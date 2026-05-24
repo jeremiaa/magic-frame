@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <!-- Background gradient: deep navy with subtle blue-purple wash -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e1a" />
+      <stop offset="60%" stop-color="#0f1530" />
+      <stop offset="100%" stop-color="#1a1240" />
+    </linearGradient>
+
+    <!-- Brand gradient (matches logo) -->
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+
+    <!-- Soft glow behind logo -->
+    <radialGradient id="logoGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.45" />
+      <stop offset="60%" stop-color="#6366f1" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Glass-card gradient (semi-transparent) -->
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04" />
+    </linearGradient>
+
+    <!-- Mini-logo as a symbol for re-use -->
+    <symbol id="brandMark" viewBox="0 0 120 160">
+      <rect x="5" y="5" width="110" height="150" rx="22" fill="url(#brandGrad)" />
+      <rect x="14" y="14" width="92" height="132" rx="14" fill="#0f172a" />
+      <path d="M14 110 L38 90 L60 105 L80 85 L92 95 V146 H14 Z" fill="url(#brandGrad)" fill-opacity="0.4" />
+      <rect x="25" y="28" width="45" height="16" rx="5" fill="white" />
+      <rect x="75" y="28" width="20" height="16" rx="5" fill="white" fill-opacity="0.3" />
+      <rect x="25" y="50" width="60" height="6" rx="3" fill="white" fill-opacity="0.2" />
+      <path d="M100 20C100 20 98 17 95 17C98 17 100 14 100 14C100 14 102 17 105 17C102 17 100 20 100 20Z" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5" />
+    </symbol>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bgGrad)" />
+
+  <!-- Decorative soft glow behind logo -->
+  <circle cx="200" cy="320" r="280" fill="url(#logoGlow)" />
+
+  <!-- Subtle grid pattern for tech-feel -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="160" x2="1280" y2="160" />
+    <line x1="0" y1="320" x2="1280" y2="320" />
+    <line x1="0" y1="480" x2="1280" y2="480" />
+    <line x1="320" y1="0" x2="320" y2="640" />
+    <line x1="640" y1="0" x2="640" y2="640" />
+    <line x1="960" y1="0" x2="960" y2="640" />
+  </g>
+
+  <!-- Floating glass cards on the right side (hint at dashboard widgets) -->
+  <g transform="translate(820, 110)">
+    <!-- Card 1: large clock-like -->
+    <rect x="0" y="0" width="200" height="120" rx="14" fill="url(#glassGrad)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+    <rect x="20" y="30" width="120" height="22" rx="4" fill="#ffffff" fill-opacity="0.45" />
+    <rect x="20" y="64" width="80" height="10" rx="3" fill="#ffffff" fill-opacity="0.22" />
+    <rect x="20" y="84" width="55" height="10" rx="3" fill="#ffffff" fill-opacity="0.18" />
+
+    <!-- Card 2: weather/data -->
+    <rect x="220" y="0" width="180" height="120" rx="14" fill="url(#glassGrad)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+    <circle cx="260" cy="42" r="18" fill="#fbbf24" fill-opacity="0.8" />
+    <rect x="290" y="30" width="80" height="14" rx="4" fill="#ffffff" fill-opacity="0.4" />
+    <rect x="290" y="50" width="60" height="10" rx="3" fill="#ffffff" fill-opacity="0.22" />
+    <rect x="240" y="76" width="140" height="8" rx="3" fill="#ffffff" fill-opacity="0.15" />
+    <rect x="240" y="90" width="100" height="8" rx="3" fill="#ffffff" fill-opacity="0.15" />
+
+    <!-- Card 3: button row -->
+    <rect x="0" y="140" width="400" height="80" rx="14" fill="url(#glassGrad)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+    <rect x="20" y="160" width="80" height="40" rx="10" fill="url(#brandGrad)" fill-opacity="0.6" />
+    <rect x="115" y="160" width="80" height="40" rx="10" fill="#ffffff" fill-opacity="0.15" />
+    <rect x="210" y="160" width="80" height="40" rx="10" fill="#ffffff" fill-opacity="0.15" />
+    <rect x="305" y="160" width="80" height="40" rx="10" fill="#ffffff" fill-opacity="0.15" />
+
+    <!-- Card 4: list/todos -->
+    <rect x="0" y="240" width="400" height="160" rx="14" fill="url(#glassGrad)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+    <rect x="20" y="260" width="120" height="14" rx="4" fill="#ffffff" fill-opacity="0.4" />
+    <g fill="#ffffff" fill-opacity="0.22">
+      <circle cx="32" cy="296" r="6" />
+      <rect x="50" y="291" width="280" height="10" rx="3" />
+      <circle cx="32" cy="324" r="6" />
+      <rect x="50" y="319" width="240" height="10" rx="3" />
+      <circle cx="32" cy="352" r="6" />
+      <rect x="50" y="347" width="260" height="10" rx="3" />
+      <circle cx="32" cy="380" r="6" />
+      <rect x="50" y="375" width="200" height="10" rx="3" />
+    </g>
+  </g>
+
+  <!-- Brand mark (logo) -->
+  <use href="#brandMark" x="80" y="180" width="180" height="240" />
+
+  <!-- Wordmark + tagline -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" fill="#ffffff">
+    <text x="300" y="280" font-size="92" font-weight="800" letter-spacing="-2">Magic Frame</text>
+    <text x="300" y="330" font-size="28" font-weight="500" fill="#cbd5e1" letter-spacing="-0.5">Local glassmorphism dashboard for</text>
+    <text x="300" y="370" font-size="28" font-weight="500" fill="#cbd5e1" letter-spacing="-0.5">tablets, monitors &amp; picture frames</text>
+
+    <!-- Feature pills row -->
+    <g font-size="18" font-weight="600" fill="#94a3b8">
+      <text x="300" y="445">Drag &amp; drop editor  ·  Live sync  ·  Home Assistant  ·  Custom modules  ·  Self-hosted</text>
+    </g>
+  </g>
+
+  <!-- Bottom-right metadata badge -->
+  <g transform="translate(1080, 580)">
+    <rect x="0" y="-26" width="160" height="36" rx="18" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1" />
+    <text x="80" y="-2" font-family="-apple-system, system-ui, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1" text-anchor="middle">github.com/jeremiaa</text>
+  </g>
+</svg>
