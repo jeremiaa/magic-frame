@@ -248,6 +248,28 @@ docker compose logs -f caddy
 
 ---
 
+## Troubleshooting
+
+### Browser lädt `http://<server-ip>` nicht / HTTPS-Verbindung scheitert
+Brave, Chrome und Edge upgraden `http://` automatisch auf `https://`. Bei einem frischen lokalen Install gibt's noch kein Zertifikat — der Upgrade scheitert bevor die Anfrage Magic Frame erreicht.
+
+- **Brave:** `brave://settings/security` → *„Always use secure connections"* → auf *„Don't use"* stellen (oder per-Site-Ausnahme setzen)
+- **Chrome/Edge:** `chrome://settings/security` → *„Always use secure connections"* → ausschalten
+- **Firefox/Safari:** akzeptieren HTTP auf lokale IPs meist ohne Murren
+- **Langfristig:** Domain einrichten → Caddy zieht automatisch ein echtes Let's-Encrypt-Cert (siehe *Settings → Hosting & Netzwerk* in der App)
+
+### `Bind for 0.0.0.0:80 failed: port is already allocated` beim Install
+Etwas anderes auf dem Host hört schon auf Port 80. Mit `ss -tlnp | grep :80` und `docker ps --filter "publish=80"` checken. Häufige Übeltäter:
+
+- `nginx` / `apache2` vom Distri-Default: `systemctl stop nginx && systemctl disable nginx`
+- Anderer Container belegt den Port: `docker stop <name>`
+- Danach den Caddy-Container sauber neu erstellen: `docker compose down && docker compose up -d`
+
+### Seite zeigt nach `git pull` + Rebuild noch altes Verhalten
+Sowohl Next.js als auch der Browser cachen aggressiv. Hard-Refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`) oder URL im Inkognito-Fenster öffnen nach `docker compose up -d --build`.
+
+---
+
 ## Doku
 
 | | |
