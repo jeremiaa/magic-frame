@@ -98,6 +98,18 @@ cd magic-frame && ./deploy/install.sh
 
 ---
 
+## Demo
+
+<div align="center">
+
+https://github.com/jeremiaa/magic-frame/raw/main/public/demo/magic-frame-preview.mp4
+
+<sub>~1 min walkthrough: create a new view → drag widgets onto the grid → configure them in the inspector → save → live-sync pushes to every connected display.</sub>
+
+</div>
+
+---
+
 ## Screenshots
 
 ### Dashboard — entry point with live status
