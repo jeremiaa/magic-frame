@@ -253,6 +253,7 @@ docker compose logs -f caddy
 ### Browser refuses to load `http://<server-ip>` / says HTTPS failed
 Brave, Chrome, and Edge auto-upgrade `http://` to `https://` by default. On a fresh local install there's no cert yet, so the upgrade fails before the request reaches Magic Frame.
 
+- **Quickest workaround:** type the full path — `http://<server-ip>/login` (or `/editor`) instead of just `http://<server-ip>`. The auto-upgrade often only fires on bare host URLs.
 - **Brave:** `brave://settings/security` → *"Always use secure connections"* → switch to *"Don't use"* (or set a per-site exception)
 - **Chrome/Edge:** `chrome://settings/security` → *"Always use secure connections"* → off
 - **Firefox/Safari:** usually fine with HTTP on local IPs out of the box
