@@ -116,6 +116,31 @@ cd magic-frame && ./deploy/install.sh
 
 ---
 
+## In the wild
+
+A few real setups from my own home — phone photos, no Photoshop. Same project running on completely different hardware.
+
+<table>
+<tr>
+<td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wall-mounted portrait monitor with clock, calendar, notifications and weather forecast" /></td>
+<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Tablet running smart-home view with Home Assistant buttons and entities" /></td>
+</tr>
+<tr>
+<td valign="top"><sub><strong>Big portrait monitor on the wall:</strong> clock, calendar, three live HA notifications (washing machine, cat reminder, dryer), 4-day weather forecast. Wallpaper rotates from an Immich album.</sub></td>
+<td valign="top"><sub><strong>Tablet in the kitchen:</strong> four HA scene buttons (lowboard, "only good vibes", access point, red), a door-sensor tile, and the living-room air purifier. One tap = service call straight into Home Assistant.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="public/setups/setup-notify.jpg" alt="Close-up of notification tiles on the wall monitor at night" /></td>
+<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Small framed tablet on a side table as a digital picture frame with subtle widgets" /></td>
+</tr>
+<tr>
+<td valign="top"><sub><strong>Notifications close-up:</strong> rule-based tiles that auto-show when something happens (washing machine done) and auto-hide once acknowledged. Wallpaper continues underneath.</sub></td>
+<td valign="top"><sub><strong>Picture-frame mode:</strong> a small tablet in a real photo-frame mount, rotating wallpapers from Immich with only a tiny clock and three notification tiles when needed.</sub></td>
+</tr>
+</table>
+
+---
+
 ## Screenshots
 
 ### Dashboard — entry point with live status
