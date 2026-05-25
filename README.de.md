@@ -102,9 +102,9 @@ cd magic-frame && ./deploy/install.sh
 
 <div align="center">
 
-https://github.com/jeremiaa/magic-frame/raw/main/public/demo/magic-frame-preview.mp4
+<img src="public/demo/magic-frame-teaser.gif" alt="Magic-Frame-Editor — View erstellen, Widgets ziehen, Inspector konfigurieren, Live-Sync auf Displays" width="720" />
 
-<sub>~1 Min Walkthrough: neue View erstellen → Widgets auf das Grid ziehen → im Inspector konfigurieren → speichern → Live-Sync pusht an alle verbundenen Displays.</sub>
+<sub>View erstellen → Widgets auf das 24-Spalten-Grid ziehen → im Inspector konfigurieren → speichern → Live-Sync pusht an alle verbundenen Displays. <a href="public/demo/magic-frame-preview.mp4">Vollständigen ~1 Min Walkthrough ansehen</a>.</sub>
 
 </div>
 
