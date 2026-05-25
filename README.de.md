@@ -120,22 +120,29 @@ cd magic-frame && ./deploy/install.sh
 
 Ein paar echte Setups bei mir zuhause — Handyfotos, kein Photoshop. Gleiches Projekt auf komplett unterschiedlicher Hardware.
 
+### Großer Portrait-Monitor an der Wand
+
 <table>
 <tr>
 <td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wandmontierter Portrait-Monitor mit Uhr, Kalender, Notifications und Wetter-Vorhersage" /></td>
-<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Tablet mit Smart-Home-View mit Home-Assistant-Buttons und Entities" /></td>
-</tr>
-<tr>
-<td valign="top"><sub><strong>Großer Portrait-Monitor an der Wand:</strong> Uhr, Kalender, drei Live-HA-Notifications (Waschmaschine, Katzen-Erinnerung, Trockner), 4-Tage-Wettervorhersage. Wallpaper rotieren aus einem Immich-Album.</sub></td>
-<td valign="top"><sub><strong>Tablet in der Küche:</strong> vier HA-Szenen-Buttons (Lowboard, „Only good Vibes", Access Point, Red), ein Türsensor-Tile und der Wohnzimmer-Luftreiniger. Ein Tap = Service-Call direkt in Home Assistant.</sub></td>
-</tr>
-<tr>
 <td width="50%"><img src="public/setups/setup-notify.jpg" alt="Notification-Tiles am Wand-Monitor in der Nacht — Close-up" /></td>
-<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Kleines gerahmtes Tablet auf einem Beistelltisch als digitaler Bilderrahmen mit dezenten Widgets" /></td>
 </tr>
 <tr>
-<td valign="top"><sub><strong>Notifications im Detail:</strong> regelbasierte Tiles die automatisch erscheinen wenn was passiert (Waschmaschine fertig) und sich wieder verstecken sobald's quittiert wurde. Das Wallpaper läuft drunter weiter.</sub></td>
-<td valign="top"><sub><strong>Bilderrahmen-Modus:</strong> ein kleines Tablet in echter Bilderrahmen-Halterung, Wallpaper-Rotation aus Immich, nur eine dezente Uhr und drei Notification-Tiles bei Bedarf.</sub></td>
+<td valign="top"><sub><strong>Voll bestückt:</strong> Uhr, Kalender mit anstehenden Terminen, drei Live-HA-Notifications (Waschmaschine, Katzen-Erinnerung, Trockner), 4-Tage-Wettervorhersage. Wallpaper rotiert aus einem Immich-Album im Hintergrund.</sub></td>
+<td valign="top"><sub><strong>Notifications im Detail:</strong> regelbasierte Tiles die automatisch erscheinen wenn was passiert (Waschmaschine fertig, „Milou füttern") und sich wieder verstecken sobald's quittiert wurde. Das Wallpaper läuft drunter weiter.</sub></td>
+</tr>
+</table>
+
+### Derselbe Bilderrahmen, zwei Modi — ein Tap zum Umschalten
+
+<table>
+<tr>
+<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Bilderrahmen-Tablet im Clean-Modus — nur Wallpaper und kleine Uhr" /></td>
+<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Derselbe Bilderrahmen mit eingeblendeten HA-Buttons und Entity-Tiles" /></td>
+</tr>
+<tr>
+<td valign="top"><sub><strong>Bilderrahmen-Modus:</strong> ein kleines Tablet in echter Bilderrahmen-Halterung auf dem Beistelltisch. Nur das Wallpaper, eine dezente Uhr und wenn relevant ein paar leise Notifications.</sub></td>
+<td valign="top"><sub><strong>Dashboard-Modus (selbes Gerät):</strong> Toggle-Button antippen → HA-Szenen-Buttons (Lowboard, „Only good Vibes", Access Point, Red) und Entity-Tiles (Wohnzimmer-Tür, Luftreiniger) blenden sich ein. Nochmal tippen → zurück in den Bilderrahmen-Modus.</sub></td>
 </tr>
 </table>
 

@@ -120,22 +120,29 @@ cd magic-frame && ./deploy/install.sh
 
 A few real setups from my own home — phone photos, no Photoshop. Same project running on completely different hardware.
 
+### Big portrait monitor on the wall
+
 <table>
 <tr>
 <td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wall-mounted portrait monitor with clock, calendar, notifications and weather forecast" /></td>
-<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Tablet running smart-home view with Home Assistant buttons and entities" /></td>
-</tr>
-<tr>
-<td valign="top"><sub><strong>Big portrait monitor on the wall:</strong> clock, calendar, three live HA notifications (washing machine, cat reminder, dryer), 4-day weather forecast. Wallpaper rotates from an Immich album.</sub></td>
-<td valign="top"><sub><strong>Tablet in the kitchen:</strong> four HA scene buttons (lowboard, "only good vibes", access point, red), a door-sensor tile, and the living-room air purifier. One tap = service call straight into Home Assistant.</sub></td>
-</tr>
-<tr>
 <td width="50%"><img src="public/setups/setup-notify.jpg" alt="Close-up of notification tiles on the wall monitor at night" /></td>
-<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Small framed tablet on a side table as a digital picture frame with subtle widgets" /></td>
 </tr>
 <tr>
-<td valign="top"><sub><strong>Notifications close-up:</strong> rule-based tiles that auto-show when something happens (washing machine done) and auto-hide once acknowledged. Wallpaper continues underneath.</sub></td>
-<td valign="top"><sub><strong>Picture-frame mode:</strong> a small tablet in a real photo-frame mount, rotating wallpapers from Immich with only a tiny clock and three notification tiles when needed.</sub></td>
+<td valign="top"><sub><strong>Full layout:</strong> clock, calendar with upcoming events, three live HA notifications (washing machine, cat reminder, dryer), 4-day weather forecast. Wallpaper rotates from an Immich album in the background.</sub></td>
+<td valign="top"><sub><strong>Notifications close-up:</strong> rule-based tiles that auto-show when something happens (washing machine done, "feed Milou") and auto-hide once acknowledged. Wallpaper keeps running underneath.</sub></td>
+</tr>
+</table>
+
+### Same picture frame, two modes — one tap to switch
+
+<table>
+<tr>
+<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Picture-frame tablet in clean mode — just wallpaper and a tiny clock" /></td>
+<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Same picture frame with HA buttons and entity tiles toggled visible" /></td>
+</tr>
+<tr>
+<td valign="top"><sub><strong>Frame mode:</strong> a small tablet in a real photo-frame mount on the side table. Just the wallpaper, a tiny clock and a couple of subtle notifications when relevant.</sub></td>
+<td valign="top"><sub><strong>Dashboard mode (same device):</strong> tap the toggle button → HA scene buttons (lowboard, "only good vibes", access point, red) and entity tiles (living-room door, air purifier) fade in. Tap again to go back to frame mode.</sub></td>
 </tr>
 </table>
 
