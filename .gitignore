@@ -50,3 +50,6 @@ next-env.d.ts
 # Build-Artefakte von Custom-Modulen (siehe scripts/build-module.mjs).
 # Source bleibt im Repo, Bundles werden bei Bedarf neu gebaut.
 /examples/modules/*/dist/
+
+# AI-assistant guide — local only, contains private paths/IPs
+CLAUDE.md
