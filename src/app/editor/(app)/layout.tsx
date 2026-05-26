@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import MagicFrameLogo from "@/components/MagicFrameLogo";
 import { LocaleProvider, useT } from "@/lib/i18n/LocaleProvider";
+import UpdateBanner from "@/app/editor/_components/UpdateBanner";
 
 type NavItem = {
   href: string;
@@ -160,6 +161,7 @@ function EditorAppLayoutInner({
       )}
 
       <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <UpdateBanner />
         <div className="md:hidden h-12 shrink-0 border-b border-white/10 bg-black/40 flex items-center gap-2 px-3">
           <button
             onClick={() => setOpen(true)}
