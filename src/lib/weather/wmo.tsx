@@ -2,12 +2,17 @@ import { CloudRain, Cloud, Sun, CloudDrizzle, CloudLightning, CloudSnow, CloudFo
 import {
   SolidSun,
   SolidMoon,
+  SolidPartlyCloudyDay,
+  SolidPartlyCloudyNight,
   SolidCloud,
+  SolidCloudHeavy,
   SolidCloudRain,
   SolidCloudSnow,
   SolidCloudLightning,
   SolidCloudFog,
   SolidCloudDrizzle,
+  SolidSleet,
+  SolidHail,
 } from "@/components/widgets/SolidWeatherIcons";
 
 // Zentrale Mapping-Funktionen für Open-Meteo WMO-Weather-Codes.
@@ -18,13 +23,25 @@ export function wmoToIcon(code: number, isDay: boolean = true, iconSet: string =
   const props = { strokeWidth: 1.5, className: "w-full h-full drop-shadow-md" };
 
   if (iconSet === "solid") {
+    // Differenzierung in den ersten 3 Wolken-Codes:
+    //   1 = "leicht bewölkt"   → Sonne/Mond mit kleiner Wolke
+    //   2 = "bewölkt"          → einfache helle Cloud
+    //   3 = "stark bewölkt"    → CloudHeavy (zwei Schichten)
+    // Spezialfälle:
+    //   56, 57 = freezing drizzle → Sleet (Niesel + Flocken-Mix)
+    //   66, 67 = freezing rain    → Sleet
+    //   96, 99 = Gewitter mit Hagel → Hail statt nur Blitz
     if (code === 0) return isDay ? <SolidSun {...props} /> : <SolidMoon {...props} />;
-    if ([1, 2, 3].includes(code)) return <SolidCloud {...props} />;
+    if (code === 1) return isDay ? <SolidPartlyCloudyDay {...props} /> : <SolidPartlyCloudyNight {...props} />;
+    if (code === 2) return <SolidCloud {...props} />;
+    if (code === 3) return <SolidCloudHeavy {...props} />;
     if ([45, 48].includes(code)) return <SolidCloudFog {...props} />;
-    if ([51, 53, 55, 56, 57].includes(code)) return <SolidCloudDrizzle {...props} />;
-    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return <SolidCloudRain {...props} />;
+    if ([56, 57, 66, 67].includes(code)) return <SolidSleet {...props} />;
+    if ([51, 53, 55].includes(code)) return <SolidCloudDrizzle {...props} />;
+    if ([61, 63, 65, 80, 81, 82].includes(code)) return <SolidCloudRain {...props} />;
     if ([71, 73, 75, 77, 85, 86].includes(code)) return <SolidCloudSnow {...props} />;
-    if ([95, 96, 99].includes(code)) return <SolidCloudLightning {...props} />;
+    if ([96, 99].includes(code)) return <SolidHail {...props} />;
+    if (code === 95) return <SolidCloudLightning {...props} />;
     return <SolidCloud {...props} />;
   }
 
