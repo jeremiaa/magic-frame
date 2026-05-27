@@ -236,16 +236,31 @@ export default function SettingsPage() {
 function LanguageCard() {
   const { locale, setLocale } = useLocale();
   const t = useT();
+  // Picking a language here updates *this browser* via localStorage
+  // (setLocale) AND saves it as the installation-wide default on the
+  // server. Every other display that hasn't picked its own language yet
+  // will inherit this on next load — that's how the kitchen monitor
+  // catches up with what you set in the editor on your laptop.
+  const pick = (l: "de" | "en") => {
+    setLocale(l);
+    fetch("/api/admin/locale-default", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: l }),
+    }).catch(() => {
+      // Silent — local switch already happened, server is best-effort.
+    });
+  };
   return (
     <Card
       icon={<Languages size={18} />}
       iconTint="blue"
       title="Sprache"
-      desc="Sprache der Editor-Oberfläche. Wird lokal gespeichert."
+      desc="Sprache der Oberfläche. Pro Browser merkbar + als Default für alle Displays gespeichert."
     >
       <div className="inline-flex rounded-lg bg-black/40 border border-white/10 p-0.5">
         <button
-          onClick={() => setLocale("de")}
+          onClick={() => pick("de")}
           className={`px-4 h-9 rounded-md text-sm font-medium transition-colors ${
             locale === "de" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
           }`}
@@ -253,7 +268,7 @@ function LanguageCard() {
           {t("Deutsch")}
         </button>
         <button
-          onClick={() => setLocale("en")}
+          onClick={() => pick("en")}
           className={`px-4 h-9 rounded-md text-sm font-medium transition-colors ${
             locale === "en" ? "bg-white/15 text-white" : "text-white/50 hover:text-white"
           }`}

@@ -21,18 +21,41 @@ const Ctx = createContext<LocaleCtx>({
 });
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  // English is the primary language and the default for every new visitor.
-  // German is only used if the user explicitly opts in via the locale switcher
-  // (persisted in localStorage). No automatic navigator-language detection —
-  // we want a single canonical first-impression UX, not a browser-dependent one.
+  // English is the strict app default — but every Magic Frame installation
+  // can set its own preferred locale via Settings → General. Resolution
+  // order on first mount:
+  //
+  //   1. localStorage["mf-lang"] (per-browser override, set by the switcher)
+  //   2. /api/locale-default (per-installation default, set by the admin)
+  //   3. "en" (fallback for fresh repos / new installations)
+  //
+  // This solves the "laptop shows German, kitchen monitor shows English"
+  // problem: any browser that hasn't been to the editor before still picks
+  // up the installation's preferred locale.
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
+    let cancelled = false;
     const saved = localStorage.getItem("mf-lang");
     if (saved === "en" || saved === "de") {
       setLocaleState(saved);
+      return;
     }
-    // else: stay on the "en" default — no auto-switch to German for DE browsers.
+    // No per-browser preference yet — ask the server for its default.
+    fetch("/api/locale-default", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        if (d?.locale === "de" || d?.locale === "en") {
+          setLocaleState(d.locale);
+        }
+      })
+      .catch(() => {
+        // Network failure → stay on "en", non-critical.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Auch <html lang> aktualisieren (a11y / Browser-Hints)

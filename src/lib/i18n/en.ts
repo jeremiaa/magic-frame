@@ -91,6 +91,8 @@ export const EN: Record<string, string> = {
   "Sprache": "Language",
   "Sprache der Editor-Oberfläche. Wird lokal gespeichert.":
     "Language of the editor interface. Stored locally.",
+  "Sprache der Oberfläche. Pro Browser merkbar + als Default für alle Displays gespeichert.":
+    "UI language. Remembered per browser and saved as the default for all displays.",
   "Deutsch": "German",
   "Englisch": "English",
 
@@ -1351,4 +1353,49 @@ export const EN: Record<string, string> = {
   // Custom file-picker label (replaces the browser's native locale-dependent
   // "Keine ausgewählt" / "No file chosen" status text)
   "Keine Datei ausgewählt": "No file chosen",
+
+  // v1.1.0 — Camera widget
+  "Kamera": "Camera",
+  "HA-Kamera-Entity": "HA camera entity",
+  "HA-Kamera-Entity in Config eintragen, z.B. camera.front_door":
+    "Set an HA camera entity in the config, e.g. camera.front_door",
+  "Stream-Modus noch nicht verfügbar — Snapshot wählen":
+    "Stream mode not available yet — pick Snapshot",
+  "WebRTC noch nicht verfügbar — Snapshot oder MJPEG wählen":
+    "WebRTC not available yet — pick Snapshot or MJPEG",
+  "WebRTC-Verbindung fehlgeschlagen": "WebRTC connection failed",
+  "HD, niedrige Latenz": "HD, low latency",
+  "flüssig, mehr BW": "smooth, more bw",
+  "Snapshot ist bandbreitenfreundlich. MJPEG ist flüssig. WebRTC liefert HD mit niedriger Latenz, braucht aber eine WebRTC-fähige HA-Konfiguration (go2rtc bzw. eine Kamera-Integration mit eigenem WebRTC-Provider).":
+    "Snapshot is bandwidth-friendly. MJPEG is smooth. WebRTC delivers HD with low latency but needs a WebRTC-capable HA setup (go2rtc or a camera integration with its own WebRTC provider).",
+  "WebRTC braucht eine HA-Instanz mit go2rtc-Setup (Standard bei Frigate, UniFi Protect via go2rtc, ESPHome cams etc.). Bei nicht-WebRTC-fähigen Kameras zeigt das Widget einen Fehler — dann auf MJPEG zurückschalten. Qualität von Snapshot und MJPEG hängt am HA-Stream-Profil der Kamera.":
+    "WebRTC needs an HA setup with go2rtc (default for Frigate, UniFi Protect via go2rtc, ESPHome cams, etc.). On cameras without WebRTC support the widget shows an error — fall back to MJPEG then. Snapshot/MJPEG quality depends on the camera's HA stream profile.",
+  "Klick außerhalb des Widgets um Vollbild zu schließen — der Live-Stream läuft im Widget weiter.":
+    "Click outside the widget to close fullscreen — the live stream keeps running inside the widget.",
+  "Anzeige-Modus": "Display mode",
+  "Snapshot": "Snapshot",
+  "alle paar Sekunden": "every few seconds",
+  "Live-Stream (MJPEG)": "Live stream (MJPEG)",
+  "flüssig, mehr Bandbreite": "smooth, more bandwidth",
+  "Snapshot ist bandbreitenfreundlich, MJPEG ist flüssig. Qualität hängt am HA-Stream-Setup der Kamera.":
+    "Snapshot is bandwidth-friendly, MJPEG is smooth. Quality depends on the camera's HA stream setup.",
+  "Snapshot konnte nicht geladen werden": "Snapshot could not be loaded",
+  "Liste enthält nur Kamera-Entities aus deiner verbundenen HA-Instanz.":
+    "List only contains camera entities from your connected HA instance.",
+  "Aktualisierungs-Intervall": "Refresh interval",
+  "Wie oft das Vorschaubild neu geholt wird. Schneller = mehr Bandbreite + HA-Last.":
+    "How often the snapshot is refetched. Faster = more bandwidth + HA load.",
+  "Seitenverhältnis": "Aspect ratio",
+  "„Auto“ passt sich an die Quelle an. Fixe Werte beschneiden das Bild, füllen aber das Widget vollständig.":
+    "“Auto” follows the source. Fixed ratios crop the image but fill the widget.",
+  "Bei Klick auf Bild Vollbild öffnen": "Click image to open fullscreen",
+  "Beschriftung (optional)": "Caption (optional)",
+  "z.B. Haustür": "e.g. Front door",
+  "Kleiner Hinweis-Chip unten-links im Widget. Leer = kein Chip.":
+    "Small caption chip in the lower-left corner. Empty = no chip.",
+  "Snapshot-Modus: das Vorschaubild wird im konfigurierten Intervall neu geholt. MJPEG-Stream und WebRTC (go2rtc) folgen in späteren Releases.":
+    "Snapshot mode: the preview image is refetched at the configured interval. MJPEG stream and WebRTC (go2rtc) come in later releases.",
+  "MJPEG-Qualität hängt direkt am HA-Stream-Profil der Kamera — niedrige Auflösung im HA-Stream-Source liefert auch hier nur niedrige Auflösung. WebRTC (go2rtc) folgt in einem späteren Release.":
+    "MJPEG quality depends directly on the camera's HA stream profile — a low-resolution stream source means low-resolution here too. WebRTC (go2rtc) comes in a later release.",
+  // "Schließen" already exists earlier in this dict.
 };
