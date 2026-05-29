@@ -76,6 +76,31 @@ export default function ButtonInspector({
             </div>
         ) : (
             <div className="space-y-4 pt-2">
+               <label className="flex items-center justify-between gap-3 cursor-pointer group bg-white/5 border border-white/10 rounded-lg px-3 py-2.5">
+                  <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Diesen Button anzeigen")}</span>
+                  <div className="relative">
+                     <input
+                        type="checkbox"
+                        checked={!(activeWidget.config as any)?.[`btnHidden${btnSuffix}`]}
+                        onChange={(e) => updateConfig(activeWidget.i, `btnHidden${btnSuffix}`, !e.target.checked)}
+                        className="sr-only peer"
+                     />
+                     <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-500"></div>
+                  </div>
+               </label>
+               {(activeWidget.config as any)?.[`btnHidden${btnSuffix}`] && (
+                  <p className="text-[11px] text-white/40 -mt-1">
+                     {t("Button ist ausgeblendet — die Einstellungen bleiben erhalten.")}
+                  </p>
+               )}
+               {!(activeWidget.config as any)?.[`btnHidden${btnSuffix}`] &&
+                  !(activeWidget.config as any)?.[`icon${btnSuffix}`] &&
+                  !(activeWidget.config as any)?.[`label${btnSuffix}`] &&
+                  !((activeWidget.config as any)?.[`targets${btnSuffix}`]?.length) && (
+                  <p className="text-[11px] text-amber-300/70 -mt-1">
+                     {t("Noch leer — ein Icon oder Text zuweisen, damit der Button angezeigt wird.")}
+                  </p>
+               )}
                <div>
                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Anzeige Text")}</label>
                   <input

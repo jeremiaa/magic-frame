@@ -1412,4 +1412,11 @@ export const EN: Record<string, string> = {
   "Deutsch (Di., 27. Mai)": "German (Di., 27. Mai)",
   "US-Englisch (Tue, May 27)": "US English (Tue, May 27)",
   "UK-Englisch (Tue 27 May)": "UK English (Tue 27 May)",
+
+  // Button widget: per-slot visibility toggle
+  "Diesen Button anzeigen": "Show this button",
+  "Button ist ausgeblendet — die Einstellungen bleiben erhalten.":
+    "Button is hidden — its settings are kept.",
+  "Noch leer — ein Icon oder Text zuweisen, damit der Button angezeigt wird.":
+    "Still empty — assign an icon or label so the button shows.",
 };

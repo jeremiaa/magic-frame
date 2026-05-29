@@ -224,10 +224,16 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
   
   const extractBtn = (idx: number) => {
       const suffix = idx === 1 ? '' : String(idx);
+
+      // Explicit per-slot hide — keeps the slot's config intact but drops it
+      // from the rendered widget. Lets the user show e.g. only 1 of the 4
+      // slots without having to clear icon / label / targets / actions.
+      if (config[`btnHidden${suffix}`]) return null;
+
       const icon = config[`icon${suffix}`];
       const targets = config[`targets${suffix}`];
       const label = config[`label${suffix}`];
-      
+
       // If none of these exist, the slot is technically "empty"
       if (!icon && (!targets || targets.length === 0) && !label) return null;
       
