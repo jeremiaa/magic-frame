@@ -203,8 +203,10 @@ export async function GET(request: NextRequest) {
       }),
     );
 
+    const now = new Date();
     const allEvents = feedResults
       .flatMap((f) => f.events)
+      .filter((e) => new Date(e.end) > now)
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
       .slice(0, limit);
 
