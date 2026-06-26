@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: magic-frame-env
+  labels:
+    app: magic-frame-env
+data:
+  ADMIN_EMAIL: {{ .Values.appConfig.adminEmail | quote }}
+  ADMIN_PASSWORD: {{ .Values.appConfig.adminPassword | quote }}
+  APP_BASE_URL: {{ .Values.appConfig.appBaseUrl | quote }}
+  CADDY_ADMIN_URL: {{ .Values.appConfig.caddyAdminUrl | quote }}
+  COOKIE_SECURE: {{ .Values.appConfig.cookieSecure | quote }}
+  DATABASE_URL: {{ .Values.appConfig.databaseUrl | quote }}
+  GOOGLE_CLIENT_ID: {{ .Values.appConfig.googleClientId | quote }}
+  GOOGLE_CLIENT_SECRET: {{ .Values.appConfig.googleClientSecret | quote }}
+  MS_CLIENT_ID: {{ .Values.appConfig.msClientId | quote }}
+  MS_CLIENT_SECRET: {{ .Values.appConfig.msClientSecret | quote }}
+  NODE_ENV: {{ .Values.appConfig.nodeEnv | quote }}
+  OPENWEATHERMAP_API_KEY: {{ .Values.appConfig.openWeatherMapApiKey | quote }}
+  SESSION_SECRET: {{ .Values.appConfig.sessionSecret | quote }}

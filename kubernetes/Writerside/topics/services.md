@@ -1,10 +1,12 @@
 # Services
 
-Services are used to expose pods to the network. In this case, we have three services defined for the Caddy pod, the database pod, and the app pod.
+Services are used to expose pods to the network. In this case, we have three services defined: the (optional) Caddy pod, 
+the Postgres database pod, and the Magic Frame app pod.
 
-## Caddy pod service
-The service for the Caddy pod is defined as follows:
+## Caddy pod service (optional)
+The service for the Caddy pod is defined as follows.
 
+Copy and past the below YAML code into a YAML file named ```magic-frame-caddy-service.yaml```
 ```
 apiVersion: v1
 kind: Service
@@ -19,10 +21,12 @@ spec:
     - name: "80"
       port: 80
       targetPort: 80
-      nodePort: 11112 # External app access (http): choose your own port here
+      # External app access (http): choose your own port
+      nodePort: 30080 
     - name: "443"
       port: 443
-      nodePort: 11443 # External app access (https): choose your own port here
+      # External app access (https): choose your own port
+      nodePort: 30443 
       targetPort: 443
     - name: 443-udp
       port: 443
@@ -36,7 +40,9 @@ spec:
 ```
 
 ## Database pod service
-The service for the database pod is defined as follows:
+The service for the database pod is defined as follows.
+
+Copy and past the below YAML code into a YAML file named ```magic-frame-db-service.yaml```
 
 ```
 apiVersion: v1
@@ -58,8 +64,9 @@ spec:
 ```
 
 ## App pod service
-The service for the app pod is defined as follows:
+The service for the app pod is defined as follows.
 
+Copy and past the below YAML code into a YAML file named ```magic-frame-app-service.yaml```
 ```
 apiVersion: v1
 kind: Service

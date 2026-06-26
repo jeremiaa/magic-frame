@@ -1,10 +1,17 @@
 # Deployments
 
-Deployments are a way to manage and distribute your applications or services to different environments, such as development, staging, and production. They allow you to automate the process of releasing new features, bug fixes, and updates to your users.
-The containers, or pods, are deployed to a cluster of servers. The deployment process typically creating a deployment configuration, and then deploying it to the target environment.
+Deployments are a way to manage and distribute your applications or services to different environments, such as 
+development, staging, and production. They allow you to automate the process of releasing new features, bug fixes, 
+and updates to your users. The containers, or pods, are deployed to a cluster of servers. The deployment process
+typically creating a deployment configuration, and then deploying it to the target environment.
 
 ## Database Deployment
-The database deployment is responsible for managing the database service in the cluster. It ensures that the database is running and available for the application to use. The deployment configuration specifies the database image, the number of replicas, and any necessary environment variables or configuration settings. The deployment will also handle scaling the database up or down based on demand, and it will automatically restart any failed pods to ensure high availability.
+The database deployment is responsible for managing the database service in the cluster. It ensures that the database is
+running and available for the application to use. The deployment configuration specifies the database image, the number
+of replicas, and any necessary environment variables or configuration settings. The deployment will also handle scaling
+the database up or down based on demand, and it will automatically restart any failed pods to ensure high availability.
+
+Copy and past the below YAML code into a YAML file named ```magic-frame-db-deployment.yaml```
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -53,12 +60,18 @@ spec:
         - name: magic-frame-pgdata-pvc
           persistentVolumeClaim:
             claimName: magic-frame-pgdata-pvc
+
 ```
 
-## Caddy Deployment
+## Caddy Deployment (optional)
 The Caddy deployment is responsible for managing the Caddy web server in the cluster.
-Caddy is a powerful and easy-to-use web server that can be used to serve static files, reverse proxy to other services, and handle SSL/TLS termination. The deployment configuration for Caddy specifies the Caddy image, the number of replicas, and any necessary environment variables or configuration settings. The deployment will ensure that Caddy is running and available to serve requests from users, and it will automatically restart any failed pods to maintain high availability.
 
+Caddy is a powerful and easy-to-use web server that can be used to serve static files, reverse proxy to other services, 
+and handle SSL/TLS termination. The deployment configuration for Caddy specifies the Caddy image, the number of replicas, 
+and any necessary environment variables or configuration settings. The deployment will ensure that Caddy is running and 
+available to serve requests from users, and it will automatically restart any failed pods to maintain high availability.
+
+Copy and past the below YAML code into a YAML file named ```magic-frame-caddy-deployment.yaml```
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -110,10 +123,13 @@ spec:
         - name: magic-frame-caddy-conf-pvc
           persistentVolumeClaim:
             claimName: magic-frame-caddy-conf-pvc
-
 ```
 ## Magic Frame App Deployment
-The Magic Frame App deployment is responsible for managing the main application in the cluster. This deployment configuration specifies the application image, the number of replicas, and any necessary environment variables or configuration settings. The deployment will ensure that the application is running and available to users, and it will automatically restart any failed pods to maintain high availability. Additionally, the deployment can be configured to scale up or down based on demand, ensuring that the application can handle varying levels of traffic effectively.
+The Magic Frame App deployment is responsible for managing the main application in the cluster. This deployment
+configuration specifies the application image, the number of replicas, and any necessary environment variables or 
+configuration settings. 
+
+Copy and past the below YAML code into a YAML file named ```magic-frame-app-deployment.yaml```
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -212,8 +228,12 @@ spec:
               name: magic-frame-configs-pvc
             - mountPath: /app/wallpapers
               name: magic-frame-wallpapers-pvc
-            - mountPath: /caddy/config
-              name: magic-frame-caddy-config-pvc
+#
+# Uncomment the 2 lines below if you want to run and use Caddy
+# Make sure the indentation is correct.
+#
+#            - mountPath: /caddy/config
+#              name: magic-frame-caddy-config-pvc
       restartPolicy: Always
       volumes:
         - name: magic-frame-configs-pvc
@@ -222,9 +242,13 @@ spec:
         - name: magic-frame-wallpapers-pvc
           persistentVolumeClaim:
             claimName: magic-frame-wallpapers-pvc
-        - name: magic-frame-caddy-config-pvc
-          persistentVolumeClaim:
-            claimName: magic-frame-caddy-config-pvc
+#
+# Uncomment the 3 lines below if you want to run and use Caddy.
+# Make sure the indentation is correct.
+#
+#        - name: magic-frame-caddy-config-pvc
+#          persistentVolumeClaim:
+#            claimName: magic-frame-caddy-config-pvc
 ---
 
 apiVersion: v1
@@ -247,6 +271,11 @@ data:
   MS_CLIENT_SECRET: ""
   NODE_ENV: "production"
   OPENWEATHERMAP_API_KEY: ""
-  SESSION_SECRET: ""
+#
+# Put the generated session secret between the quotes on the line below.
+#
+  SESSION_SECRET: "<paste session secret here>"
+
+
 
 ```

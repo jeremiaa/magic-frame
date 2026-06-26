@@ -8,13 +8,13 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: "80"
+    - name: 80-tcp
       port: 80
       targetPort: 80
-      nodePort: 11112
-    - name: "443"
+      nodePort: 30080
+    - name: 443-tcp
       port: 443
-      nodePort: 11443
+      nodePort: 30443
       targetPort: 443
     - name: 443-udp
       port: 443
@@ -23,6 +23,6 @@ spec:
     - name: "2019"
       port: 2019
       targetPort: 2019
-      nodePort: 12019
+      nodePort: 32019
   selector:
     app: magic-frame-caddy

@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magic-frame-app
+  labels:
+    app: magic-frame-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magic-frame-app
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: magic-frame-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: magic-frame-env
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/configs
+              name: magic-frame-configs-pvc
+            - mountPath: /app/wallpapers
+              name: magic-frame-wallpapers-pvc
+            {{- if .Values.caddy.enabled }}
+            - mountPath: /caddy/config
+              name: magic-frame-caddy-config-pvc
+            {{- end }}
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-configs-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-configs-pvc
+        - name: magic-frame-wallpapers-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-wallpapers-pvc
+        {{- if .Values.caddy.enabled }}
+        - name: magic-frame-caddy-config-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-config-pvc
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-app
+  labels:
+    app: magic-frame-app
+spec:
+  type: ClusterIP
+  ports:
+    - name: mf-port
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: magic-frame-app
+
+{{- if not .Values.caddy.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-nocaddy
+spec:
+  type: NodePort
+  ports:
+    - name: "80"
+      protocol: TCP
+      port: 3080
+      targetPort: 3000
+      nodePort: 30080
+    - name: "443"
+      protocol: TCP
+      port: 3443
+      targetPort: 3000
+      nodePort: 30443
+  selector:
+    app: magic-frame-app
+{{- end }}

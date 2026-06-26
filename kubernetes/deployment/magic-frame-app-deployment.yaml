@@ -95,8 +95,12 @@ spec:
               name: magic-frame-configs-pvc
             - mountPath: /app/wallpapers
               name: magic-frame-wallpapers-pvc
-            - mountPath: /caddy/config
-              name: magic-frame-caddy-config-pvc
+#
+# Uncomment the 2 lines below if you want to run and use Caddy
+# Make sure the indentation is correct.
+#
+#            - mountPath: /caddy/config
+#              name: magic-frame-caddy-config-pvc
       restartPolicy: Always
       volumes:
         - name: magic-frame-configs-pvc
@@ -105,9 +109,13 @@ spec:
         - name: magic-frame-wallpapers-pvc
           persistentVolumeClaim:
             claimName: magic-frame-wallpapers-pvc
-        - name: magic-frame-caddy-config-pvc
-          persistentVolumeClaim:
-            claimName: magic-frame-caddy-config-pvc
+#
+# Uncomment the 3 lines below if you want to run and use Caddy.
+# Make sure the indentation is correct.
+#
+#        - name: magic-frame-caddy-config-pvc
+#          persistentVolumeClaim:
+#            claimName: magic-frame-caddy-config-pvc
 ---
 
 apiVersion: v1
@@ -130,5 +138,8 @@ data:
   MS_CLIENT_SECRET: ""
   NODE_ENV: "production"
   OPENWEATHERMAP_API_KEY: ""
-  SESSION_SECRET: ""
+#
+# Put the generated session secret between the quotes on the line below.
+#
+  SESSION_SECRET: "<paste session secret here>"
 

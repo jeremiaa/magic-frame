@@ -1,0 +1,32 @@
+# Toggle Caddy deployment and related configs on or off
+caddy:
+  enabled: true
+
+# Application Image Settings
+image:
+  repository: magic-frame-app
+  tag: latest
+  pullPolicy: Never
+
+# Environment Variables (ConfigMap)
+appConfig:
+  adminEmail: ""
+  adminPassword: ""
+  appBaseUrl: ""
+  caddyAdminUrl: "http://caddy:2019"
+  cookieSecure: ""
+  databaseUrl: "postgresql://postgres:postgres@magic-frame-db:5432/magicdashboard?schema=public"
+  googleClientId: ""
+  googleClientSecret: ""
+  msClientId: ""
+  msClientSecret: ""
+  nodeEnv: "production"
+  openWeatherMapApiKey: ""
+  sessionSecret: "replace-with-generated-secret"
+
+# Persistent Storage Configurations
+storage:
+  className: "magic-frame-storage"
+  capacity: "100Mi"
+  # Base path for hostPath volumes
+  hostPathBase: "/var/lib/rancher/k3s/storage"

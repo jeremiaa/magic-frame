@@ -1,0 +1,9 @@
+magic-frame/
+├── Chart.yaml
+├── values.yaml
+└── templates/
+    ├── configmap.yaml
+    ├── storage.yaml
+    ├── db.yaml
+    ├── app.yaml
+    └── caddy.yaml

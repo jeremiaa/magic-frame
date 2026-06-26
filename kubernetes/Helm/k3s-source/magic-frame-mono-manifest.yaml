@@ -1,0 +1,545 @@
+# Original filename: magic-frame-app-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: magic-frame-app
+  name: magic-frame-app
+  namespace: magic-frame
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: magic-frame-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magic-frame-app
+    spec:
+      containers:
+        - env:
+            - name: ADMIN_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  key: ADMIN_EMAIL
+                  name: magic-frame-env
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: ADMIN_PASSWORD
+                  name: magic-frame-env
+            - name: APP_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_BASE_URL
+                  name: magic-frame-env
+            - name: CADDY_ADMIN_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: CADDY_ADMIN_URL
+                  name: magic-frame-env
+            - name: COOKIE_SECURE
+              valueFrom:
+                configMapKeyRef:
+                  key: COOKIE_SECURE
+                  name: magic-frame-env
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: DATABASE_URL
+                  name: magic-frame-env
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GOOGLE_CLIENT_ID
+                  name: magic-frame-env
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: GOOGLE_CLIENT_SECRET
+                  name: magic-frame-env
+            - name: MS_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: MS_CLIENT_ID
+                  name: magic-frame-env
+            - name: MS_CLIENT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: MS_CLIENT_SECRET
+                  name: magic-frame-env
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  key: NODE_ENV
+                  name: magic-frame-env
+            - name: OPENWEATHERMAP_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: OPENWEATHERMAP_API_KEY
+                  name: magic-frame-env
+            - name: SESSION_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: SESSION_SECRET
+                  name: magic-frame-env
+          image: magic-frame-app:latest
+          name: magic-frame-app
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/configs
+              name: magic-frame-configs-pvc
+            - mountPath: /app/wallpapers
+              name: magic-frame-wallpapers-pvc
+#
+# Uncomment the 2 lines below if you want to run and use Caddy
+# Make sure the indentation is correct.
+#
+#            - mountPath: /caddy/config
+#              name: magic-frame-caddy-config-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-configs-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-configs-pvc
+        - name: magic-frame-wallpapers-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-wallpapers-pvc
+#
+# Uncomment the 3 lines below if you want to run and use Caddy.
+# Make sure the indentation is correct.
+#
+#        - name: magic-frame-caddy-config-pvc
+#          persistentVolumeClaim:
+#            claimName: magic-frame-caddy-config-pvc
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: magic-frame-env
+  name: magic-frame-env
+  namespace: magic-frame
+data:
+  ADMIN_EMAIL: ""
+  ADMIN_PASSWORD: ""
+  APP_BASE_URL: ""
+  CADDY_ADMIN_URL: "http://caddy:2019"
+  COOKIE_SECURE: ""
+  DATABASE_URL: "postgresql://postgres:postgres@magic-frame-db:5432/magicdashboard?schema=public"
+  GOOGLE_CLIENT_ID: ""
+  GOOGLE_CLIENT_SECRET: ""
+  MS_CLIENT_ID: ""
+  MS_CLIENT_SECRET: ""
+  NODE_ENV: "production"
+  OPENWEATHERMAP_API_KEY: ""
+#
+# Put the generated session secret between the quotes on the line below.
+#
+  SESSION_SECRET: "<paste session secret here>"
+
+---
+# Original filename: magic-frame-app-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: magic-frame-app
+  name: magic-frame-app
+  namespace: magic-frame
+spec:
+  type: ClusterIP
+  ports:
+    - name: mf-port
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: magic-frame-app
+---
+# Original filename: magic-frame-caddy-conf-pv.yaml    
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-conf-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    namespace: magic-frame
+    name: magic-frame-caddy-conf-pvc
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-caddy-conf-pv
+    type: DirectoryOrCreate
+---
+# Original filename: magic-frame-caddy-conf-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-conf-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Original filename: magic-frame-caddy-config-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-config-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    namespace: magic-frame
+    name: magic-frame-caddy-config-pvc
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-caddy-config-pv
+    type: DirectoryOrCreate
+---
+# Original filename: magic-frame-caddy-config-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-config-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Original filename: magic-frame-caddy-data-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-data-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    namespace: magic-frame
+    name: magic-frame-caddy-data-pvc
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-caddy-data-pv
+    type: DirectoryOrCreate
+
+---
+# Original filename: magic-frame-caddy-data-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-data-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Original filename: magic-frame-caddy-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: magic-frame-caddy
+  name: magic-frame-caddy
+  namespace: magic-frame
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-caddy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magic-frame-caddy
+    spec:
+      containers:
+        - image: magic-frame-caddy
+          name: magic-frame-caddy
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+            - containerPort: 443
+              protocol: UDP
+            - containerPort: 2019
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/caddy
+              name: magic-frame-caddy-config-pvc
+            - mountPath: /data
+              name: magic-frame-caddy-data-pvc
+            - mountPath: /config
+              name: magic-frame-caddy-config-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-caddy-config-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-config-pvc
+        - name: magic-frame-caddy-data-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-data-pvc
+        - name: magic-frame-caddy-conf-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-caddy-conf-pvc
+---
+# Original filename: magic-frame-caddy-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: magic-frame-caddy
+  name: magic-frame-caddy
+  namespace: magic-frame
+spec:
+  type: NodePort
+  ports:
+    - name: 80-tcp
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+    - name: 443-tcp
+      port: 443
+      nodePort: 30443
+      targetPort: 443
+    - name: 443-udp
+      port: 443
+      protocol: UDP
+      targetPort: 443
+    - name: "2019"
+      port: 2019
+      targetPort: 2019
+      nodePort: 32019
+  selector:
+    app: magic-frame-caddy
+
+---
+# Original filename: magic-frame-configs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-configs-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    namespace: magic-frame
+    name: magic-frame-configs-pvc
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-configs-pv
+    type: DirectoryOrCreate
+
+---
+# Original filename: magic-frame-configs-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-configs-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Original filename: magic-frame-db-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: magic-frame-db
+  name: magic-frame-db
+  namespace: magic-frame
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magic-frame-db
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: magicdashboard
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+          image: postgres:16-alpine
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready -U postgres
+            failureThreshold: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          name: magic-frame-db
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: magic-frame-pgdata-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-pgdata-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-pgdata-pvc
+---
+# Original filename: magic-frame-db-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: magic-frame-db
+  name: magic-frame-db
+  namespace: magic-frame
+spec:
+  type: ClusterIP
+  ports:
+    - name: db-port
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: magic-frame-db
+---
+# Original filename: magic-frame-nocaddy-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-nocaddy
+  namespace: magic-frame
+spec:
+  type: NodePort
+  selector:
+    app: magic-frame-app
+  ports:
+    - protocol: TCP
+      name: "80"
+      port: 3080
+      targetPort: 3000
+      nodePort: 30080
+    - protocol: TCP
+      name: "443"
+      port: 3443
+      targetPort: 3000
+      nodePort: 30443
+---
+# Original filename: magic-frame-pgdata-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-pgdata-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    namespace: magic-frame
+    name: magic-frame-pgdata-pvc
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-pgdata-pv
+    type: DirectoryOrCreate
+---
+# Original filename: magic-frame-pgdata-pvc.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-pgdata-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Original filename: magic-frame-wallpapers-pv.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-wallpapers-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    namespace: magic-frame
+    name: magic-frame-wallpapers-pvc
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-wallpapers-pv
+    type: DirectoryOrCreate
+---
+
+# Original filename: magic-frame-wallpapers-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-wallpapers-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
