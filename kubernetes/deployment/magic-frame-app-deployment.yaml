@@ -142,4 +142,3 @@ data:
 # Put the generated session secret between the quotes on the line below.
 #
   SESSION_SECRET: "<paste session secret here>"
-

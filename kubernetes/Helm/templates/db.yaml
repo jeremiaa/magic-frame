@@ -21,11 +21,14 @@ spec:
           image: postgres:16-alpine
           env:
             - name: POSTGRES_DB
-              value: magicdashboard
-            - name: POSTGRES_PASSWORD
-              value: postgres
+              value: {{ .Values.appConfig.dbName | quote }}
             - name: POSTGRES_USER
-              value: postgres
+              value: {{ .Values.appConfig.dbUser | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: magic-frame-secrets
+                  key: DB_PASSWORD
           ports:
             - containerPort: 5432
               protocol: TCP

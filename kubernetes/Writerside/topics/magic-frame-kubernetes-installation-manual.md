@@ -12,7 +12,7 @@ For the sake of this documentation we will use, surprisingly, "magic-frame".
 ```bash
 kubectl create namespace magic-frame
 ```
-## Step 2: Create a database secret
+## Step 2: Create a database secret REMOVE
 Magic Frame requires a database to store its data. You need to create a secret to store the database credentials.
 ```bash
 kubectl create secret generic magic-frame-db-secret \

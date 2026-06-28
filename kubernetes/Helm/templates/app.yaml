@@ -11,20 +11,25 @@ spec:
       app: magic-frame-app
   strategy:
     type: Recreate
+  # Inside templates/app.yaml
   template:
     metadata:
       labels:
         app: magic-frame-app
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
       containers:
         - name: magic-frame-app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # Load from BOTH the ConfigMap and the Secret
           envFrom:
             - configMapRef:
                 name: magic-frame-env
+            - secretRef:
+                name: magic-frame-secrets
           ports:
             - containerPort: 3000
               protocol: TCP
@@ -76,16 +81,16 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: "80"
+    - name: http
       protocol: TCP
       port: 3080
       targetPort: 3000
-      nodePort: 30080
-    - name: "443"
+      nodePort: {{ .Values.nodePorts.httpPort }}
+    - name: https
       protocol: TCP
       port: 3443
       targetPort: 3000
-      nodePort: 30443
+      nodePort: {{ .Values.nodePorts.httpsPort }}
   selector:
     app: magic-frame-app
 {{- end }}

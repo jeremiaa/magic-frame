@@ -6,4 +6,5 @@ magic-frame/
     ├── storage.yaml
     ├── db.yaml
     ├── app.yaml
+    ├── secret.yaml
     └── caddy.yaml

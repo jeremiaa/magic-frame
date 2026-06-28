@@ -58,22 +58,22 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: 80-tcp
+    - name: http
       port: 80
       targetPort: 80
-      nodePort: 30080
-    - name: 443-tcp
+      nodePort: {{ .Values.nodePorts.httpPort }}
+    - name: https
       port: 443
       targetPort: 443
-      nodePort: 30443
-    - name: 443-udp
+      nodePort: {{ .Values.nodePorts.httpsPort }}
+    - name: https-udp
       protocol: UDP
       port: 443
       targetPort: 443
-    - name: "2019"
+    - name: caddy_mgm
       port: 2019
       targetPort: 2019
-      nodePort: 32019
+      nodePort: {{ .Values.nodePorts.caddyPort }}
   selector:
     app: magic-frame-caddy
 {{- end }}

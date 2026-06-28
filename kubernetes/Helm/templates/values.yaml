@@ -1,6 +1,6 @@
 # Toggle Caddy deployment and related configs on or off
 caddy:
-  enabled: true
+  enabled: false
 
 # Application Image Settings
 image:
@@ -8,21 +8,36 @@ image:
   tag: latest
   pullPolicy: Never
 
-# Environment Variables (ConfigMap)
+# nodePort Settings (external access). Change to your needs!
+nodePorts:
+  http_port: 30080
+  https_port: 30443
+  caddy_port: 32019
+
+# Environment Variables
 appConfig:
+  # --- Public Configuration (ConfigMap) ---
   adminEmail: ""
-  adminPassword: ""
   appBaseUrl: ""
-  caddyAdminUrl: "http://caddy:2019"
+  caddyAdminUrl: "http://magic-frame-caddy:2019"
   cookieSecure: ""
-  databaseUrl: "postgresql://postgres:postgres@magic-frame-db:5432/magicdashboard?schema=public"
   googleClientId: ""
-  googleClientSecret: ""
   msClientId: ""
-  msClientSecret: ""
   nodeEnv: "production"
+
+  # --- Database Configuration ---
+  dbHost: "magic-frame-db"
+  dbPort: "5432"
+  dbName: "magicdashboard"
+  dbUser: "postgres"
+
+  # --- Sensitive Credentials (Kubernetes Secret) ---
+  adminPassword: ""
+  dbPassword: "YOUR_SECURE_PASSWORD_HERE"
+  googleClientSecret: ""
+  msClientSecret: ""
   openWeatherMapApiKey: ""
-  sessionSecret: "replace-with-generated-secret"
+  sessionSecret: "GENERATED_SECRET_HERE"
 
 # Persistent Storage Configurations
 storage:

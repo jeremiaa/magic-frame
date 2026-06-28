@@ -10,7 +10,6 @@ data:
   APP_BASE_URL: {{ .Values.appConfig.appBaseUrl | quote }}
   CADDY_ADMIN_URL: {{ .Values.appConfig.caddyAdminUrl | quote }}
   COOKIE_SECURE: {{ .Values.appConfig.cookieSecure | quote }}
-  DATABASE_URL: {{ .Values.appConfig.databaseUrl | quote }}
   GOOGLE_CLIENT_ID: {{ .Values.appConfig.googleClientId | quote }}
   GOOGLE_CLIENT_SECRET: {{ .Values.appConfig.googleClientSecret | quote }}
   MS_CLIENT_ID: {{ .Values.appConfig.msClientId | quote }}
@@ -18,3 +17,4 @@ data:
   NODE_ENV: {{ .Values.appConfig.nodeEnv | quote }}
   OPENWEATHERMAP_API_KEY: {{ .Values.appConfig.openWeatherMapApiKey | quote }}
   SESSION_SECRET: {{ .Values.appConfig.sessionSecret | quote }}
+  DATABASE_URL: {{ printf "postgresql://%s:%s@%s:%s/%s?schema=public" .Values.appConfig.dbUser .Values.appConfig.dbPassword .Values.appConfig.dbHost .Values.appConfig.dbPort .Values.appConfig.dbName | quote }}
