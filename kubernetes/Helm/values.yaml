@@ -2,6 +2,10 @@
 caddy:
   enabled: false
 
+# Namespace setting
+namespace:
+  namespace: magic-frame
+
 # Application Image Settings
 image:
   repository: magic-frame-app
@@ -10,9 +14,9 @@ image:
 
 # nodePort Settings (external access). Change to your needs!
 nodePorts:
-  http_port: 30080
-  https_port: 30443
-  caddy_port: 32019
+  httpPort: 30080
+  httpsPort: 30443
+  caddyPort: 32019
 
 # Environment Variables
 appConfig:
@@ -25,6 +29,13 @@ appConfig:
   msClientId: ""
   nodeEnv: "production"
 
+# Persistent Storage Configurations
+storage:
+  className: "magic-frame-storage"
+  capacity: "100Mi"
+  # Base path for hostPath volumes
+  hostPathBase: "/var/lib/rancher/k3s/storage"
+
   # --- Database Configuration ---
   dbHost: "magic-frame-db"
   dbPort: "5432"
@@ -33,15 +44,10 @@ appConfig:
 
   # --- Sensitive Credentials (Kubernetes Secret) ---
   adminPassword: ""
-  dbPassword: "YOUR_SECURE_PASSWORD_HERE"
   googleClientSecret: ""
   msClientSecret: ""
   openWeatherMapApiKey: ""
-  sessionSecret: "GENERATED_SECRET_HERE"
 
-# Persistent Storage Configurations
-storage:
-  className: "magic-frame-storage"
-  capacity: "100Mi"
-  # Base path for hostPath volumes
-  hostPathBase: "/var/lib/rancher/k3s/storage"
+  sessionSecret: "GENERATED_SECRET_HERE"
+  dbPassword: "YOUR_SECURE_PASSWORD_HERE"
+

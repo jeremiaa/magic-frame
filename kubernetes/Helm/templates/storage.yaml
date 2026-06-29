@@ -3,9 +3,11 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: magic-frame-configs-pv
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   claimRef:
     name: magic-frame-configs-pvc
+    namespace: {{ .Values.namespace.namespace }}
   storageClassName: {{ .Values.storage.className }}
   capacity:
     storage: {{ .Values.storage.capacity }}
@@ -20,6 +22,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: magic-frame-configs-pvc
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   storageClassName: {{ .Values.storage.className }}
   accessModes:
@@ -32,9 +35,11 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: magic-frame-wallpapers-pv
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   claimRef:
     name: magic-frame-wallpapers-pvc
+    namespace: {{ .Values.namespace.namespace }}
   storageClassName: {{ .Values.storage.className }}
   capacity:
     storage: {{ .Values.storage.capacity }}
@@ -49,6 +54,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: magic-frame-wallpapers-pvc
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   storageClassName: {{ .Values.storage.className }}
   accessModes:
@@ -63,9 +69,11 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: magic-frame-pgdata-pv
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   claimRef:
     name: magic-frame-pgdata-pvc
+    namespace: {{ .Values.namespace.namespace }}
   storageClassName: {{ .Values.storage.className }}
   capacity:
     storage: {{ .Values.storage.capacity }}
@@ -80,6 +88,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: magic-frame-pgdata-pvc
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   storageClassName: {{ .Values.storage.className }}
   accessModes:
@@ -95,9 +104,11 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: magic-frame-caddy-conf-pv
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   claimRef:
     name: magic-frame-caddy-conf-pvc
+    namespace: {{ .Values.namespace.namespace }}
   storageClassName: {{ .Values.storage.className }}
   capacity:
     storage: {{ .Values.storage.capacity }}
@@ -112,6 +123,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: magic-frame-caddy-conf-pvc
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   storageClassName: {{ .Values.storage.className }}
   accessModes:
@@ -124,9 +136,11 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: magic-frame-caddy-config-pv
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   claimRef:
     name: magic-frame-caddy-config-pvc
+    namespace: {{ .Values.namespace.namespace }}
   storageClassName: {{ .Values.storage.className }}
   capacity:
     storage: {{ .Values.storage.capacity }}
@@ -141,6 +155,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: magic-frame-caddy-config-pvc
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   storageClassName: {{ .Values.storage.className }}
   accessModes:
@@ -153,9 +168,11 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: magic-frame-caddy-data-pv
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   claimRef:
     name: magic-frame-caddy-data-pvc
+    namespace: {{ .Values.namespace.namespace }}
   storageClassName: {{ .Values.storage.className }}
   capacity:
     storage: {{ .Values.storage.capacity }}
@@ -170,6 +187,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: magic-frame-caddy-data-pvc
+  namespace: {{ .Values.namespace.namespace }}
 spec:
   storageClassName: {{ .Values.storage.className }}
   accessModes:

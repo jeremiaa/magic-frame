@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: magic-frame-db
+  namespace: {{ .Values.namespace.namespace }}
   labels:
     app: magic-frame-db
 spec:
@@ -52,6 +53,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: magic-frame-db
+  namespace: {{ .Values.namespace.namespace }}
   labels:
     app: magic-frame-db
 spec:
