@@ -1,0 +1,70 @@
+---
+# Source: magic-frame/templates/db.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-db
+  namespace: magic-frame
+  labels:
+    app: magic-frame-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: db-port
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: magic-frame-db
+---
+# Source: magic-frame/templates/db.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magic-frame-db
+  namespace: magic-frame
+  labels:
+    app: magic-frame-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: magic-frame-db
+    spec:
+      containers:
+        - name: magic-frame-db
+          image: postgres:16-alpine
+          env:
+            - name: POSTGRES_DB
+              value: "magicdashboard"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: magic-frame-secrets
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready -U postgres
+            failureThreshold: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: magic-frame-pgdata-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-pgdata-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-pgdata-pvc

@@ -1,0 +1,209 @@
+---
+# Source: magic-frame/templates/storage.yaml
+# --- App Storage ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-configs-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    name: magic-frame-configs-pvc
+    namespace: magic-frame
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-configs-pv
+    type: DirectoryOrCreate
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-wallpapers-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    name: magic-frame-wallpapers-pvc
+    namespace: magic-frame
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-wallpapers-pv
+    type: DirectoryOrCreate
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-pgdata-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    name: magic-frame-pgdata-pvc
+    namespace: magic-frame
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-pgdata-pv
+    type: DirectoryOrCreate
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-conf-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    name: magic-frame-caddy-conf-pvc
+    namespace: magic-frame
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-caddy-conf-pv
+    type: DirectoryOrCreate
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-config-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    name: magic-frame-caddy-config-pvc
+    namespace: magic-frame
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-caddy-config-pv
+    type: DirectoryOrCreate
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: magic-frame-caddy-data-pv
+  namespace: magic-frame
+spec:
+  claimRef:
+    name: magic-frame-caddy-data-pvc
+    namespace: magic-frame
+  storageClassName: magic-frame-storage
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/rancher/k3s/storage/magic-frame-caddy-data-pv
+    type: DirectoryOrCreate
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-configs-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-wallpapers-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+
+# --- Database Storage ---
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-pgdata-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+
+# --- Caddy Storage (Conditional) ---
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-conf-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-config-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Source: magic-frame/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: magic-frame-caddy-data-pvc
+  namespace: magic-frame
+spec:
+  storageClassName: magic-frame-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

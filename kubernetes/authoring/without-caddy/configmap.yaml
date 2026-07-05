@@ -1,0 +1,23 @@
+---
+# Source: magic-frame/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: magic-frame-env
+  namespace: magic-frame
+  labels:
+    app: magic-frame-env
+data:
+  ADMIN_EMAIL: ""
+  ADMIN_PASSWORD: ""
+  APP_BASE_URL: ""
+  CADDY_ADMIN_URL: "http://magic-frame-caddy:2019"
+  COOKIE_SECURE: ""
+  GOOGLE_CLIENT_ID: ""
+  GOOGLE_CLIENT_SECRET: ""
+  MS_CLIENT_ID: ""
+  MS_CLIENT_SECRET: ""
+  NODE_ENV: "production"
+  OPENWEATHERMAP_API_KEY: ""
+  SESSION_SECRET: "GENERATED_SECRET_HERE"
+  DATABASE_URL: "postgresql://postgres:YOUR_SECURE_PASSWORD_HERE@magic-frame-db:5432/magicdashboard?schema=public"

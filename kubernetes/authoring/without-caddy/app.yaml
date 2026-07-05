@@ -1,0 +1,91 @@
+---
+# Source: magic-frame/templates/app.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-app
+  namespace: magic-frame
+  labels:
+    app: magic-frame-app
+spec:
+  type: ClusterIP
+  ports:
+    - name: mf-port
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: magic-frame-app
+---
+# Source: magic-frame/templates/app.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: magic-frame-nocaddy
+  namespace: magic-frame
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3080
+      targetPort: 3000
+      nodePort: 30080
+    - name: https
+      protocol: TCP
+      port: 3443
+      targetPort: 3000
+      nodePort: 30443
+  selector:
+    app: magic-frame-app
+---
+# Source: magic-frame/templates/app.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magic-frame-app
+  namespace: magic-frame
+  labels:
+    app: magic-frame-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: magic-frame-app
+  strategy:
+    type: Recreate
+  # Inside templates/app.yaml
+  template:
+    metadata:
+      labels:
+        app: magic-frame-app
+      annotations:
+        checksum/config: 316eabe1ec6377ca2d2fcfb36c980f4b4ccf59aa652656ad0d48394d46d4d404
+        checksum/secret: af86866f563fb6a10da41bbe20a02db754eabffa46667396685a1d2e17bee069
+    spec:
+      containers:
+        - name: magic-frame-app
+          image: "magic-frame-app:latest"
+          imagePullPolicy: Never
+          # Load from BOTH the ConfigMap and the Secret
+          envFrom:
+            - configMapRef:
+                name: magic-frame-env
+            - secretRef:
+                name: magic-frame-secrets
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/configs
+              name: magic-frame-configs-pvc
+            - mountPath: /app/wallpapers
+              name: magic-frame-wallpapers-pvc
+      restartPolicy: Always
+      volumes:
+        - name: magic-frame-configs-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-configs-pvc
+        - name: magic-frame-wallpapers-pvc
+          persistentVolumeClaim:
+            claimName: magic-frame-wallpapers-pvc
