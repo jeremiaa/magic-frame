@@ -43,8 +43,8 @@ spec:
     spec:
       containers:
         - name: magic-frame-app
-          image: "magic-frame-app:latest"
-          imagePullPolicy: Never
+          image: "ghcr.io/magic-frame-app:latest"
+          imagePullPolicy: Always
           # Load from BOTH the ConfigMap and the Secret
           envFrom:
             - configMapRef:

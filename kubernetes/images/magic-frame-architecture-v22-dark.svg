@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1000 820" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <rect x="0" y="0" width="1000" height="820" style="fill:rgb(43,43,47);"/>
+    <g transform="matrix(1,0,0,1,500,30)">
+        <text x="-193.018px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:20px;fill:rgb(249,250,251);">Magic Frame — Kubernetes <tspan x="75.205px 89.648px " y="0px 0px ">Ar</tspan>chitecture</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,50)">
+        <text x="-74.414px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:13px;fill:rgb(161,161,170);">Namespace: magic-frame</text>
+    </g>
+    <path d="M570,74L570,100C570,104.415 566.415,108 562,108L438,108C433.585,108 430,104.415 430,100L430,74C430,69.585 433.585,66 438,66L562,66C566.415,66 570,69.585 570,74Z" style="fill:rgb(238,242,255);stroke:rgb(99,102,241);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,500,92)">
+        <text x="-53.29px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:14px;fill:rgb(55,48,163);">Client / Browser</text>
+    </g>
+    <path d="M970,140L970,750C970,755.519 965.519,760 960,760L40,760C34.481,760 30,755.519 30,750L30,140C30,134.481 34.481,130 40,130L960,130C965.519,130 970,134.481 970,140Z" style="fill:rgb(58,58,63);stroke:rgb(113,113,122);stroke-width:1.5px;stroke-dasharray:6,4;"/>
+    <g transform="matrix(1,0,0,1,50,152)">
+        <text x="0px" y="0px" style="font-family:'Arial-ItalicMT', 'Arial', sans-serif;font-style:italic;font-size:12px;fill:rgb(161,161,170);">kubernetes namespace: magic-frame</text>
+    </g>
+    <path d="M360,188L360,238C360,242.415 356.415,246 352,246L108,246C103.585,246 100,242.415 100,238L100,188C100,183.585 103.585,180 108,180L352,180C356.415,180 360,183.585 360,188Z" style="fill:rgb(254,243,199);stroke:rgb(217,119,6);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,230,203)">
+        <text x="-64.189px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:14px;fill:rgb(146,64,14);">magic-frame-caddy</text>
+    </g>
+    <g transform="matrix(1,0,0,1,230,219)">
+        <text x="-57.774px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(146,64,14);">reverse proxy (optional)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,230,233)">
+        <text x="-43.55px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:10px;fill:rgb(180,83,9);">caddy<tspan x="-17.607px -14.829px " y="0px 0px ">.e</tspan>nabled: true</text>
+    </g>
+    <path d="M900,188L900,238C900,242.415 896.415,246 892,246L648,246C643.585,246 640,242.415 640,238L640,188C640,183.585 643.585,180 648,180L892,180C896.415,180 900,183.585 900,188Z" style="fill:rgb(224,242,254);stroke:rgb(2,132,199);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,770,203)">
+        <text x="-58.355px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:14px;fill:rgb(7,89,133);">NodePort Service</text>
+    </g>
+    <g transform="matrix(1,0,0,1,770,219)">
+        <text x="-37.603px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(7,89,133);">direct exposure</text>
+    </g>
+    <g transform="matrix(1,0,0,1,770,233)">
+        <text x="-45.496px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:10px;fill:rgb(3,105,161);">caddy<tspan x="-19.553px -16.775px " y="0px 0px ">.e</tspan>nabled: false</text>
+    </g>
+    <path d="M900,146L900,164C900,167.311 897.311,170 894,170L646,170C642.689,170 640,167.311 640,164L640,146C640,142.689 642.689,140 646,140L894,140C897.311,140 900,142.689 900,146Z" style="fill:rgb(58,58,63);stroke:rgb(161,161,170);stroke-width:1px;stroke-dasharray:4,3;"/>
+    <g transform="matrix(1,0,0,1,770,160)">
+        <text x="-79.476px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(212,212,216);">your own ingress / reverse proxy</text>
+    </g>
+    <path d="M630,308L630,358C630,362.415 626.415,366 622,366L378,366C373.585,366 370,362.415 370,358L370,308C370,303.585 373.585,300 378,300L622,300C626.415,300 630,303.585 630,308Z" style="fill:rgb(243,232,255);stroke:rgb(147,51,234);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,500,323)">
+        <g transform="matrix(13,0,0,13,-35.588135,0)">
+        </g>
+        <g transform="matrix(13,0,0,13,-31.259033,0)">
+        </g>
+        <text x="-60.858px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:13px;fill:rgb(88,28,135);">ConﬁgMap + Secret</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,339)">
+        <g transform="matrix(10,0,0,10,-6.943359,0)">
+        </g>
+        <g transform="matrix(10,0,0,10,-4.165039,0)">
+        </g>
+        <text x="-41.973px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:10px;fill:rgb(107,33,168);">appConﬁg.* values</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,353)">
+        <text x="-47.522px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:10px;fill:rgb(107,33,168);">(env vars for the app)</text>
+    </g>
+    <path d="M630,418L630,468C630,472.415 626.415,476 622,476L378,476C373.585,476 370,472.415 370,468L370,418C370,413.585 373.585,410 378,410L622,410C626.415,410 630,413.585 630,418Z" style="fill:rgb(220,252,231);stroke:rgb(22,163,74);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,500,433)">
+        <text x="-44.601px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:15px;fill:rgb(20,83,45);">magic-frame</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,449)">
+        <text x="-64.66px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(22,101,52);">app Deployment + Service</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,463)">
+        <text x="-53.911px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:10px;fill:rgb(21,128,61);">ghcr<tspan x="-35.01px -32.231px " y="0px 0px ">.i</tspan>o/magic-frame-app</text>
+    </g>
+    <g transform="matrix(1,0,0,1,0,15)">
+        <path d="M630,558L630,608C630,612.415 626.415,616 622,616L378,616C373.585,616 370,612.415 370,608L370,558C370,553.585 373.585,550 378,550L622,550C626.415,550 630,553.585 630,558Z" style="fill:rgb(254,226,226);stroke:rgb(220,38,38);stroke-width:1.5px;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,500,588)">
+        <text x="-56.261px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:15px;fill:rgb(127,29,29);">magic-frame-db</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,601)">
+        <text x="-85.239px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(153,27,27);">PostgreSQL<tspan x="-25.728px -22.671px " y="0px 0px "> D</tspan>eployment + Service</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,615)">
+        <g transform="matrix(10,0,0,10,-46.962891,0)">
+        </g>
+        <g transform="matrix(10,0,0,10,-44.18457,0)">
+        </g>
+        <text x="-81.992px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:10px;fill:rgb(185,28,28);">appConﬁg.dbHost / dbPort / dbName</text>
+    </g>
+    <path d="M320,308L320,362C320,366.415 316.415,370 312,370L68,370C63.585,370 60,366.415 60,362L60,308C60,303.585 63.585,300 68,300L312,300C316.415,300 320,303.585 320,308Z" style="fill:rgb(254,249,195);stroke:rgb(202,138,4);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,190,318)">
+        <text x="-36.368px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:11px;fill:rgb(113,63,18);">PVCs (Caddy)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,333)">
+        <g transform="matrix(9,0,0,9,15.756592,0)">
+        </g>
+        <g transform="matrix(9,0,0,9,18.25708,0)">
+        </g>
+        <text x="-77.293px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">caddy-conf / caddy-conﬁg / caddy-data</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,346)">
+        <text x="-50.454px" y="0px" style="font-family:'Arial-ItalicMT', 'Arial', sans-serif;font-style:italic;font-size:9px;fill:rgb(161,98,7);">only when caddy<tspan x="15.921px 18.422px " y="0px 0px ">.e</tspan>nabled</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,359)">
+        <text x="-79.282px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">storageClassName: storage.className</text>
+    </g>
+    <path d="M320,398L320,462C320,466.415 316.415,470 312,470L68,470C63.585,470 60,466.415 60,462L60,398C60,393.585 63.585,390 68,390L312,390C316.415,390 320,393.585 320,398Z" style="fill:rgb(254,243,199);stroke:rgb(202,138,4);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,190,408)">
+        <text x="-32.396px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:11px;fill:rgb(113,63,18);">PVs (Caddy)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,423)">
+        <g transform="matrix(9,0,0,9,9.505371,0)">
+        </g>
+        <g transform="matrix(9,0,0,9,12.005859,0)">
+        </g>
+        <text x="-96.047px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">caddy-conf-pv / caddy-conﬁg-pv / caddy-data-pv</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,438)">
+        <text x="-82.305px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">hostPath: storage.hostPathBase/&lt;name&gt;</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,451)">
+        <text x="-42.014px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">reclaimPolicy: Retain</text>
+    </g>
+    <g transform="matrix(1,0,0,1,190,464)">
+        <text x="-56.775px" y="0px" style="font-family:'Arial-ItalicMT', 'Arial', sans-serif;font-style:italic;font-size:9px;fill:rgb(161,98,7);">statically bound via claimRef</text>
+    </g>
+    <path d="M940,418L940,468C940,472.415 936.415,476 932,476L688,476C683.585,476 680,472.415 680,468L680,418C680,413.585 683.585,410 688,410L932,410C936.415,410 940,413.585 940,418Z" style="fill:rgb(254,249,195);stroke:rgb(202,138,4);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,810,428)">
+        <text x="-30.25px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:11px;fill:rgb(113,63,18);">PVCs (App)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,810,443)">
+        <g transform="matrix(9,0,0,9,18.254883,0)">
+        </g>
+        <g transform="matrix(9,0,0,9,20.755371,0)">
+        </g>
+        <text x="-49.263px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">magic-frame-conﬁgs-pvc</text>
+    </g>
+    <g transform="matrix(1,0,0,1,810,456)">
+        <text x="-56.516px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">magic-frame-wallpapers-pvc</text>
+    </g>
+    <path d="M940,498L940,548C940,552.415 936.415,556 932,556L688,556C683.585,556 680,552.415 680,548L680,498C680,493.585 683.585,490 688,490L932,490C936.415,490 940,493.585 940,498Z" style="fill:rgb(254,243,199);stroke:rgb(202,138,4);stroke-width:1.5px;"/>
+    <g transform="matrix(1,0,0,1,810,508)">
+        <text x="-26.278px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:11px;fill:rgb(113,63,18);">PVs (App)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,810,523)">
+        <g transform="matrix(9,0,0,9,20.504883,0)">
+        </g>
+        <g transform="matrix(9,0,0,9,23.005371,0)">
+        </g>
+        <text x="-47.013px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">magic-frame-conﬁgs-pv</text>
+    </g>
+    <g transform="matrix(1,0,0,1,810,536)">
+        <text x="-91.784px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">magic-frame-wallpapers-pv (hostPath, Retain)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,0,24)">
+        <path d="M940,558L940,592C940,596.415 936.415,600 932,600L688,600C683.585,600 680,596.415 680,592L680,558C680,553.585 683.585,550 688,550L932,550C936.415,550 940,553.585 940,558Z" style="fill:rgb(254,249,195);stroke:rgb(202,138,4);stroke-width:1.5px;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,810,594)">
+        <text x="-24.444px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:11px;fill:rgb(113,63,18);">PVC (DB)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,810,609)">
+        <text x="-48.768px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">magic-frame-pgdata-pvc</text>
+    </g>
+    <g transform="matrix(1,0,0,1,0,22)">
+        <path d="M940,622L940,656C940,660.415 936.415,664 932,664L688,664C683.585,664 680,660.415 680,656L680,622C680,617.585 683.585,614 688,614L932,614C936.415,614 940,617.585 940,622Z" style="fill:rgb(254,243,199);stroke:rgb(202,138,4);stroke-width:1.5px;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,810,655)">
+        <text x="-20.472px" y="0px" style="font-family:'Arial-BoldMT', 'Arial', sans-serif;font-weight:700;font-size:11px;fill:rgb(113,63,18);">PV (DB)</text>
+    </g>
+    <g transform="matrix(1,0,0,1,810,670)">
+        <text x="-84.037px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9px;fill:rgb(133,77,14);">magic-frame-pgdata-pv (hostPath, Retain)</text>
+    </g>
+    <path d="M480,108L260,176" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    <path d="M520,108L770,140" style="fill:none;fill-rule:nonzero;stroke:rgb(232,232,233);stroke-width:1.2px;stroke-dasharray:4,3;"/>
+    <g transform="matrix(0.757201,0,0,1,79.682369,4.670898)">
+        <path d="M317.376,241.329C317.376,315.329 370.85,387.725 460,406" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    </g>
+    <path d="M770,246C761.171,296.348 693.684,352.527 693.684,352.527C693.684,352.527 677.419,365.125 654.444,379.012C627.1,395.539 616.737,409.562 586.487,410.671" style="fill:none;fill-rule:nonzero;stroke:rgb(113,113,122);stroke-width:1.2px;stroke-dasharray:4,3;"/>
+    <path d="M500,366L500,406" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    <path d="M500,476L500,565" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    <path d="M190,246L190,296" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    <path d="M190,370L190,386" style="fill:none;fill-rule:nonzero;stroke:rgb(161,98,7);stroke-width:1.3px;"/>
+    <path d="M630,440L676,440" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    <path d="M810,476L810,486" style="fill:none;fill-rule:nonzero;stroke:rgb(161,98,7);stroke-width:1.3px;"/>
+    <g transform="matrix(0.99788,0.065079,-0.065079,0.99788,39.227809,-23.263958)">
+        <path d="M630,583L676,580" style="fill:none;fill-rule:nonzero;stroke:rgb(209,213,219);stroke-width:1.5px;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,0,24)">
+        <path d="M810,600L810,610" style="fill:none;fill-rule:nonzero;stroke:rgb(161,98,7);stroke-width:1.3px;"/>
+    </g>
+    <rect x="60" y="700" width="14" height="14" style="fill:rgb(254,243,199);stroke:rgb(217,119,6);stroke-width:1px;"/>
+    <g transform="matrix(1,0,0,1,80,711)">
+        <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(228,228,231);">Ingress path (choose one)</text>
+    </g>
+    <rect x="260" y="700" width="14" height="14" style="fill:rgb(220,252,231);stroke:rgb(22,163,74);stroke-width:1px;"/>
+    <g transform="matrix(1,0,0,1,280,711)">
+        <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(228,228,231);">Application</text>
+    </g>
+    <rect x="400" y="700" width="14" height="14" style="fill:rgb(254,226,226);stroke:rgb(220,38,38);stroke-width:1px;"/>
+    <g transform="matrix(1,0,0,1,420,711)">
+        <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(228,228,231);">Database</text>
+    </g>
+    <rect x="520" y="700" width="14" height="14" style="fill:rgb(254,249,195);stroke:rgb(202,138,4);stroke-width:1px;"/>
+    <g transform="matrix(1,0,0,1,540,711)">
+        <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(228,228,231);">PVC</text>
+    </g>
+    <rect x="590" y="700" width="14" height="14" style="fill:rgb(254,243,199);stroke:rgb(202,138,4);stroke-width:1px;"/>
+    <g transform="matrix(1,0,0,1,610,711)">
+        <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(228,228,231);">PV (hostPath)</text>
+    </g>
+    <rect x="720" y="700" width="14" height="14" style="fill:rgb(243,232,255);stroke:rgb(147,51,234);stroke-width:1px;"/>
+    <g transform="matrix(1,0,0,1,740,711)">
+        <g transform="matrix(11,0,0,11,20.179199,0)">
+        </g>
+        <g transform="matrix(11,0,0,11,23.235352,0)">
+        </g>
+        <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:11px;fill:rgb(228,228,231);">Conﬁg &amp; secrets</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,735)">
+        <text x="-245.232px" y="0px" style="font-family:'Arial-ItalicMT', 'Arial', sans-serif;font-style:italic;font-size:10px;fill:rgb(161,161,170);">Every component&apos;s storage is a statically provisioned PV bound 1:1 to its PVC via claimRef (see storage.yaml).</text>
+    </g>
+    <g transform="matrix(1,0,0,1,500,750)">
+        <text x="-143.162px" y="0px" style="font-family:'Arial-ItalicMT', 'Arial', sans-serif;font-style:italic;font-size:10px;fill:rgb(161,161,170);">Caddy&apos;s PVs/PVCs are only created when caddy<tspan x="72.004px 74.783px " y="0px 0px ">.e</tspan>nabled is true.</text>
+    </g>
+</svg>
