@@ -19,7 +19,7 @@ The raw manifests are not hand-maintained separately - they are the committed ou
 
 Because they're generated output, if you need to change something in them beyond the values described in this guide, treat that as a signal you should switch to Helm instead.
 
-![Magic Frame Kubernetes architecture](../images/magic-frame-architecture-v22.svg)
+![Magic Frame Kubernetes architecture](../images/magic-frame-architecture-v22-dark.svg)
 
 ### Components
 
