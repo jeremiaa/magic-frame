@@ -1,6 +1,6 @@
 # Toggle Caddy deployment and related configs on or off
 caddy:
-  enabled: false
+  enabled: true
 
 # Namespace setting
 namespace:
@@ -8,9 +8,9 @@ namespace:
 
 # Application Image Settings
 image:
-  repository: magic-frame-app
+  repository: ghcr.io/jeremiaa/magic-frame-app
   tag: latest
-  pullPolicy: Never
+  pullPolicy: Always
 
 # nodePort Settings (external access). Change to your needs!
 nodePorts:

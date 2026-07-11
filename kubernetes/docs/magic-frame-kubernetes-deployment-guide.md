@@ -44,6 +44,23 @@ Before deploying, make sure you have:
 3. **A namespace decision.** The default namespace across all three options is `magic-frame`. It's created for you by the manifests/chart - you don't need to `kubectl create namespace` yourself.
 4. **(Helm only)** Helm 3.x installed locally.
 
+### 2.1 Create a Namespace
+First, create a namespace for Magic Frame. This can be any name, but must be consistent throughout the manifests. For the sake of this documentation we will use, surprisingly, "magic-frame". Avoid using the default namespace.
+
+```bash
+kubectl create namespace magic-frame
+```
+### 2.2 Create a "Session Secret" that will allow safe communication.
+There are a number of ways to create and implement a secret (as in Step 2), in this case we will use a manual option as an example. There are many ways to create a 32 character hex value. If you prefer to create it any other way, that's fine.
+
+You can run the following command on a Linux system or on WSL on Windows.
+If you want to go really hard-core, just type 32 random hex numbers.
+
+```
+$ head -c 32 /dev/urandom | od -An -tx1 -v | tr -d ' \n'
+```
+Copy the secret and save it for now.
+
 ## 3. Deployment options
 
 ### 3.1 Option A – Helm install (recommended)

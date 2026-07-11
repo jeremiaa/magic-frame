@@ -60,13 +60,13 @@ spec:
       labels:
         app: magic-frame-app
       annotations:
-        checksum/config: 43e139a01e361bd8ecda098da18132950512406f36f99b823e65a13871ca638f
-        checksum/secret: ab5c3dc32377f1a21f347c88e16ea8440d881f26a1edf4260dedd8b5016ff721
+        checksum/config: f729fb00caca5aff7b5f0db0ae34b251f989be461828a2bf950a424693b3a880
+        checksum/secret: 3c0a04c8c497834da50b2372caad3fa70bccc359a40c166cd5bb2e781e619f22
     spec:
       containers:
         - name: magic-frame-app
-          image: "magic-frame-app:latest"
-          imagePullPolicy: Never
+          image: "ghcr.io/jeremiaa/magic-frame-app:latest"
+          imagePullPolicy: Always
           # Load from BOTH the ConfigMap and the Secret
           envFrom:
             - configMapRef:

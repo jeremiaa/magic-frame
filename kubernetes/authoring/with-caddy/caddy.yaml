@@ -51,8 +51,8 @@ spec:
     spec:
       containers:
         - name: magic-frame-caddy
-          image: magic-frame-caddy
-          imagePullPolicy: Never
+          image: ghcr.io/jeremiaa/magic-frame-caddy
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
               protocol: TCP

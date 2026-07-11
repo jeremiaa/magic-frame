@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
         - name: magic-frame-caddy
-          image: magic-frame-caddy
-          imagePullPolicy: Never
+          image: ghcr.io/jeremiaa/magic-frame-caddy
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
               protocol: TCP
@@ -72,7 +72,7 @@ spec:
       protocol: UDP
       port: 443
       targetPort: 443
-    - name: caddy_mgm
+    - name: caddy-mgm
       port: 2019
       targetPort: 2019
       nodePort: {{ .Values.nodePorts.caddyPort }}
