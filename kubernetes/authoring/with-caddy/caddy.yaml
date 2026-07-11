@@ -22,7 +22,7 @@ spec:
       protocol: UDP
       port: 443
       targetPort: 443
-    - name: caddy_mgm
+    - name: caddy-mgm
       port: 2019
       targetPort: 2019
       nodePort: 32019

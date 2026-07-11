@@ -1,4 +1,4 @@
-# Magic Frame - Kubernetes Deployment Guide
+# Magic Frame – Kubernetes Deployment Guide
 
 This guide covers deploying Magic Frame on Kubernetes. It assumes you already have a working Kubernetes cluster (this guide is written with k3s in mind, but the manifests are vanilla Kubernetes), basic familiarity with `kubectl`, and - for the Helm-based options - basic familiarity with Helm.
 
@@ -12,7 +12,7 @@ Magic Frame ships three interchangeable ways to deploy it on Kubernetes. They al
 | **Helm template** | You want the flexibility of Helm's templating, but prefer to apply manifests yourself (review diffs, use your own GitOps pipeline, etc.) | Yes, only at render time |
 | **Raw manifests** | You don't want Helm at all | No |
 
-The raw manifests are not hand-maintained separately - they are the committed output of `helm template`, split into two sets:
+The raw manifests are not hand-maintained separately – they are the committed output of `helm template`, split into two sets:
 
 - **`authoring/with-caddy/`** - includes the Caddy reverse proxy as the ingress point.
 - **`authoring/without-caddy/`** - omits Caddy; use this if you already run your own ingress controller or reverse proxy.
@@ -25,7 +25,7 @@ Because they're generated output, if you need to change something in them beyond
 
 Every deployment method creates the same resources:
 
-- **`magic-frame`** - the application Deployment + Service
+- **`magic-frame-app`** - the application Deployment + Service
 - **`magic-frame-db`** - a PostgreSQL Deployment + Service
 - **`magic-frame-caddy`** - the Caddy reverse proxy Deployment + Service (only when Caddy is enabled)
 - A **ConfigMap** and **Secret** holding the app's environment configuration
@@ -37,7 +37,7 @@ Every deployment method creates the same resources:
 Before deploying, make sure you have:
 
 1. **A Kubernetes cluster** with at least one node with local storage available (see [Storage](#6-storage) for why this matters).
-2. **The application images built and available to the cluster:**
+2. **The application images are built and available to the cluster:**
    - App image: `ghcr.io/magic-frame-app:latest`
    - Caddy image (only if using Caddy): `ghcr.io/magic-frame-caddy:latest`
    - Both are pulled with `imagePullPolicy: Always`, so your cluster nodes need network access to `ghcr.io`, or you need to have pushed the images to a registry your cluster can reach.
@@ -46,12 +46,15 @@ Before deploying, make sure you have:
 
 ## 3. Deployment options
 
-### 3.1 Option A - Helm install (recommended)
+### 3.1 Option A – Helm install (recommended)
 
-This is the simplest path - Helm manages the release for you.
+This is the simplest path – Helm manages the release for you.
 
+Download the chart (the complete helm directory)
 ```bash
-cd Helm
+cd helm (or the directory containing the files you just downloaded)
+```
+```bash
 helm install magic-frame . -f values.yaml
 ```
 
@@ -64,36 +67,51 @@ helm upgrade magic-frame . -f values.yaml
 To remove the deployment:
 
 ```bash
+cd helm #(or the directory containing the files you just downloaded)
+```
+```bash
 helm uninstall magic-frame
 ```
+Goto [Section 4](#4-choosing-with-or-without-caddy) for more info on Helm with or without Caddy.
 
-### 3.2 Option B - Helm template + kubectl apply
+### 3.2 Option B – Helm template + kubectl apply
 
-Use this if you want to inspect or version-control the exact manifests being applied, or feed them into your own deployment pipeline.
+Use this if you want to inspect or version-control the exact manifests being applied or feed them into your own deployment pipeline.
 
 ```bash
-cd Helm
-helm template magic-frame . -f values.yaml > rendered.yaml
+cd helm #(or the directory containing the files you just downloaded)
+```
+```bash
+helm template magic-frame . -f values.yaml > rendered.yaml #(1 complete manifest)
 kubectl apply -f rendered.yaml
+```
+or
+
+```bash
+helm template magic-frame . -f values.yaml --output-dir rendered #(seperate manifests)
+kubectl apply -f rendered/<manifest-name>.yaml #(for each manifest)
 ```
 
 You're responsible for re-running `helm template` and re-applying (or diffing) whenever `values.yaml` changes.
 
-### 3.3 Option C - Raw manifests (no Helm)
+### 3.3 Option C – Raw manifests (no Helm)
 
-Pick the set matching whether you want Caddy as your ingress:
+Pick the set matching whether you want Caddy as your ingress (/with-caddy or /without-caddy):
 
 **With Caddy:**
+Download the authoring/with-caddy/ folder.
+
 ```bash
 kubectl apply -f authoring/with-caddy/
 ```
 
 **Without Caddy** (bring your own ingress/reverse proxy):
+Download the authoring/without-caddy/ folder.
 ```bash
 kubectl apply -f authoring/without-caddy/
 ```
 
-Because these are pre-rendered, any configuration change (passwords, secrets, hostnames, etc.) means editing the YAML files directly - there's no `values.yaml` to adjust. If you find yourself editing these regularly, switch to one of the Helm-based options instead.
+Because these are pre-rendered, any configuration change (passwords, secrets, hostnames, etc.) means editing the YAML files directly – there's no `values.yaml` to adjust. If you find yourself editing these regularly, switch to one of the Helm-based options instead.
 
 ## 4. Choosing with or without Caddy
 
@@ -147,7 +165,7 @@ If your cluster has a dynamic StorageClass available (for example, k3s's built-i
 
 1. Remove (or don't apply) the `PersistentVolume` resources.
 2. Keep the `PersistentVolumeClaim` resources, but set `storage.className` to the name of your dynamic StorageClass (e.g. `local-path`).
-3. Apply as normal - the provisioner will create the underlying volumes automatically to match each PVC.
+3. Apply as normal – the provisioner will create the underlying volumes automatically to match each PVC.
 
 This is generally the better option unless you specifically need the data pinned to a known path on disk.
 
@@ -166,6 +184,6 @@ This is generally the better option unless you specifically need the data pinned
 
 - **App can't reach the database:** check `appConfig.dbHost`/`dbPort`/`dbName`/`dbUser`/`dbPassword` match what's actually running, and confirm the `magic-frame-db` Service and pod are healthy (`kubectl get pods,svc -n magic-frame`).
 - **502/Bad Gateway from Caddy:** confirm the app Service name and port match what's configured in Caddy's config, and that DNS resolution works inside the Caddy pod (`kubectl exec` into it and `wget http://magic-frame:<port>`).
-- **NodePort not reachable:** confirm the chosen ports fall within your cluster's allowed NodePort range (k3s default: `30000–32767`) and aren't already in use by another service.
+- **NodePort not reachable:** confirm the chosen ports fall within your cluster's allowed NodePort range (k3s default: `30000–32767`) and aren't yet in use by another service.
 - **Pod stuck in `ImagePullBackOff`:** confirm the images are reachable from your nodes and that you're using the fully qualified `ghcr.io/magic-frame-app:latest` / `ghcr.io/magic-frame-caddy:latest` image names.
 - **PVC stuck in `Pending`:** confirm `storage.className` matches an existing StorageClass on your cluster, and (for static provisioning) that `storage.hostPathBase` exists and is writable on the target node.
