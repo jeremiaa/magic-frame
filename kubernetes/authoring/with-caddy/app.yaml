@@ -38,8 +38,8 @@ spec:
       labels:
         app: magic-frame-app
       annotations:
-        checksum/config: f729fb00caca5aff7b5f0db0ae34b251f989be461828a2bf950a424693b3a880
-        checksum/secret: 3c0a04c8c497834da50b2372caad3fa70bccc359a40c166cd5bb2e781e619f22
+        checksum/config: 865d4176f7c7cf5759e7839dd5184ea90ca061d9ec8927f3683b848a7bcc53a3
+        checksum/secret: 7c42df6c79ad704c43e793450cd118105bc9e66d5a794b841e8121c6592f1687
     spec:
       containers:
         - name: magic-frame-app

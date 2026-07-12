@@ -1,10 +1,13 @@
-# Toggle Caddy deployment and related configs on or off
-caddy:
-  enabled: true
-
 # Namespace setting
 namespace:
   namespace: magic-frame
+
+# Persistent Storage Configurations
+storage:
+  className: "magic-frame-storage"
+  capacity: "100Mi"
+  # Base path for hostPath volumes
+  hostPathBase: "/var/lib/rancher/k3s/storage"
 
 # Application Image Settings
 image:
@@ -41,14 +44,9 @@ appConfig:
   msClientSecret: ""
   openWeatherMapApiKey: ""
 
-  sessionSecret: "1234567890123456789012345678901234567890123456789012345678901111"
-  dbPassword: "YOUR_SECURE_PASSWORD_HERE"
+  sessionSecret: "YOUR_SESSION_SECRET_HERE" # ########################### CHANGE THIS!
+  dbPassword: "YOUR_SECURE_PASSWORD_HERE" # ############################# CHANGE THIS!
 
-# Persistent Storage Configurations
-storage:
-  className: "magic-frame-storage"
-  capacity: "100Mi"
-  # Base path for hostPath volumes
-  hostPathBase: "/var/lib/rancher/k3s/storage"
-
-
+# Toggle Caddy deployment and related configs on or off
+caddy:
+  enabled: "CHOOSE_true_OR_false" # ###################################### CHANGE THIS!

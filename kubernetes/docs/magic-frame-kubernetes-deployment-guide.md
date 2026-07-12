@@ -6,18 +6,18 @@ This guide covers deploying Magic Frame on Kubernetes. It assumes you already ha
 
 Magic Frame ships three interchangeable ways to deploy it on Kubernetes. They all produce the same set of resources; pick whichever fits your workflow:
 
-| Option | Best for | Requires Helm? |
-|---|---|---|
-| **Helm install** | Fastest path; Helm manages the release for you | Yes |
+| Option            | Best for                                                                                                                                 | Requires Helm?           |
+|-------------------|------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| **Helm install**  | Fastest path; Helm manages the release for you                                                                                           | Yes                      |
 | **Helm template** | You want the flexibility of Helm's templating, but prefer to apply manifests yourself (review diffs, use your own GitOps pipeline, etc.) | Yes, only at render time |
-| **Raw manifests** | You don't want Helm at all | No |
+| **Raw manifests** | You don't want Helm at all                                                                                                               | No                       |
 
 The raw manifests are not hand-maintained separately – they are the committed output of `helm template`, split into two sets:
 
 - **`authoring/with-caddy/`** - includes the Caddy reverse proxy as the ingress point.
 - **`authoring/without-caddy/`** - omits Caddy; use this if you already run your own ingress controller or reverse proxy.
 
-Because they're generated output, if you need to change something in them beyond the values described in this guide, treat that as a signal you should switch to Helm instead.
+Because they are generated output, if you need to change something in them beyond the values described in this guide, treat that as a signal you should switch to Helm instead.
 
 ![Magic Frame Kubernetes architecture](../images/magic-frame-architecture-v22-dark.svg)
 
@@ -25,9 +25,9 @@ Because they're generated output, if you need to change something in them beyond
 
 Every deployment method creates the same resources:
 
-- **`magic-frame-app`** - the application Deployment + Service
+- **`magic-frame-app`** - the application Deployment plus Service
 - **`magic-frame-db`** - a PostgreSQL Deployment + Service
-- **`magic-frame-caddy`** - the Caddy reverse proxy Deployment + Service (only when Caddy is enabled)
+- **`magic-frame-caddy`** - the Caddy reverse proxy Deployment plus Service (only when Caddy is enabled)
 - A **ConfigMap** and **Secret** holding the app's environment configuration
 - **PersistentVolume(s)** and **PersistentVolumeClaim(s)** for app and database storage
 - A **NodePort Service** exposing the app directly, used when Caddy is disabled (or as a fallback path when it's enabled)
@@ -51,10 +51,10 @@ First, create a namespace for Magic Frame. This can be any name, but must be con
 kubectl create namespace magic-frame
 ```
 ### 2.2 Create a "Session Secret" that will allow safe communication.
-There are a number of ways to create and implement a secret (as in Step 2), in this case we will use a manual option as an example. There are many ways to create a 32 character hex value. If you prefer to create it any other way, that's fine.
+There are a number of ways to create and implement a secret (as in Step 2), in this case we will use a manual option as an example. There are many ways to create a 32-character hex value. If you prefer to create it any other way, that's fine.
 
 You can run the following command on a Linux system or on WSL on Windows.
-If you want to go really hard-core, just type 32 random hex numbers.
+If you want to go really hard-core, type 32 random hex numbers.
 
 ```
 $ head -c 32 /dev/urandom | od -An -tx1 -v | tr -d ' \n'
@@ -105,11 +105,15 @@ kubectl apply -f rendered.yaml
 or
 
 ```bash
-helm template magic-frame . -f values.yaml --output-dir rendered #(seperate manifests)
+helm template magic-frame . -f values.yaml --output-dir rendered #(separate manifests)
 kubectl apply -f rendered/<manifest-name>.yaml #(for each manifest)
 ```
 
-You're responsible for re-running `helm template` and re-applying (or diffing) whenever `values.yaml` changes.
+You're responsible for re-running `helm template` and re-applying (or diffing) whenever `values.yaml` changes.  
+
+NOTE:  
+*_Look for the lines in the values.yaml with the '### CHANGE THIS!' comment._*  
+*_See section 5 for more on configuration reference._*
 
 ### 3.3 Option C – Raw manifests (no Helm)
 
@@ -130,6 +134,8 @@ kubectl apply -f authoring/without-caddy/
 
 Because these are pre-rendered, any configuration change (passwords, secrets, hostnames, etc.) means editing the YAML files directly – there's no `values.yaml` to adjust. If you find yourself editing these regularly, switch to one of the Helm-based options instead.
 
+*_!! Look for the lines in the configmap.yaml and the secret.yaml with the string '\_HERE'. They are at the end of the file._*
+
 ## 4. Choosing with or without Caddy
 
 This is controlled by a single toggle: `caddy.enabled` in `values.yaml` (`true`/`false`), or by which `authoring/` folder you apply.
@@ -137,33 +143,35 @@ This is controlled by a single toggle: `caddy.enabled` in `values.yaml` (`true`/
 - **`caddy.enabled: true`** - Caddy is deployed and acts as the reverse proxy / ingress point for the app. Use this if you don't already have a reverse proxy in front of your cluster.
 - **`caddy.enabled: false`** - Caddy is skipped entirely. The app is instead exposed via a NodePort Service, so you can point your own ingress controller or reverse proxy at `<node-ip>:<nodePorts.httpPort>`.
 
+*_Look for the lines in the values.yaml with the '### CHANGE THIS!' comment._* 
+
 ## 5. Configuration reference (`values.yaml`)
 
 This table applies to both Helm options (Option A and B). For raw manifests, the equivalent value is set directly wherever it appears in the manifest files.
 
-| Key | Purpose | Notes |
-|---|---|---|
-| `caddy.enabled` | Toggle Caddy on/off | See [section 4](#4-choosing-with-or-without-caddy) |
-| `namespace.namespace` | Target namespace for all resources | Default: `magic-frame` |
-| `image.repository` | App container image | Default: `ghcr.io/magic-frame-app` |
-| `image.tag` | App image tag | Default: `latest` |
-| `image.pullPolicy` | Image pull policy | Should be `Always` |
-| `nodePorts.httpPort` | External NodePort for HTTP | Default `30080`. **Must fall within your cluster's NodePort range** - k3s defaults to `30000–32767`. Change if it conflicts with something else on your cluster. |
-| `nodePorts.httpsPort` | External NodePort for HTTPS | Default `30443` |
-| `nodePorts.caddyPort` | External NodePort for the Caddy admin API | Default `32019` |
-| `appConfig.appBaseUrl` | Public base URL the app is served from | e.g. `https://frame.example.com` |
-| `appConfig.caddyAdminUrl` | Internal URL the app uses to talk to Caddy's admin API | Only relevant when Caddy is enabled |
-| `appConfig.cookieSecure` | Whether session cookies require HTTPS | Set to `"true"` in production behind TLS |
-| `appConfig.googleClientId` / `appConfig.googleClientSecret` | Google OAuth credentials | Leave blank to disable Google login |
-| `appConfig.msClientId` / `appConfig.msClientSecret` | Microsoft OAuth credentials | Leave blank to disable Microsoft login |
-| `appConfig.nodeEnv` | Node environment | Default `production` - leave as-is unless debugging |
-| `appConfig.dbHost` / `dbPort` / `dbName` / `dbUser` | Database connection details | Must match the `magic-frame-db` Service unless you're pointing at an external database |
-| `appConfig.dbPassword` | Database password | **Change from the placeholder before deploying** |
-| `appConfig.sessionSecret` | Secret used to sign session cookies | **Generate a unique, random value** - don't reuse the sample value across environments |
-| `appConfig.openWeatherMapApiKey` | OpenWeatherMap API key | Leave blank to disable weather features |
-| `storage.className` | StorageClass name used by the static PVs | See [Storage](#6-storage) below |
-| `storage.capacity` | Size of the provisioned volumes | Default `100Mi` |
-| `storage.hostPathBase` | Base host path used for `hostPath` volumes | Default `/var/lib/rancher/k3s/storage` - a k3s-specific path |
+| Key                                                         | Purpose                                                | Notes                                                                                                                                                            |
+|-------------------------------------------------------------|--------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `caddy.enabled`                                             | Toggle Caddy on/off                                    | See [section 4](#4-choosing-with-or-without-caddy)                                                                                                               |
+| `namespace.namespace`                                       | Target namespace for all resources                     | Default: `magic-frame`                                                                                                                                           |
+| `image.repository`                                          | App container image                                    | Default: `ghcr.io/magic-frame-app`                                                                                                                               |
+| `image.tag`                                                 | App image tag                                          | Default: `latest`                                                                                                                                                |
+| `image.pullPolicy`                                          | Image pull policy                                      | Should be `Always`                                                                                                                                               |
+| `nodePorts.httpPort`                                        | External NodePort for HTTP                             | Default `30080`. **Must fall within your cluster's NodePort range** - k3s defaults to `30000–32767`. Change if it conflicts with something else on your cluster. |
+| `nodePorts.httpsPort`                                       | External NodePort for HTTPS                            | Default `30443`                                                                                                                                                  |
+| `nodePorts.caddyPort`                                       | External NodePort for the Caddy admin API              | Default `32019`                                                                                                                                                  |
+| `appConfig.appBaseUrl`                                      | Public base URL the app is served from                 | e.g. `https://frame.example.com`                                                                                                                                 |
+| `appConfig.caddyAdminUrl`                                   | Internal URL the app uses to talk to Caddy's admin API | Only relevant when Caddy is enabled                                                                                                                              |
+| `appConfig.cookieSecure`                                    | Whether session cookies require HTTPS                  | Set to `"true"` in production behind TLS                                                                                                                         |
+| `appConfig.googleClientId` / `appConfig.googleClientSecret` | Google OAuth credentials                               | Leave blank to disable Google login                                                                                                                              |
+| `appConfig.msClientId` / `appConfig.msClientSecret`         | Microsoft OAuth credentials                            | Leave blank to disable Microsoft login                                                                                                                           |
+| `appConfig.nodeEnv`                                         | Node environment                                       | Default `production` - leave as-is unless debugging                                                                                                              |
+| `appConfig.dbHost` / `dbPort` / `dbName` / `dbUser`         | Database connection details                            | Must match the `magic-frame-db` Service unless you're pointing at an external database                                                                           |
+| `appConfig.dbPassword`                                      | Database password                                      | **Change from the placeholder before deploying**                                                                                                                 |
+| `appConfig.sessionSecret`                                   | Secret used to sign session cookies                    | **Generate a unique, random value** - don't reuse the sample value across environments                                                                           |
+| `appConfig.openWeatherMapApiKey`                            | OpenWeatherMap API key                                 | Leave blank to disable weather features                                                                                                                          |
+| `storage.className`                                         | StorageClass name used by the static PVs               | See [Storage](#6-storage) below                                                                                                                                  |
+| `storage.capacity`                                          | Size of the provisioned volumes                        | Default `100Mi`                                                                                                                                                  |
+| `storage.hostPathBase`                                      | Base host path used for `hostPath` volumes             | Default `/var/lib/rancher/k3s/storage` - a k3s-specific path                                                                                                     |
 
 At minimum, before your first deployment, set:
 - `appConfig.dbPassword`

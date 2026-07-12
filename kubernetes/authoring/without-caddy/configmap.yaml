@@ -19,5 +19,5 @@ data:
   MS_CLIENT_SECRET: ""
   NODE_ENV: "production"
   OPENWEATHERMAP_API_KEY: ""
-  SESSION_SECRET: "<YOUR_SECURE_SESSION_SECRET_HERE>"
-  DATABASE_URL: "postgresql://postgres:<YOUR_SECURE_PASSWORD_HERE>@magic-frame-db:5432/magicdashboard?schema=public"
+  SESSION_SECRET: "YOUR_SESSION_SECRET_HERE"
+  DATABASE_URL: "postgresql://postgres:YOUR_SECURE_PASSWORD_HERE@magic-frame-db:5432/magicdashboard?schema=public"
