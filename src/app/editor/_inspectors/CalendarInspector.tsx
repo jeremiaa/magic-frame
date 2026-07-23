@@ -138,7 +138,7 @@ export default function CalendarInspector({
                 </button>
              ))}
           </div>
-          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">{t("Hell für helle Räume — dunkler Text.")}</p>
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">{t("Hell = helle Fläche + dunkler Text (Deckkraft steuert die Fläche).")}</p>
        </div>
        {view === "list" && (
        <label className="flex items-center gap-3 cursor-pointer mt-2 group">

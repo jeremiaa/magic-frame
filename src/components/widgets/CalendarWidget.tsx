@@ -518,22 +518,34 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     );
   };
 
-  return (
-    <div className={`flex flex-col drop-shadow-md w-full h-full overflow-hidden relative ${isMonth ? "" : "mt-[1em] justify-center"}`} style={{ color: fg }}>
-      {error ? (
-        <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
-      ) : isMonth ? (
-        renderMonth()
-      ) : (
-        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          {legacyAgenda && renderAgenda()}
-          {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
-          {view === "list" && events.length === 0 && !hideOnEmpty && (
-            <div className="opacity-50 text-[0.8em] mt-2" style={{ color: fgDim }}>{t("Keine anstehenden Termine")}</div>
-          )}
-          {view === "list" && events.map(renderEvent)}
-        </div>
+  const content = error ? (
+    <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
+  ) : isMonth ? (
+    renderMonth()
+  ) : (
+    <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      {legacyAgenda && renderAgenda()}
+      {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
+      {view === "list" && events.length === 0 && !hideOnEmpty && (
+        <div className="opacity-50 text-[0.8em] mt-2" style={{ color: fgDim }}>{t("Keine anstehenden Termine")}</div>
       )}
+      {view === "list" && events.map(renderEvent)}
+    </div>
+  );
+
+  // Heller Modus braucht eine helle FLÄCHE — dunkler Text auf dunklem Wallpaper
+  // wäre unsichtbar (dasselbe Problem wie früher beim RSS-Widget). Die Deckkraft
+  // steuert der bestehende „Hintergrund Kacheln"-Regler; bei 100 % = solide
+  // helle Platte. Dunkel bleibt transparent wie bisher.
+  const lightPanelOpacity = config?.cardOpacity !== undefined ? config.cardOpacity : 40;
+  return (
+    <div className="w-full h-full overflow-hidden relative flex flex-col" style={{ color: fg }}>
+      {isLight && (
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: `rgba(245,247,250,${lightPanelOpacity / 100})` }} />
+      )}
+      <div className={`relative z-10 flex flex-col w-full h-full overflow-hidden drop-shadow-md ${isMonth ? "p-[0.5em]" : "mt-[1em] justify-center"}`}>
+        {content}
+      </div>
     </div>
   );
 }
