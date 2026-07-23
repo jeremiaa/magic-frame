@@ -82,7 +82,7 @@ export default function WidgetPreview({ type, config, bgOpacity, gridW = 12, gri
   const isCardBased =
     type === "HomeAssistantWidget.tsx" ||
     type === "HANotificationWidget.tsx" ||
-    (type === "CalendarWidget.tsx" && config?.design !== "minimal");
+    (type === "CalendarWidget.tsx");
   const outerBgOpacity = isCardBased ? 0 : (bgOpacity ?? 0) / 100;
   const hasOuterBox = !isCardBased && (bgOpacity ?? 0) > 0;
   const paddingClass = isCardBased ? "p-0" : hasOuterBox ? "p-4 md:p-6" : "p-0";

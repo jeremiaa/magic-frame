@@ -480,7 +480,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
              const isCardBased =
                (w.type === 'HomeAssistantWidget.tsx') ||
                (w.type === 'HANotificationWidget.tsx') ||
-               (w.type === 'CalendarWidget.tsx' && w.config?.design !== 'minimal');
+               (w.type === 'CalendarWidget.tsx');
              const hasOuterBox = !isCardBased && w.bgOpacity > 0;
              const outerBgOpacity = isCardBased ? 0 : w.bgOpacity / 100;
              const paddingClass = isCardBased ? 'p-0' : (hasOuterBox ? 'p-4 md:p-6' : 'p-0');

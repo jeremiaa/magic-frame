@@ -124,21 +124,23 @@ export default function CalendarInspector({
           </div>
        </div>
 
-       {/* Helligkeit: für helle Räume dunkler Text auf hellen Kacheln. */}
+       {/* Helligkeit über das Standard-Karten-System (wie Status/Media/Notify):
+           auto folgt der zentralen View-Steuerung, sonst fest hell/dunkel. */}
        <div>
           <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Helligkeit")}</label>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
              {([
+                ["auto", t("Automatisch")],
                 ["dark", t("Dunkel")],
                 ["light", t("Hell")],
              ] as [string, string][]).map(([v, label]) => (
-                <button key={v} type="button" onClick={() => updateConfig(activeWidget.i, "calendarTheme", v)}
-                   className={`h-9 rounded-lg text-xs font-medium border transition-colors ${(cfg.calendarTheme || "dark") === v ? "border-violet-500 bg-violet-500/10 text-violet-300" : "border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/5 text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)]"}`}>
+                <button key={v} type="button" onClick={() => updateConfig(activeWidget.i, "cardTheme", v)}
+                   className={`h-9 rounded-lg text-xs font-medium border transition-colors ${(cfg.cardTheme || "dark") === v ? "border-violet-500 bg-violet-500/10 text-violet-300" : "border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/5 text-[var(--mf-fg)]/60 hover:text-[var(--mf-fg)]"}`}>
                    {label}
                 </button>
              ))}
           </div>
-          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">{t("Hell = helle Fläche + dunkler Text (Deckkraft steuert die Fläche).")}</p>
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">{t("Hell = helle Fläche + dunkler Text. Automatisch folgt der View-Einstellung.")}</p>
        </div>
        {view === "list" && (
        <label className="flex items-center gap-3 cursor-pointer mt-2 group">

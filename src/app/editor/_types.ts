@@ -93,7 +93,6 @@ export interface WidgetLayoutItem {
     hideOnEmpty?: boolean;
     // Calendar views (DAKboard-Parität)
     calendarView?: 'list' | 'agenda' | 'month';
-    calendarTheme?: 'dark' | 'light';
     entityId?: string;
     icon?: string;
     hideWhen?: string;

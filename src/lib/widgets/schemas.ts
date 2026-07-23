@@ -93,9 +93,10 @@ const calendarConfig = baseConfig.extend({
   // month (Monatsgitter). Nicht gesetzt = list; der alte showEmptyDays=true
   // wird transparent als agenda gelesen — bestehende Layouts ändern sich nicht.
   calendarView: z.enum(["list", "agenda", "month"]).optional(),
-  // Helligkeit: dark (wie bisher) | light (dunkler Text auf hellen Kacheln,
-  // für helle Räume).
-  calendarTheme: z.enum(["dark", "light"]).optional(),
+  // Karten-Fläche wie bei den anderen Karten-Widgets: cardTheme (auto/dark/
+  // light) + cardOpacity + cardBlur über useGlassStyle.
+  cardTheme: z.enum(["dark", "light", "auto"]).optional(),
+  cardBlur: z.number().optional(),
 });
 
 const buttonConfig = baseConfig

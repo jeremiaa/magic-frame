@@ -8,6 +8,7 @@ import {
 } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useGlassStyle } from "@/lib/ui/glass";
 
 type CalendarEvent = {
   id: string;
@@ -88,9 +89,12 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const gridStart = startOfWeek(monthAnchor, { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthAnchor), { weekStartsOn });
 
-  // Helligkeit: für helle Räume kann der Kalender auf hell umgestellt werden
-  // (dunkler Text auf hellen Kacheln). Standard "dark" wie bisher.
-  const isLight = config?.calendarTheme === "light";
+  // Karten-Fläche wie bei allen anderen Karten-Widgets (Status/Media/Notify):
+  // EINE Fläche über useGlassStyle — dieselbe Deckkraft, dasselbe Hell/Dunkel
+  // (cardTheme, folgt auch der zentralen View-Steuerung), dieselben runden
+  // Ecken. Keine konkurrierenden Hintergrund-Systeme mehr.
+  const glass = useGlassStyle(config);
+  const isLight = glass.isLight;
   const fg = isLight ? "rgba(15,23,42,0.92)" : "#ffffff";
   const fgDim = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.5)";
   const cardRgb = isLight ? "255,255,255" : "0,0,0";
@@ -533,17 +537,13 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     </div>
   );
 
-  // Heller Modus braucht eine helle FLÄCHE — dunkler Text auf dunklem Wallpaper
-  // wäre unsichtbar (dasselbe Problem wie früher beim RSS-Widget). Die Deckkraft
-  // steuert der bestehende „Hintergrund Kacheln"-Regler; bei 100 % = solide
-  // helle Platte. Dunkel bleibt transparent wie bisher.
-  const lightPanelOpacity = config?.cardOpacity !== undefined ? config.cardOpacity : 40;
+  // Fläche = EINE Glass-Karte (useGlassStyle) für Agenda/Monat; bei der Liste
+  // liefern die Termin-Kacheln selbst die Fläche, darum außen transparent.
+  const usePanel = view !== "list";
   return (
-    <div className="w-full h-full overflow-hidden relative flex flex-col" style={{ color: fg }}>
-      {isLight && (
-        <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: `rgba(245,247,250,${lightPanelOpacity / 100})` }} />
-      )}
-      <div className={`relative z-10 flex flex-col w-full h-full overflow-hidden drop-shadow-md ${isMonth ? "p-[0.5em]" : "mt-[1em] justify-center"}`}>
+    <div className="w-full h-full overflow-hidden relative rounded-3xl flex flex-col"
+         style={{ ...(usePanel ? glass.cardStyle : {}), color: fg }}>
+      <div className={`relative flex flex-col w-full h-full overflow-hidden ${usePanel ? (isMonth ? "p-[0.6em]" : "p-[0.7em]") : (isMonth ? "" : "mt-[1em] justify-center")} ${view === "list" && !isLight ? "drop-shadow-md" : ""}`}>
         {content}
       </div>
     </div>
