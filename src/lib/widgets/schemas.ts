@@ -98,6 +98,9 @@ const calendarConfig = baseConfig.extend({
   // Bild-Widget). Standard none.
   calendarBg: z.enum(["none", "solid", "photo"]).optional(),
   calendarBgHeight: z.number().optional(), // Höhe des Foto-Kopfs in %
+  calImageAlbum: z.string().optional(),    // Immich-Album für den Foto-Kopf
+  calImageSource: z.string().optional(),
+  calImageInterval: z.number().optional(),
 });
 
 const buttonConfig = baseConfig

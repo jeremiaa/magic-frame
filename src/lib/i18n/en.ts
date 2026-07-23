@@ -1791,6 +1791,20 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Panel-Hintergrund":
+    "Panel background",
+  "Transparent (Wallpaper)":
+    "Transparent (wallpaper)",
+  "Deckende Fläche":
+    "Solid fill",
+  "Foto-Kopf + Fläche":
+    "Photo header + fill",
+  "Immich-Album-ID":
+    "Immich album ID",
+  "Album-ID (siehe Bild-Widget)":
+    "Album ID (see Image widget)",
+  "Höhe des Foto-Kopfs":
+    "Photo header height",
   "Ansicht":
     "View",
   "Agenda":

@@ -44,7 +44,7 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
   if (type === "QrWidget.tsx") return <QrWidget config={config} />;
   if (type === "StatusWidget.tsx") return <StatusWidget config={config} onVisibilityChange={onVisibilityChange} />;
   if (type === "MediaPlayerWidget.tsx") return <MediaPlayerWidget config={config} onVisibilityChange={onVisibilityChange} />;
-  if (type === "CalendarWidget.tsx") return <CalendarWidget config={config} onVisibilityChange={onVisibilityChange} />;
+  if (type === "CalendarWidget.tsx") return <CalendarWidget config={config} dashboardId={dashboardId} onVisibilityChange={onVisibilityChange} />;
   if (type === "WeatherWidget.tsx") return <WeatherWidget config={config} location={config?.location} lat={config?.lat} lon={config?.lon} />;
   if (type === "HomeAssistantWidget.tsx") return <HomeAssistantWidget config={config} onVisibilityChange={onVisibilityChange} />;
   if (type === "HANotificationWidget.tsx") return <HANotificationWidget config={config} dashboardId={dashboardId} onVisibilityChange={onVisibilityChange} />;

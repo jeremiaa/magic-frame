@@ -95,6 +95,9 @@ export interface WidgetLayoutItem {
     calendarView?: 'list' | 'agenda' | 'month';
     calendarBg?: 'none' | 'solid' | 'photo';
     calendarBgHeight?: number;
+    calImageAlbum?: string;
+    calImageSource?: string;
+    calImageInterval?: number;
     entityId?: string;
     icon?: string;
     hideWhen?: string;

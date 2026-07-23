@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import type { WidgetLayoutItem } from '../_types';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import HAEntityInput from '../_components/HAEntityInput';
 
 type CalendarInspectorProps = {
   widget: WidgetLayoutItem;
@@ -122,6 +123,45 @@ export default function CalendarInspector({
              />
           </div>
        </div>
+
+       {/* Panel-Hintergrund (DAKboard-Foto-Kopf): der Kalender füllt seinen
+           Bereich selbst — deckend oder mit Bild-Streifen oben. */}
+       <div>
+          <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Panel-Hintergrund")}</label>
+          <select
+             value={cfg.calendarBg || 'none'}
+             onChange={(e) => updateConfig(activeWidget.i, 'calendarBg', e.target.value)}
+             className="w-full bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:border-[var(--mf-bdr)]/20"
+          >
+             <option value="none">{t("Transparent (Wallpaper)")}</option>
+             <option value="solid">{t("Deckende Fläche")}</option>
+             <option value="photo">{t("Foto-Kopf + Fläche")}</option>
+          </select>
+          {cfg.calendarBg === 'photo' && (
+             <div className="mt-3 space-y-3">
+                <div>
+                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1">{t("Immich-Album-ID")}</label>
+                   <input
+                      type="text" value={cfg.calImageAlbum || ''}
+                      onChange={(e) => updateConfig(activeWidget.i, 'calImageAlbum', e.target.value)}
+                      placeholder={t("Album-ID (siehe Bild-Widget)")}
+                      className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs font-mono rounded-lg px-3 h-9 focus:outline-none focus:border-violet-500"
+                   />
+                </div>
+                <div>
+                   <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
+                      <span>{t("Höhe des Foto-Kopfs")}</span>
+                      <span className="text-blue-400">{Number(cfg.calendarBgHeight) || 33}%</span>
+                   </label>
+                   <input
+                      type="range" min="10" max="60" step="1" value={Number(cfg.calendarBgHeight) || 33}
+                      onChange={(e) => updateConfig(activeWidget.i, 'calendarBgHeight', parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
+                   />
+                </div>
+             </div>
+          )}
+       </div>
        {view === "list" && (
        <label className="flex items-center gap-3 cursor-pointer mt-2 group">
           <div className="relative flex items-center justify-center">
@@ -161,7 +201,7 @@ export default function CalendarInspector({
   );
 }
 
-type FeedType = "ical" | "google" | "microsoft";
+type FeedType = "ical" | "google" | "microsoft" | "homeassistant";
 
 type Feed = {
   id?: string;
@@ -297,6 +337,7 @@ function FeedsEditor({
               <option value="ical">{t("iCal / Webcal")}</option>
               <option value="google">{t("Google-Konto")}</option>
               <option value="microsoft">Microsoft 365</option>
+              <option value="homeassistant">Home Assistant</option>
             </select>
             <FeedBody
               feed={feed}
@@ -365,6 +406,23 @@ function FeedsEditor({
         >
           + Microsoft
         </button>
+        <button
+          onClick={() =>
+            write([
+              ...feeds,
+              {
+                id: `feed-${Date.now()}`,
+                label: "Home Assistant",
+                type: "homeassistant",
+                calendarId: "",
+                color: "#22C55E",
+              },
+            ])
+          }
+          className="col-span-3 h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-emerald-500/40 rounded-md transition-colors"
+        >
+          + Home Assistant
+        </button>
       </div>
     </div>
   );
@@ -388,6 +446,20 @@ function FeedBody({
         onChange={(e) => onChange({ url: e.target.value })}
         className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs font-mono rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
       />
+    );
+  }
+
+  if (feed.type === "homeassistant") {
+    return (
+      <div className="flex-1">
+        <HAEntityInput
+          value={feed.calendarId ?? ""}
+          onChange={(v) => onChange({ calendarId: v })}
+          domains={["calendar"]}
+          placeholder="calendar.familie"
+          className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs rounded-md px-3 h-9 focus:outline-none focus:border-emerald-500"
+        />
+      </div>
     );
   }
 

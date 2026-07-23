@@ -8,6 +8,7 @@ import {
 } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import ImageWidget from "./ImageWidget";
 
 type CalendarEvent = {
   id: string;
@@ -23,7 +24,7 @@ type FeedConfig = {
   id?: string;
   label?: string;
   color?: string;
-  type?: "ical" | "google" | "microsoft";
+  type?: "ical" | "google" | "microsoft" | "homeassistant";
   url?: string;
   accountId?: string;
   calendarId?: string;
@@ -33,6 +34,8 @@ const isValidFeed = (f: any): boolean => {
   if (!f || typeof f !== "object") return false;
   const type = f.type ?? "ical";
   if (type === "ical") return typeof f.url === "string" && f.url.trim() !== "";
+  // HA-Kalender identifiziert sich über die Entität (calendarId), nicht accountId.
+  if (type === "homeassistant") return typeof f.calendarId === "string" && f.calendarId.trim() !== "";
   return typeof f.accountId === "string" && f.accountId.trim() !== "";
 };
 
@@ -46,7 +49,7 @@ const isValidFeed = (f: any): boolean => {
 // client-side, usando `limit`.
 const EMPTY_DAYS_FETCH_LIMIT = 60;
 
-export default function CalendarWidget({ config, onVisibilityChange }: { config?: any, onVisibilityChange?: (isVisible: boolean) => void }) {
+export default function CalendarWidget({ config, dashboardId, onVisibilityChange }: { config?: any, dashboardId?: string, onVisibilityChange?: (isVisible: boolean) => void }) {
   const { locale, t } = useLocale();
   const dfLocale = locale === "en" ? enUS : de;
   // Feeds-Array bevorzugen, Legacy icalUrl als Single-Feed fallback.
@@ -85,6 +88,13 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
   const monthAnchor = startOfMonth(new Date());
   const gridStart = startOfWeek(monthAnchor, { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthAnchor), { weekStartsOn });
+
+  // Panel-Hintergrund: none (transparent, wie bisher) | solid (deckende Fläche)
+  // | photo (Bild-Streifen oben, eingebettetes Bild-Widget). Damit „besitzt"
+  // der Kalender bei Bedarf seinen Bereich wie bei DAKboard.
+  const bgMode: "none" | "solid" | "photo" =
+    config?.calendarBg === "photo" || config?.calendarBg === "solid" ? config.calendarBg : "none";
+  const headerPct = Math.max(10, Math.min(60, Number(config?.calendarBgHeight) || 33));
 
   const [fetchedEvents, setEvents] = useState<CalendarEvent[]>([]);
   // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo. Echte Termine
@@ -506,22 +516,53 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
     );
   };
 
+  const body = error ? (
+    <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
+  ) : isMonth ? (
+    renderMonth()
+  ) : (
+    <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      {legacyAgenda && renderAgenda()}
+      {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
+      {view === "list" && events.length === 0 && !hideOnEmpty && (
+        <div className="opacity-50 text-[0.8em] mt-2">{t("Keine anstehenden Termine")}</div>
+      )}
+      {view === "list" && events.map(renderEvent)}
+    </div>
+  );
+
+  // Transparent (Standard): unverändertes Verhalten wie bisher.
+  if (bgMode === "none") {
+    return (
+      <div className={`flex flex-col drop-shadow-md w-full h-full overflow-hidden relative ${isMonth ? "" : "mt-[1em] justify-center"}`}>
+        {body}
+      </div>
+    );
+  }
+
+  // Eigener Panel-Hintergrund: deckende Fläche (solid) oder Foto-Kopf (photo).
+  // Die deckende Fläche verdrängt den Wallpaper-Hintergrund und macht die
+  // Termine lesbar; im Foto-Modus sitzt oben ein Bild-Streifen (eingebettetes
+  // Bild-Widget), darunter füllt der Kalender den Rest.
+  const imgCfg = {
+    immichAlbumId: config?.calImageAlbum ?? "",
+    immichSource: config?.calImageSource || "global",
+    intervalSec: Math.max(5, Number(config?.calImageInterval) || 30),
+    fit: "cover",
+    cornerRadius: 0,
+  };
   return (
-    <div className={`flex flex-col drop-shadow-md w-full h-full overflow-hidden relative ${isMonth ? "" : "mt-[1em] justify-center"}`}>
-      {error ? (
-        <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
-      ) : isMonth ? (
-        renderMonth()
-      ) : (
-        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          {legacyAgenda && renderAgenda()}
-          {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
-          {view === "list" && events.length === 0 && !hideOnEmpty && (
-            <div className="opacity-50 text-[0.8em] mt-2">{t("Keine anstehenden Termine")}</div>
-          )}
-          {view === "list" && events.map(renderEvent)}
+    <div className="w-full h-full flex flex-col overflow-hidden relative">
+      {bgMode === "photo" && (
+        <div className="shrink-0 w-full overflow-hidden relative" style={{ height: `${headerPct}%` }}>
+          <ImageWidget config={imgCfg} dashboardId={dashboardId} />
         </div>
       )}
+      <div className="flex-1 min-h-0 relative overflow-hidden" style={{ backgroundColor: "rgba(12,16,26,0.92)" }}>
+        <div className={`w-full h-full flex flex-col overflow-hidden ${isMonth ? "p-[0.6em]" : "px-[0.8em] pt-[0.6em]"}`}>
+          {body}
+        </div>
+      </div>
     </div>
   );
 }
