@@ -89,6 +89,15 @@ const calendarConfig = baseConfig.extend({
   // #33: Uhrzeit-Format der Termine. "auto" = nach App-Sprache (12h EN / 24h DE),
   // wie bisher → ändert für bestehende Layouts nichts. "12h"/"24h" = fester Override.
   calendarTimeFormat: z.enum(["auto", "12h", "24h"]).optional(),
+  // Ansicht: list (bisheriges Verhalten) | agenda (nach Tagen gruppiert) |
+  // month (Monatsgitter). Nicht gesetzt = list; der alte showEmptyDays=true
+  // wird transparent als agenda gelesen — bestehende Layouts ändern sich nicht.
+  calendarView: z.enum(["list", "agenda", "month"]).optional(),
+  // Eigener Panel-Hintergrund (DAKboard-Foto-Kopf): none (transparent, wie
+  // bisher) | solid (deckende Fläche) | photo (Bild-Streifen oben, eingebettetes
+  // Bild-Widget). Standard none.
+  calendarBg: z.enum(["none", "solid", "photo"]).optional(),
+  calendarBgHeight: z.number().optional(), // Höhe des Foto-Kopfs in %
 });
 
 const buttonConfig = baseConfig

@@ -91,6 +91,10 @@ export interface WidgetLayoutItem {
     days?: number;
     color?: string;
     hideOnEmpty?: boolean;
+    // Calendar views (DAKboard-Parität)
+    calendarView?: 'list' | 'agenda' | 'month';
+    calendarBg?: 'none' | 'solid' | 'photo';
+    calendarBgHeight?: number;
     entityId?: string;
     icon?: string;
     hideWhen?: string;

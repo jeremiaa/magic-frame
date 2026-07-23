@@ -1791,6 +1791,18 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Ansicht":
+    "View",
+  "Agenda":
+    "Agenda",
+  "Monat":
+    "Month",
+  "Kommende Termine als Liste.":
+    "Upcoming events as a list.",
+  "Nach Tagen gruppiert mit Überschriften.":
+    "Grouped by day with headings.",
+  "Volles Monatsgitter mit Terminen in den Tagen.":
+    "Full month grid with events in the days.",
   "Befehl fehlgeschlagen":
     "Command failed",
   "Netzwerkfehler — Befehl nicht gesendet.":

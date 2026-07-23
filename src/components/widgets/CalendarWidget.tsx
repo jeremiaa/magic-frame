@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { parseISO, isToday, isTomorrow, isSameDay, addDays, isValid, format } from "date-fns";
+import {
+  parseISO, isToday, isTomorrow, isSameDay, addDays, isValid, format,
+  startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
+  isSameMonth, differenceInCalendarDays,
+} from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -63,6 +67,25 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
   const accentColor = config?.color || config?.accentColor || "#ffffff";
   const hideOnEmpty = config?.hideOnEmpty || false;
 
+  // Ansicht auflösen: explizites calendarView gewinnt. Ohne das gilt der alte
+  // showEmptyDays=true als "legacy-agenda" (bisheriges 3-Tage-Verhalten bleibt
+  // damit unverändert), sonst "list". So ändert sich für kein bestehendes
+  // Layout etwas — die neuen Ansichten sind rein opt-in.
+  const legacyAgenda = !config?.calendarView && showEmptyDays;
+  const view: "list" | "agenda" | "month" =
+    config?.calendarView === "agenda" || config?.calendarView === "month" || config?.calendarView === "list"
+      ? config.calendarView
+      : legacyAgenda
+        ? "agenda"
+        : "list";
+  const isMonth = view === "month";
+
+  // Monatsgitter: sichtbares Fenster = ganze Wochen um den aktuellen Monat.
+  const weekStartsOn = locale === "en" ? 0 : 1; // So (EN) / Mo (DE)
+  const monthAnchor = startOfMonth(new Date());
+  const gridStart = startOfWeek(monthAnchor, { weekStartsOn });
+  const gridEnd = endOfWeek(endOfMonth(monthAnchor), { weekStartsOn });
+
   const [fetchedEvents, setEvents] = useState<CalendarEvent[]>([]);
   // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo. Echte Termine
   // bleiben stehen und werden bis zur KONFIGURIERTEN Anzahl mit Beispielen
@@ -71,8 +94,8 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
   const events: CalendarEvent[] = !config?.__demo
     ? fetchedEvents
     : (() => {
-        // Agenda-Modus zeigt genau die nächsten 3 Tage, sonst gilt `limit`.
-        const want = Math.max(1, Math.min(showEmptyDays ? 3 : limit, 12));
+        // Wie viele Beispieltermine die Vorschau auffüllt — je Ansicht anders.
+        const want = Math.max(1, Math.min(isMonth ? 8 : view === "agenda" ? 6 : limit, 12));
         const missing = want - fetchedEvents.length;
         if (missing <= 0) return fetchedEvents;
         const pool = [
@@ -119,11 +142,23 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
       try {
         const url = new URL("/api/calendar", window.location.origin);
         url.searchParams.set("feeds", JSON.stringify(feeds));
-        // Agenda fija (showEmptyDays): ventana siempre de 3 días (hoy/+1/+2).
-        const effectiveDays = showEmptyDays ? 3 : days;
-        const effectiveLimit = showEmptyDays ? EMPTY_DAYS_FETCH_LIMIT : limit;
-        url.searchParams.set("limit", String(effectiveLimit));
-        url.searchParams.set("days", String(effectiveDays));
+        if (isMonth) {
+          // Monatsgitter: festes Fenster (ganze Wochen um den Monat), auch
+          // vergangene Tage. Das Backend kann das über mode=range schon (#…).
+          const span = differenceInCalendarDays(gridEnd, gridStart) + 1;
+          url.searchParams.set("mode", "range");
+          url.searchParams.set("start", format(gridStart, "yyyy-MM-dd"));
+          url.searchParams.set("days", String(span));
+          url.searchParams.set("limit", "500"); // alle Termine des Monats
+        } else if (legacyAgenda) {
+          // Legacy-Agenda (altes showEmptyDays): 3-Tage-Fenster, unverändert.
+          url.searchParams.set("limit", String(EMPTY_DAYS_FETCH_LIMIT));
+          url.searchParams.set("days", "3");
+        } else {
+          // list + neue Agenda: gemeinsames „kommende Termine"-Fenster.
+          url.searchParams.set("limit", String(limit));
+          url.searchParams.set("days", String(days));
+        }
         const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
@@ -132,9 +167,9 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
         setEvents(evts);
         setError(null);
 
-        if (showEmptyDays) {
-          onVisibilityChange?.(true);
-        } else if (hideOnEmpty && evts.length === 0) {
+        // hideOnEmpty gilt nur für die Listen-Ansicht; Agenda/Monat zeigen
+        // ihr Gerüst auch ohne Termine.
+        if (view === "list" && hideOnEmpty && evts.length === 0) {
           onVisibilityChange?.(false);
         } else {
           onVisibilityChange?.(true);
@@ -158,7 +193,7 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [feedsKey, limit, days, hideOnEmpty, showEmptyDays]);
+  }, [feedsKey, limit, days, hideOnEmpty, showEmptyDays, view]);
 
   // Beide Hinweise überspringen, wenn die Editor-Vorschau Beispieldaten will —
   // sonst sieht man beim frisch angelegten Widget nur "URL hinterlegen".
@@ -335,21 +370,158 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
     });
   };
 
-  return (
-    <div className="flex flex-col drop-shadow-md mt-[1em] w-full h-full justify-center overflow-hidden relative">
-      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        {error && (
-          <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
-        )}
+  // Gemeinsames Uhrzeit-Muster (auch für Agenda/Monat).
+  const timeFmt = config?.calendarTimeFormat || "auto";
+  const timePattern =
+    timeFmt === "24h" ? "HH:mm"
+    : timeFmt === "12h" ? "h:mm a"
+    : locale === "en" ? "h:mm a" : "HH:mm";
 
-        {!error && showEmptyDays && renderAgenda()}
+  // Neue Agenda (DAKboard-Stil): nach Tag gruppiert mit fetter Tages-Überschrift
+  // (Heute / Morgen / Wochentag + Datum), darunter schlanke Zeilen.
+  const renderAgendaGrouped = () => {
+    const groups = new Map<string, CalendarEvent[]>();
+    for (const ev of events) {
+      const d = parseISO(ev.start);
+      if (!isValid(d)) continue;
+      const key = format(d, "yyyy-MM-dd");
+      const list = groups.get(key);
+      if (list) list.push(ev);
+      else groups.set(key, [ev]);
+    }
+    const dayKeys = [...groups.keys()].sort();
+    if (dayKeys.length === 0) {
+      return <div className="opacity-50 text-[0.8em] mt-2">{t("Keine anstehenden Termine")}</div>;
+    }
+    const isMinimal = config?.design === "minimal";
+    return dayKeys.map((key) => {
+      const day = parseISO(`${key}T00:00:00`);
+      const head = isToday(day) ? t("Heute")
+        : isTomorrow(day) ? t("Morgen")
+        : format(day, "eee, d. MMM", { locale: dfLocale });
+      const dayEvents = groups.get(key)!.slice(0, limit);
+      return (
+        <div key={key} className="mb-[0.9em]">
+          <div className="uppercase tracking-wider font-semibold text-[0.72em] text-white/55 mb-[0.45em]">{head}</div>
+          <div className="flex flex-col gap-[0.4em]">
+            {dayEvents.map((ev) => {
+              const start = parseISO(ev.start);
+              const end = parseISO(ev.end);
+              const color = ev.feedColor || accentColor;
+              const showRange = isValid(start) && isValid(end) && +end !== +start;
+              const timeStr = showRange
+                ? `${format(start, timePattern)} – ${format(end, timePattern)}`
+                : isValid(start) ? format(start, timePattern) : "";
+              return (
+                <div key={ev.id} className="flex items-start gap-[0.6em]">
+                  <span className="shrink-0 w-[0.25em] self-stretch rounded-full mt-[0.15em]" style={{ backgroundColor: color }} />
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className={`font-semibold leading-tight truncate ${isMinimal ? "text-[0.95em]" : "text-[0.9em]"}`}>{ev.title}</span>
+                    <span className="text-white/50 text-[0.72em] leading-tight">
+                      {ev.isAllDay
+                        ? <span className="uppercase tracking-wider text-[0.9em] rounded px-[0.35em] py-[0.05em] bg-white/10">{t("Ganztägig")}</span>
+                        : timeStr}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    });
+  };
 
-        {!error && !showEmptyDays && events.length === 0 && !hideOnEmpty && (
-          <div className="opacity-50 text-[0.8em] mt-2">{t("Keine anstehenden Termine")}</div>
-        )}
-
-        {!error && !showEmptyDays && events.map(renderEvent)}
+  // Monatsgitter (DAKboard „Full monthly view"): Wochentag-Kopf + 6 Wochen,
+  // Termine in den Tageszellen. Ganztägig = farbiger Balken, mit Uhrzeit =
+  // Punkt + Titel. Heute hervorgehoben, Tage außerhalb des Monats gedimmt.
+  const renderMonth = () => {
+    const gridDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
+    const byDay = new Map<string, CalendarEvent[]>();
+    for (const ev of events) {
+      const d = parseISO(ev.start);
+      if (!isValid(d)) continue;
+      const key = format(d, "yyyy-MM-dd");
+      const list = byDay.get(key);
+      if (list) list.push(ev);
+      else byDay.set(key, [ev]);
+    }
+    const weekdayHead = eachDayOfInterval({ start: gridStart, end: addDays(gridStart, 6) });
+    const perCell = 3; // Termine pro Zelle, Rest als "+N"
+    return (
+      <div className="w-full h-full flex flex-col text-[0.9em]">
+        {/* Wochentage */}
+        <div className="grid grid-cols-7 shrink-0 mb-[0.3em]">
+          {weekdayHead.map((d) => (
+            <div key={+d} className="text-center uppercase tracking-wider text-white/45 font-medium text-[0.7em]">
+              {format(d, "eee", { locale: dfLocale })}
+            </div>
+          ))}
+        </div>
+        {/* 6 Wochen */}
+        <div className="grid grid-cols-7 grid-rows-6 flex-1 gap-[0.15em] min-h-0">
+          {gridDays.map((d) => {
+            const key = format(d, "yyyy-MM-dd");
+            const inMonth = isSameMonth(d, monthAnchor);
+            const today = isToday(d);
+            const dayEvents = (byDay.get(key) || []).slice().sort((a, b) => a.start.localeCompare(b.start));
+            const shown = dayEvents.slice(0, perCell);
+            const extra = dayEvents.length - shown.length;
+            return (
+              <div key={key} className={`flex flex-col min-h-0 overflow-hidden rounded-[0.4em] px-[0.25em] py-[0.15em] ${inMonth ? "bg-white/[0.03]" : "bg-transparent"}`}>
+                <div className="flex justify-end shrink-0">
+                  <span className={`text-[0.72em] font-semibold leading-none rounded-full w-[1.5em] h-[1.5em] flex items-center justify-center ${today ? "bg-red-500 text-white" : inMonth ? "text-white/85" : "text-white/30"}`}>
+                    {format(d, "d")}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-[0.12em] mt-[0.1em] min-h-0 overflow-hidden">
+                  {shown.map((ev) => {
+                    const color = ev.feedColor || accentColor;
+                    if (ev.isAllDay) {
+                      return (
+                        <div key={ev.id} className="rounded-[0.25em] px-[0.3em] text-[0.6em] leading-[1.5] truncate text-white" style={{ backgroundColor: color }}>
+                          {ev.title}
+                        </div>
+                      );
+                    }
+                    const start = parseISO(ev.start);
+                    return (
+                      <div key={ev.id} className="flex items-center gap-[0.25em] text-[0.6em] leading-[1.5] truncate">
+                        <span className="shrink-0 rounded-full w-[0.4em] h-[0.4em]" style={{ backgroundColor: color }} />
+                        <span className="truncate text-white/85">
+                          <span className="text-white/55">{isValid(start) ? format(start, timePattern) : ""}</span> {ev.title}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {extra > 0 && (
+                    <div className="text-[0.58em] text-white/45 leading-none pl-[0.3em]">+{extra}</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={`flex flex-col drop-shadow-md w-full h-full overflow-hidden relative ${isMonth ? "" : "mt-[1em] justify-center"}`}>
+      {error ? (
+        <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
+      ) : isMonth ? (
+        renderMonth()
+      ) : (
+        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {legacyAgenda && renderAgenda()}
+          {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
+          {view === "list" && events.length === 0 && !hideOnEmpty && (
+            <div className="opacity-50 text-[0.8em] mt-2">{t("Keine anstehenden Termine")}</div>
+          )}
+          {view === "list" && events.map(renderEvent)}
+        </div>
+      )}
     </div>
   );
 }
