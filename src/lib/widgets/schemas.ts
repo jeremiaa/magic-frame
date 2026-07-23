@@ -93,14 +93,9 @@ const calendarConfig = baseConfig.extend({
   // month (Monatsgitter). Nicht gesetzt = list; der alte showEmptyDays=true
   // wird transparent als agenda gelesen — bestehende Layouts ändern sich nicht.
   calendarView: z.enum(["list", "agenda", "month"]).optional(),
-  // Eigener Panel-Hintergrund (DAKboard-Foto-Kopf): none (transparent, wie
-  // bisher) | solid (deckende Fläche) | photo (Bild-Streifen oben, eingebettetes
-  // Bild-Widget). Standard none.
-  calendarBg: z.enum(["none", "solid", "photo"]).optional(),
-  calendarBgHeight: z.number().optional(), // Höhe des Foto-Kopfs in %
-  calImageAlbum: z.string().optional(),    // Immich-Album für den Foto-Kopf
-  calImageSource: z.string().optional(),
-  calImageInterval: z.number().optional(),
+  // Helligkeit: dark (wie bisher) | light (dunkler Text auf hellen Kacheln,
+  // für helle Räume).
+  calendarTheme: z.enum(["dark", "light"]).optional(),
 });
 
 const buttonConfig = baseConfig

@@ -1791,6 +1791,14 @@ export const EN: Record<string, string> = {
     "Font scales with the width (responsive) — exactly like on the display.",
   "Schrift fest:": "Fixed font:",
   "Manuell": "Manual",
+  "Helligkeit":
+    "Brightness",
+  "Dunkel":
+    "Dark",
+  "Hell":
+    "Light",
+  "Hell für helle Räume — dunkler Text.":
+    "Light for bright rooms — dark text.",
   "Panel-Hintergrund":
     "Panel background",
   "Transparent (Wallpaper)":

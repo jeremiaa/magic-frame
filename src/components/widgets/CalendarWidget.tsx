@@ -8,7 +8,6 @@ import {
 } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-import ImageWidget from "./ImageWidget";
 
 type CalendarEvent = {
   id: string;
@@ -89,12 +88,13 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const gridStart = startOfWeek(monthAnchor, { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthAnchor), { weekStartsOn });
 
-  // Panel-Hintergrund: none (transparent, wie bisher) | solid (deckende Fläche)
-  // | photo (Bild-Streifen oben, eingebettetes Bild-Widget). Damit „besitzt"
-  // der Kalender bei Bedarf seinen Bereich wie bei DAKboard.
-  const bgMode: "none" | "solid" | "photo" =
-    config?.calendarBg === "photo" || config?.calendarBg === "solid" ? config.calendarBg : "none";
-  const headerPct = Math.max(10, Math.min(60, Number(config?.calendarBgHeight) || 33));
+  // Helligkeit: für helle Räume kann der Kalender auf hell umgestellt werden
+  // (dunkler Text auf hellen Kacheln). Standard "dark" wie bisher.
+  const isLight = config?.calendarTheme === "light";
+  const fg = isLight ? "rgba(15,23,42,0.92)" : "#ffffff";
+  const fgDim = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.5)";
+  const cardRgb = isLight ? "255,255,255" : "0,0,0";
+  const borderCls = isLight ? "border-black/10" : "border-white/10";
 
   const [fetchedEvents, setEvents] = useState<CalendarEvent[]>([]);
   // Vorschau-Beispieldaten (#42): Der Editor injiziert __demo. Echte Termine
@@ -247,7 +247,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           <div className="flex flex-col flex-1 min-w-0">
             <span className="font-bold leading-tight truncate" style={{ fontSize: '1em' }}>{t("Keine Termine an diesem Tag")}</span>
             {!hideWeekday && (
-              <span className="text-white/50 text-[0.8em] leading-tight uppercase tracking-wider">{weekdayLabel}</span>
+              <span className="text-[0.8em] leading-tight uppercase tracking-wider" style={{ color: fgDim }}>{weekdayLabel}</span>
             )}
           </div>
         </div>
@@ -256,12 +256,12 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
 
     return (
       <div key={key}
-           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] shrink-0 mb-[0.8em] opacity-50 ${hasBg ? 'backdrop-blur-md border border-white/10 shadow-xl' : ''}`}
-           style={{ backgroundColor: `rgba(0,0,0,${cardOpacity / 100})` }}
+           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] shrink-0 mb-[0.8em] opacity-50 ${hasBg ? `backdrop-blur-md border ${borderCls} shadow-xl` : ''}`}
+           style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})` }}
       >
         <div
-          className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex flex-col items-center justify-center relative overflow-hidden ${hasBg ? 'border border-white/5' : ''}`}
-          style={{ backgroundColor: `rgba(0,0,0,${cardOpacity / 100})` }}
+          className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex flex-col items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
+          style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})` }}
         >
           <span className="relative z-10 text-[0.6em] uppercase tracking-wider opacity-80">{monthLabel}</span>
           <span className="relative z-10 text-[1.4em] font-bold tracking-tight leading-none">{dateLabel}</span>
@@ -269,7 +269,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
         <div className="flex flex-col min-w-0 flex-1">
           <span className="font-bold tracking-tight text-[0.9em] leading-tight">{t("Keine Termine an diesem Tag")}</span>
           {!hideWeekday && (
-            <span className="text-white/50 text-[0.7em] font-mono tracking-wider uppercase mt-[0.2em]">{weekdayLabel}</span>
+            <span className="text-[0.7em] font-mono tracking-wider uppercase mt-[0.2em]" style={{ color: fgDim }}>{weekdayLabel}</span>
           )}
         </div>
       </div>
@@ -328,7 +328,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           </div>
           <div className="flex flex-col flex-1 min-w-0">
             <span className="font-bold leading-tight truncate" style={{ fontSize: '1em' }}>{ev.title}</span>
-            <span className="text-white/50 text-[0.8em] leading-tight">
+            <span className="text-[0.8em] leading-tight" style={{ color: fgDim }}>
               {!hideWeekday && <span className="uppercase tracking-wider">{weekdayLabel} · </span>}
               {timeStr}
             </span>
@@ -340,12 +340,12 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     // Ensure color uses proper parsing if needed, but styling allows raw hex
     return (
       <div key={ev.id}
-           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-all hover:scale-[1.02] shrink-0 mb-[0.8em] ${hasBg ? 'backdrop-blur-md border border-white/10 shadow-xl' : ''}`}
-           style={{ backgroundColor: `rgba(0,0,0,${cardOpacity / 100})`, boxShadow: hasBg ? `0 8px 32px ${accentColorForEvent}15` : 'none', borderLeft: hasBg ? `0.3em solid ${accentColorForEvent}` : 'none' }}
+           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-all hover:scale-[1.02] shrink-0 mb-[0.8em] ${hasBg ? `backdrop-blur-md border ${borderCls} shadow-xl` : ''}`}
+           style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})`, boxShadow: hasBg ? `0 8px 32px ${accentColorForEvent}15` : 'none', borderLeft: hasBg ? `0.3em solid ${accentColorForEvent}` : 'none' }}
       >
         <div
-          className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex flex-col items-center justify-center relative overflow-hidden ${hasBg ? 'border border-white/5' : ''}`}
-          style={{ backgroundColor: `rgba(0,0,0,${cardOpacity / 100})` }}
+          className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex flex-col items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
+          style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})` }}
         >
           <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: accentColorForEvent }}></div>
           {/* Card-Box: Monat klein oben, große Zahl unten. Wochentag
@@ -358,7 +358,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           <span className="font-bold tracking-tight text-[0.9em] leading-tight text-ellipsis whitespace-nowrap overflow-hidden">
             {ev.title}
           </span>
-          <span className="text-white/50 text-[0.7em] font-mono tracking-wider uppercase mt-[0.2em]">
+          <span className="text-[0.7em] font-mono tracking-wider uppercase mt-[0.2em]" style={{ color: fgDim }}>
             {!hideWeekday && <>{weekdayLabel} · </>}{timeStr}
           </span>
         </div>
@@ -412,7 +412,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
       const dayEvents = groups.get(key)!.slice(0, limit);
       return (
         <div key={key} className="mb-[0.9em]">
-          <div className="uppercase tracking-wider font-semibold text-[0.72em] text-white/55 mb-[0.45em]">{head}</div>
+          <div className="uppercase tracking-wider font-semibold text-[0.72em] mb-[0.45em]" style={{ color: fgDim }}>{head}</div>
           <div className="flex flex-col gap-[0.4em]">
             {dayEvents.map((ev) => {
               const start = parseISO(ev.start);
@@ -426,10 +426,10 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                 <div key={ev.id} className="flex items-start gap-[0.6em]">
                   <span className="shrink-0 w-[0.25em] self-stretch rounded-full mt-[0.15em]" style={{ backgroundColor: color }} />
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className={`font-semibold leading-tight truncate ${isMinimal ? "text-[0.95em]" : "text-[0.9em]"}`}>{ev.title}</span>
-                    <span className="text-white/50 text-[0.72em] leading-tight">
+                    <span className={`font-semibold leading-tight truncate ${isMinimal ? "text-[0.95em]" : "text-[0.9em]"}`} style={{ color: fg }}>{ev.title}</span>
+                    <span className="text-[0.72em] leading-tight" style={{ color: fgDim }}>
                       {ev.isAllDay
-                        ? <span className="uppercase tracking-wider text-[0.9em] rounded px-[0.35em] py-[0.05em] bg-white/10">{t("Ganztägig")}</span>
+                        ? <span className={`uppercase tracking-wider text-[0.9em] rounded px-[0.35em] py-[0.05em] ${isLight ? "bg-black/10" : "bg-white/10"}`}>{t("Ganztägig")}</span>
                         : timeStr}
                     </span>
                   </div>
@@ -463,7 +463,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
         {/* Wochentage */}
         <div className="grid grid-cols-7 shrink-0 mb-[0.3em]">
           {weekdayHead.map((d) => (
-            <div key={+d} className="text-center uppercase tracking-wider text-white/45 font-medium text-[0.7em]">
+            <div key={+d} className="text-center uppercase tracking-wider font-medium text-[0.7em]" style={{ color: fgDim }}>
               {format(d, "eee", { locale: dfLocale })}
             </div>
           ))}
@@ -478,9 +478,11 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
             const shown = dayEvents.slice(0, perCell);
             const extra = dayEvents.length - shown.length;
             return (
-              <div key={key} className={`flex flex-col min-h-0 overflow-hidden rounded-[0.4em] px-[0.25em] py-[0.15em] ${inMonth ? "bg-white/[0.03]" : "bg-transparent"}`}>
+              <div key={key} className="flex flex-col min-h-0 overflow-hidden rounded-[0.4em] px-[0.25em] py-[0.15em]"
+                   style={{ backgroundColor: inMonth ? `rgba(${isLight ? "0,0,0" : "255,255,255"},0.04)` : "transparent" }}>
                 <div className="flex justify-end shrink-0">
-                  <span className={`text-[0.72em] font-semibold leading-none rounded-full w-[1.5em] h-[1.5em] flex items-center justify-center ${today ? "bg-red-500 text-white" : inMonth ? "text-white/85" : "text-white/30"}`}>
+                  <span className={`text-[0.72em] font-semibold leading-none rounded-full w-[1.5em] h-[1.5em] flex items-center justify-center ${today ? "bg-red-500 text-white" : ""}`}
+                        style={today ? undefined : { color: inMonth ? fg : (isLight ? "rgba(15,23,42,0.35)" : "rgba(255,255,255,0.3)") }}>
                     {format(d, "d")}
                   </span>
                 </div>
@@ -498,14 +500,14 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     return (
                       <div key={ev.id} className="flex items-center gap-[0.25em] text-[0.6em] leading-[1.5] truncate">
                         <span className="shrink-0 rounded-full w-[0.4em] h-[0.4em]" style={{ backgroundColor: color }} />
-                        <span className="truncate text-white/85">
-                          <span className="text-white/55">{isValid(start) ? format(start, timePattern) : ""}</span> {ev.title}
+                        <span className="truncate" style={{ color: fg }}>
+                          <span style={{ color: fgDim }}>{isValid(start) ? format(start, timePattern) : ""}</span> {ev.title}
                         </span>
                       </div>
                     );
                   })}
                   {extra > 0 && (
-                    <div className="text-[0.58em] text-white/45 leading-none pl-[0.3em]">+{extra}</div>
+                    <div className="text-[0.58em] leading-none pl-[0.3em]" style={{ color: fgDim }}>+{extra}</div>
                   )}
                 </div>
               </div>
@@ -516,53 +518,22 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     );
   };
 
-  const body = error ? (
-    <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
-  ) : isMonth ? (
-    renderMonth()
-  ) : (
-    <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-      {legacyAgenda && renderAgenda()}
-      {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
-      {view === "list" && events.length === 0 && !hideOnEmpty && (
-        <div className="opacity-50 text-[0.8em] mt-2">{t("Keine anstehenden Termine")}</div>
-      )}
-      {view === "list" && events.map(renderEvent)}
-    </div>
-  );
-
-  // Transparent (Standard): unverändertes Verhalten wie bisher.
-  if (bgMode === "none") {
-    return (
-      <div className={`flex flex-col drop-shadow-md w-full h-full overflow-hidden relative ${isMonth ? "" : "mt-[1em] justify-center"}`}>
-        {body}
-      </div>
-    );
-  }
-
-  // Eigener Panel-Hintergrund: deckende Fläche (solid) oder Foto-Kopf (photo).
-  // Die deckende Fläche verdrängt den Wallpaper-Hintergrund und macht die
-  // Termine lesbar; im Foto-Modus sitzt oben ein Bild-Streifen (eingebettetes
-  // Bild-Widget), darunter füllt der Kalender den Rest.
-  const imgCfg = {
-    immichAlbumId: config?.calImageAlbum ?? "",
-    immichSource: config?.calImageSource || "global",
-    intervalSec: Math.max(5, Number(config?.calImageInterval) || 30),
-    fit: "cover",
-    cornerRadius: 0,
-  };
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden relative">
-      {bgMode === "photo" && (
-        <div className="shrink-0 w-full overflow-hidden relative" style={{ height: `${headerPct}%` }}>
-          <ImageWidget config={imgCfg} dashboardId={dashboardId} />
+    <div className={`flex flex-col drop-shadow-md w-full h-full overflow-hidden relative ${isMonth ? "" : "mt-[1em] justify-center"}`} style={{ color: fg }}>
+      {error ? (
+        <div className="text-red-400/80 text-[0.8em] mt-2">{error}</div>
+      ) : isMonth ? (
+        renderMonth()
+      ) : (
+        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-start" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {legacyAgenda && renderAgenda()}
+          {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
+          {view === "list" && events.length === 0 && !hideOnEmpty && (
+            <div className="opacity-50 text-[0.8em] mt-2" style={{ color: fgDim }}>{t("Keine anstehenden Termine")}</div>
+          )}
+          {view === "list" && events.map(renderEvent)}
         </div>
       )}
-      <div className="flex-1 min-h-0 relative overflow-hidden" style={{ backgroundColor: "rgba(12,16,26,0.92)" }}>
-        <div className={`w-full h-full flex flex-col overflow-hidden ${isMonth ? "p-[0.6em]" : "px-[0.8em] pt-[0.6em]"}`}>
-          {body}
-        </div>
-      </div>
     </div>
   );
 }
