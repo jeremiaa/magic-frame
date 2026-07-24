@@ -58,16 +58,48 @@ export async function GET(
       return new NextResponse(null, { status: 204 });
     }
 
-    // entity_picture is a path relative to the HA base (already token-signed).
-    const artUrl = pic.startsWith("http") ? pic : `${base}${pic}`;
-    const upstream = await fetch(artUrl, {
-      headers: auth,
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!upstream.ok) {
+    // Candidate cover sources, tried in order:
+    //  1) HA's media_player_proxy (entity_picture, already token-signed) —
+    //     works for Spotify/Sonos/etc. where HA has the image cached.
+    //  2) the `cache=` param — for AirPlay/Apple/HomePod players HA's proxy
+    //     404s (the image was never cached), but HA appends the REAL source
+    //     URL here as a cache-buster. It carries CDN size placeholders
+    //     ({w}x{h}bb.{f}) that we resolve to a concrete size. Fetched WITHOUT
+    //     the HA token (it's an external origin).
+    const candidates: Array<{ url: string; withAuth: boolean }> = [];
+    candidates.push({ url: pic.startsWith("http") ? pic : `${base}${pic}`, withAuth: true });
+    const cacheIdx = pic.indexOf("cache=");
+    if (cacheIdx >= 0) {
+      // cache= is the last param HA appends and is NOT url-encoded, so take
+      // the raw remainder verbatim (its value can contain '/' and ':').
+      let raw = pic.slice(cacheIdx + "cache=".length);
+      if (/^https?:\/\//i.test(raw)) {
+        raw = raw.replace(/\{w\}/g, "512").replace(/\{h\}/g, "512").replace(/\{f\}/g, "jpg");
+        candidates.push({ url: raw, withAuth: false });
+      }
+    }
+
+    let upstream: Response | null = null;
+    let lastStatus = 0;
+    for (const c of candidates) {
+      try {
+        const r = await fetch(c.url, {
+          headers: c.withAuth ? auth : undefined,
+          cache: "no-store",
+          signal: AbortSignal.timeout(8000),
+        });
+        lastStatus = r.status;
+        if (r.ok && (r.headers.get("content-type") || "").toLowerCase().startsWith("image")) {
+          upstream = r;
+          break;
+        }
+      } catch {
+        /* try next candidate */
+      }
+    }
+    if (!upstream) {
       return NextResponse.json(
-        { error: `Artwork fetch returned ${upstream.status}` },
+        { error: `Artwork fetch returned ${lastStatus || "no response"}` },
         { status: 502 },
       );
     }
