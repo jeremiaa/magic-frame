@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import type { WidgetLayoutItem } from '../_types';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import HAEntityInput from "../_components/HAEntityInput";
 
 type CalendarInspectorProps = {
   widget: WidgetLayoutItem;
@@ -157,7 +158,7 @@ export default function CalendarInspector({
   );
 }
 
-type FeedType = "ical" | "google" | "microsoft";
+type FeedType = "ical" | "google" | "microsoft" | "homeassistant";
 
 type Feed = {
   id?: string;
@@ -293,6 +294,7 @@ function FeedsEditor({
               <option value="ical">{t("iCal / Webcal")}</option>
               <option value="google">{t("Google-Konto")}</option>
               <option value="microsoft">Microsoft 365</option>
+              <option value="homeassistant">Home Assistant</option>
             </select>
             <FeedBody
               feed={feed}
@@ -307,7 +309,7 @@ function FeedsEditor({
         </div>
       ))}
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <button
           onClick={() =>
             write([
@@ -361,6 +363,23 @@ function FeedsEditor({
         >
           + Microsoft
         </button>
+        <button
+          onClick={() =>
+            write([
+              ...feeds,
+              {
+                id: `feed-${Date.now()}`,
+                label: "Home Assistant",
+                type: "homeassistant",
+                calendarId: "",
+                color: "#10B981",
+              },
+            ])
+          }
+          className="h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-emerald-500/40 rounded-md transition-colors"
+        >
+          + HA
+        </button>
       </div>
     </div>
   );
@@ -383,6 +402,18 @@ function FeedBody({
         placeholder="https://p01-calendars.icloud.com/…"
         onChange={(e) => onChange({ url: e.target.value })}
         className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs font-mono rounded-md px-3 h-9 focus:outline-none focus:border-violet-500"
+      />
+    );
+  }
+
+  if (feed.type === "homeassistant") {
+    return (
+      <HAEntityInput
+        value={feed.calendarId ?? ""}
+        onChange={(entityId) => onChange({ calendarId: entityId })}
+        domains={["calendar"]}
+        placeholder="calendar.familie"
+        className="flex-1 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/80 text-xs font-mono rounded-md px-3 h-9 focus:outline-none focus:border-emerald-500"
       />
     );
   }

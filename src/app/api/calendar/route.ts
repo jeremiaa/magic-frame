@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import ICAL from "ical.js";
 import { getSession } from "@/lib/auth/session";
-import { fetchGoogleEvents, fetchMicrosoftEvents } from "@/lib/calendar-auth/providers";
+import {
+  fetchGoogleEvents,
+  fetchMicrosoftEvents,
+  fetchHomeAssistantEvents,
+} from "@/lib/calendar-auth/providers";
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10 * 60 * 1000;
@@ -10,7 +14,7 @@ type FeedInput = {
   id?: string;
   label?: string;
   color?: string;
-  type?: "ical" | "google" | "microsoft";
+  type?: "ical" | "google" | "microsoft" | "homeassistant";
   url?: string;
   accountId?: string;
   calendarId?: string;
@@ -266,6 +270,14 @@ export async function GET(request: NextRequest) {
               userId,
               accountId: feed.accountId,
               calendarId: feed.calendarId || "",
+              windowStart,
+              windowEnd,
+              limit: perFeedLimit,
+            });
+          } else if (type === "homeassistant") {
+            if (!feed.calendarId) throw new Error("missing_entityId");
+            events = await fetchHomeAssistantEvents({
+              entityId: feed.calendarId,
               windowStart,
               windowEnd,
               limit: perFeedLimit,

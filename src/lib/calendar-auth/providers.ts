@@ -1,5 +1,6 @@
 import "server-only";
 import { getFreshAccessToken } from "./store";
+import { getAppSettings } from "@/lib/settings/store";
 
 export type ProviderEvent = {
   id: string;
@@ -147,4 +148,57 @@ export async function fetchMicrosoftCalendars(params: {
     primary: !!c.isDefaultCalendar,
     backgroundColor: c.hexColor,
   }));
+}
+
+// Home Assistant has no per-user OAuth account — the same global haUrl/haToken
+// from Integrations (see src/app/api/ha/entities/route.ts) is used for every
+// feed, keyed by the calendar entity id instead of an accountId.
+export async function fetchHomeAssistantEvents(params: {
+  entityId: string;
+  windowStart: Date;
+  windowEnd: Date;
+  limit: number;
+}): Promise<ProviderEvent[]> {
+  const settings = await getAppSettings();
+  if (!settings.haUrl || !settings.haToken) throw new Error("ha_not_configured");
+
+  const base = settings.haUrl.replace(/\/+$/, "");
+  const url = new URL(`${base}/api/calendars/${encodeURIComponent(params.entityId)}`);
+  url.searchParams.set("start", params.windowStart.toISOString());
+  url.searchParams.set("end", params.windowEnd.toISOString());
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${settings.haToken}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`ha_http_${res.status}:${body.slice(0, 120)}`);
+  }
+  const items = await res.json();
+  if (!Array.isArray(items)) return [];
+
+  // HA serializes CalendarEvent.start/end as either {dateTime: "..."} for
+  // timed events or {date: "YYYY-MM-DD"} for all-day ones (same shape as the
+  // Google feed above) — but older/customized integrations have been known
+  // to return a plain ISO string instead of the nested object, so accept both.
+  const pick = (v: any): { value: string | null; isDate: boolean } => {
+    if (typeof v === "string") return { value: v, isDate: false };
+    if (v?.dateTime) return { value: v.dateTime, isDate: false };
+    if (v?.date) return { value: `${v.date}T00:00:00`, isDate: true };
+    return { value: null, isDate: false };
+  };
+
+  return items.slice(0, params.limit).map((ev: any) => {
+    const start = pick(ev.start);
+    const end = pick(ev.end);
+    return {
+      id: ev.uid || `${params.entityId}-${start.value ?? Math.random()}`,
+      title: ev.summary ?? "(no title)",
+      start: start.value ? new Date(start.value).toISOString() : new Date().toISOString(),
+      end: end.value ? new Date(end.value).toISOString() : new Date().toISOString(),
+      isAllDay: start.isDate,
+    };
+  });
 }

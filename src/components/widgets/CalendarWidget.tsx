@@ -19,7 +19,7 @@ type FeedConfig = {
   id?: string;
   label?: string;
   color?: string;
-  type?: "ical" | "google" | "microsoft";
+  type?: "ical" | "google" | "microsoft" | "homeassistant";
   url?: string;
   accountId?: string;
   calendarId?: string;
@@ -29,6 +29,7 @@ const isValidFeed = (f: any): boolean => {
   if (!f || typeof f !== "object") return false;
   const type = f.type ?? "ical";
   if (type === "ical") return typeof f.url === "string" && f.url.trim() !== "";
+  if (type === "homeassistant") return typeof f.calendarId === "string" && f.calendarId.trim() !== "";
   return typeof f.accountId === "string" && f.accountId.trim() !== "";
 };
 
