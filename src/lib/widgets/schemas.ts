@@ -36,6 +36,9 @@ const baseConfig = z
     // ausblenden (z.B. Türklingel). 0/leer = sichtbar solange die Entity aktiv ist.
     autoHideSeconds: z.number().optional(),
     align: z.enum(["left", "center", "right"]).optional(),
+    // Randlos-Modus: true = Widget schwebt als runde Karte ÜBER dem
+    // Hintergrund-Raster statt eckig anzudocken. Ohne Randlos wirkungslos.
+    floatingCard: z.boolean().optional(),
   })
   .passthrough();
 
@@ -55,6 +58,9 @@ const clockConfig = baseConfig.extend({
   showWind: z.boolean().optional(),
   showUv: z.boolean().optional(),
   iconSet: z.string().optional(),
+  meteoconsStyle: z.enum(["fill", "line"]).optional(),
+  meteoconsAnimated: z.boolean().optional(),
+  meteoconsMoonPhase: z.boolean().optional(),
   unitTemp: z.enum(["celsius", "fahrenheit"]).optional(),
   statsSize: z.number().optional(),
 });
@@ -65,6 +71,23 @@ const weatherConfig = baseConfig.extend({
   location: z.string().optional(),
   forecastLayout: z.enum(["horizontal", "vertical"]).optional(),
   iconSet: z.string().optional(),
+  // Meteocons (MIT): Stil fill/line + optionale SMIL-Animation. Nur relevant
+  // wenn iconSet === "meteocons"; Defaults = fill / statisch.
+  meteoconsStyle: z.enum(["fill", "line"]).optional(),
+  meteoconsAnimated: z.boolean().optional(),
+  // Echte Mondphase im klaren Nachthimmel (nur Meteocons). Default an.
+  meteoconsMoonPhase: z.boolean().optional(),
+  // Opt-in: Info-Icons (UV/Wind/Feuchte/Sonnenzeiten) im Meteocons-Stil,
+  // wertbasiert (uv-index-N, wind-beaufort-N). Default aus = Lucide.
+  meteoconsStats: z.boolean().optional(),
+  // Opt-in: auch Vorhersage-/Stunden-Icons animieren (Meteocons + 3D-Set).
+  // Default aus — viele parallele Animationen kosten auf schwachen Displays
+  // Leistung, deshalb animiert sonst nur das Haupticon.
+  iconAnimatedAll: z.boolean().optional(),
+  // Größe der Vorschau-/Stunden-Icons in Prozent (Default 100).
+  forecastIconSize: z.number().optional(),
+  // Größe des Haupticons (aktuelles Wetter) in Prozent (Default 100).
+  currentIconSize: z.number().optional(),
   hideForecast: z.boolean().optional(),
   showHumidity: z.boolean().optional(),
   showWind: z.boolean().optional(),
@@ -82,6 +105,11 @@ const weatherConfig = baseConfig.extend({
 
 const calendarConfig = baseConfig.extend({
   icalUrl: z.string().optional(),
+  // Monats-Ansicht: Titel (Monat+Jahr, default an), KW-Spalte (opt-in),
+  // Termin-Schrift-Skalierung (0.6–2, default 1).
+  showMonthTitle: z.boolean().optional(),
+  showWeekNumbers: z.boolean().optional(),
+  monthTextScale: z.number().optional(),
   limit: z.number().optional(),
   days: z.number().optional(),
   hideOnEmpty: z.boolean().optional(),
@@ -251,6 +279,36 @@ const sensorConfig = baseConfig
     showSparkline: z.boolean().optional(),
     sparklineHours: z.number().optional(),
     entities: z.array(sensorSlot).optional(),
+  })
+  .passthrough();
+
+// EnvironmentWidget — Pollen/Luftqualität/UV/Solar/Wind via Open-Meteo.
+// Kachel-Toggles: AQI/PM2.5/Pollen default an (≠ false), Rest default aus (=== true).
+const environmentConfig = baseConfig
+  .extend({
+    lat: z.string().optional(),
+    lon: z.string().optional(),
+    aqiScale: z.enum(["european", "us"]).optional(),
+    unitWind: z.enum(["kmh", "mph", "ms", "kn"]).optional(),
+    showAqi: z.boolean().optional(),
+    showPm25: z.boolean().optional(),
+    showPm10: z.boolean().optional(),
+    showOzone: z.boolean().optional(),
+    showNo2: z.boolean().optional(),
+    showPollen: z.boolean().optional(),
+    hidePollenZero: z.boolean().optional(),
+    showUv: z.boolean().optional(),
+    showSolar: z.boolean().optional(),
+    showWind: z.boolean().optional(),
+    cardTheme: z.enum(["dark", "light", "auto"]).optional(),
+    cardOpacity: z.number().optional(),
+    cardBlur: z.number().optional(),
+    // Meteocons als Kachel-Icons (Default an; UV/Wind wertbasiert). Aus = Lucide.
+    meteoconsIcons: z.boolean().optional(),
+    meteoconsStyle: z.enum(["fill", "line"]).optional(),
+    // Eigene HA-Sensoren als Zusatz-Kacheln (DWD Pollenflug, PV, CO2 …) —
+    // gleiche Slot-Form wie im Sensor-Widget.
+    haEntities: z.array(sensorSlot).optional(),
   })
   .passthrough();
 
@@ -455,6 +513,9 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("SensorWidget.tsx"), config: sensorConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("EnvironmentWidget.tsx"), config: environmentConfig })
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("CameraWidget.tsx"), config: cameraConfig })

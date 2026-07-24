@@ -1,0 +1,11 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-low">
+<g id="Solar Panel">
+<rect id="Panel" x="39" y="40" width="34" height="48" rx="5" stroke="#304878" stroke-width="2"/>
+<path id="Lines" d="M40 55.5263H72M40 71.2632H72M56 41L56 87" stroke="#304878" stroke-width="2"/>
+</g>
+<g id="Solar Level">
+<path id="Level 1" d="M87 87V89H83V87H87ZM88 86V82C88 81.4477 87.5523 81 87 81H83C82.4477 81 82 81.4477 82 82V86C82 86.5523 82.4477 87 83 87V89C81.3949 89 80.0842 87.7394 80.0039 86.1543L80 86V82C80 80.3431 81.3431 79 83 79H87L87.1543 79.0039C88.7394 79.0842 90 80.3949 90 82V86L89.9961 86.1543C89.9184 87.6883 88.6883 88.9184 87.1543 88.9961L87 89V87C87.5523 87 88 86.5523 88 86Z" fill="#F8AF18"/>
+</g>
+</g>
+</svg>

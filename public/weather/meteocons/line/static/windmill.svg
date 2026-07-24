@@ -1,0 +1,35 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="windmill" clip-path="url(#clip0_2045_39221)">
+<g id="Windmill" clip-path="url(#clip1_2045_39221)">
+<g id="Mask group">
+<mask id="mask0_2045_39221" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 0H0V128H128V0ZM64 66C66.7614 66 69 63.7614 69 61C69 58.2386 66.7614 56 64 56C61.2386 56 59 58.2386 59 61C59 63.7614 61.2386 66 64 66Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_39221)">
+<path id="Pole" fill-rule="evenodd" clip-rule="evenodd" d="M62 96V64H66V96H62Z" fill="#CBD5E1"/>
+</g>
+</g>
+<g id="Mask group_2">
+<mask id="mask1_2045_39221" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Mask_2" fill-rule="evenodd" clip-rule="evenodd" d="M128 0H0V128H128V0ZM64 66C66.7614 66 69 63.7614 69 61C69 58.2386 66.7614 56 64 56C61.2386 56 59 58.2386 59 61C59 63.7614 61.2386 66 64 66Z" fill="black"/>
+</mask>
+<g mask="url(#mask1_2045_39221)">
+<g id="Blades">
+<path id="Blade" d="M64 34.5C64.5455 34.5 65.32 35.0165 65.4853 36.5225L67.4775 54.6582C67.5646 55.4515 67.395 56.1915 67.0879 56.7178C66.777 57.2504 66.3716 57.5 65.9912 57.5H62.0088C61.6284 57.5 61.223 57.2504 60.9121 56.7178C60.605 56.1915 60.4354 55.4515 60.5225 54.6582L62.5146 36.5225C62.68 35.0165 63.4545 34.5 64 34.5Z" fill="white" stroke="#F1F5F9"/>
+<path id="Blade_2" d="M86.9495 74.25C86.6768 74.7224 85.8422 75.1348 84.4554 74.5251L67.7533 67.1825C67.0227 66.8613 66.4666 66.3444 66.1644 65.8153C65.8586 65.2798 65.8452 64.8038 66.0354 64.4744L68.0266 61.0255C68.2167 60.6961 68.6357 60.4698 69.2523 60.4669C69.8616 60.464 70.5873 60.6872 71.2308 61.1593L85.9407 71.9524C87.1622 72.8486 87.2223 73.7775 86.9495 74.25Z" fill="white" stroke="#F1F5F9"/>
+<path id="Blade_3" d="M41.0502 74.25C40.7774 73.7776 40.8375 72.8486 42.059 71.9524L56.7689 61.1593C57.4124 60.6872 58.1381 60.4641 58.7474 60.4669C59.3641 60.4699 59.783 60.6962 59.9732 61.0256L61.9644 64.4745C62.1546 64.8039 62.1411 65.2798 61.8353 65.8153C61.5331 66.3444 60.977 66.8613 60.2465 67.1825L43.5444 74.5251C42.1575 75.1349 41.323 74.7225 41.0502 74.25Z" fill="white" stroke="#F1F5F9"/>
+</g>
+</g>
+</g>
+<circle id="Core" cx="64" cy="61" r="4.5" stroke="#E2E8F0"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_39221">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_2045_39221">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

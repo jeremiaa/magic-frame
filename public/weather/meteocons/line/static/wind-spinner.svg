@@ -1,0 +1,19 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="wind-spinner" clip-path="url(#clip0_2045_39223)">
+<g id="Wind Spinner">
+<path id="Pole" fill-rule="evenodd" clip-rule="evenodd" d="M62 96V64H66V96H62Z" fill="#CBD5E1"/>
+<g id="Blades">
+<path id="Blade 4" d="M50.6665 73C44.7755 73 39.9999 67.6274 39.9999 61L63.9999 61L63.9999 73L50.6665 73Z" fill="#1D4ED8"/>
+<path id="Blade 3" d="M75.9997 74.3333C75.9997 80.2244 70.6272 85 63.9997 85L63.9997 61L75.9997 61L75.9997 74.3333Z" fill="#FACC15"/>
+<path id="Blade 2" d="M77.3331 49C83.2241 49 87.9998 54.3726 87.9998 61L63.9998 61L63.9998 49L77.3331 49Z" fill="#16A34A"/>
+<path id="Blade 1" d="M51.9999 47.6667C51.9999 41.7756 57.3725 37 63.9999 37V61H51.9999V47.6667Z" fill="#DC2626"/>
+</g>
+<circle id="Core" cx="64" cy="61" r="4" fill="white"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_39223">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

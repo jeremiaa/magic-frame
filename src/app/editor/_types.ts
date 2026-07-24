@@ -18,11 +18,33 @@ export interface WidgetLayoutItem {
   offsetY?: number;
   responsiveText?: boolean;
   defaultHidden?: boolean;
+  floatingCard?: boolean;
   showHumidity?: boolean;
   showWind?: boolean;
+  showUv?: boolean;
+  unitWind?: 'kmh' | 'mph' | 'ms' | 'kn';
     subtextSize?: number;
     forecastLayout?: 'horizontal' | 'vertical';
     iconSet?: string;
+    meteoconsStyle?: 'fill' | 'line';
+    meteoconsAnimated?: boolean;
+    meteoconsMoonPhase?: boolean;
+    meteoconsStats?: boolean;
+    iconAnimatedAll?: boolean;
+    forecastIconSize?: number;
+    currentIconSize?: number;
+    // EnvironmentWidget (Umwelt): Kachel-Toggles + AQI-Skala
+    aqiScale?: 'european' | 'us';
+    showAqi?: boolean;
+    showPm25?: boolean;
+    showPm10?: boolean;
+    showOzone?: boolean;
+    showNo2?: boolean;
+    showPollen?: boolean;
+    hidePollenZero?: boolean;
+    showSolar?: boolean;
+    haEntities?: Array<{ entityId?: string; icon?: string; label?: string; color?: string; unit?: string; decimals?: number }>;
+    meteoconsIcons?: boolean;
     hideForecast?: boolean;
     hideSeconds?: boolean;
     showMiniWeather?: boolean;
@@ -93,6 +115,9 @@ export interface WidgetLayoutItem {
     hideOnEmpty?: boolean;
     // Calendar views (DAKboard-Parität)
     calendarView?: 'list' | 'agenda' | 'month';
+    showMonthTitle?: boolean;
+    showWeekNumbers?: boolean;
+    monthTextScale?: number;
     entityId?: string;
     icon?: string;
     hideWhen?: string;
@@ -280,6 +305,7 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "MessagesWidget.tsx": "Nachrichten",
   "ImageWidget.tsx": "Bild",
   "SensorWidget.tsx": "Sensor",
+  "EnvironmentWidget.tsx": "Umwelt",
   "ShoppingListWidget.tsx": "Einkaufsliste",
   "TodosWidget.tsx": "Todos",
   "CameraWidget.tsx": "Kamera",

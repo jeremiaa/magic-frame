@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/widgets/WidgetIcon";
 import { Search, X } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { METEOCON_NAMES } from "@/lib/weather/meteocons-catalog";
 
 type IconPickerProps = {
   value: string;
@@ -21,7 +22,7 @@ type IconPickerProps = {
   defaultPrefix?: "mdi" | "lucide";
 };
 
-type SetFilter = "mdi" | "lucide" | "all";
+type SetFilter = "mdi" | "lucide" | "meteocons" | "all";
 
 const DEFAULT_QUICK: string[] = [
   "lucide:power",
@@ -46,11 +47,22 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
   // Active set filter — starts at the caller's preferred prefix, but the user
   // can flip to "lucide" or "all" via the pills above the search box.
   const [setFilter, setSetFilter] = useState<SetFilter>(defaultPrefix ?? "all");
+  // Meteocons-Stil (fill/line) — nur relevant, wenn der Meteocons-Filter aktiv ist.
+  const [mcStyle, setMcStyle] = useState<"fill" | "line">("fill");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    // Meteocons: rein LOKALE Suche über die gebündelten Dateien — keine API.
+    // Ohne Suchbegriff wird der komplette Katalog (122 Icons) gezeigt.
+    if (setFilter === "meteocons") {
+      const q = query.trim().toLowerCase();
+      const names = q ? METEOCON_NAMES.filter((n) => n.includes(q)) : METEOCON_NAMES;
+      setResults(names.map((n) => `mc:${mcStyle}/${n}`));
+      setLoading(false);
+      return;
+    }
     if (!query || query.trim().length < 2) {
       setResults([]);
       setLoading(false);
@@ -81,10 +93,10 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, setFilter]);
+  }, [query, setFilter, mcStyle]);
 
   const picks = quickPicks && quickPicks.length > 0 ? quickPicks : DEFAULT_QUICK;
-  const showResults = query.trim().length >= 2;
+  const showResults = query.trim().length >= 2 || setFilter === "meteocons";
 
   return (
     <div className="space-y-2">
@@ -119,9 +131,9 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
           background (deep-black inspector, lighter accordion card, etc.). */}
       <div className="flex items-center gap-1.5">
         <div className="flex shrink-0 bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 rounded-lg p-0.5 text-[10px] font-medium">
-          {(["mdi", "lucide", "all"] as SetFilter[]).map((f) => {
+          {(["mdi", "lucide", "meteocons", "all"] as SetFilter[]).map((f) => {
             const isActive = setFilter === f;
-            const labelText = f === "mdi" ? "MDI" : f === "lucide" ? "Lucide" : t("Alle");
+            const labelText = f === "mdi" ? "MDI" : f === "lucide" ? "Lucide" : f === "meteocons" ? "Meteo" : t("Alle");
             return (
               <button
                 key={f}
@@ -144,7 +156,7 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("Icon suchen (Iconify)…")}
+            placeholder={setFilter === "meteocons" ? t("Meteocons durchsuchen (lokal)…") : t("Icon suchen (Iconify)…")}
             className="w-full bg-[var(--mf-elev)]/5 border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-lg pl-8 pr-8 h-8 focus:outline-none focus:border-cyan-500"
           />
           {query && (
@@ -158,6 +170,22 @@ export default function IconPicker({ value, onChange, placeholder, quickPicks, l
           )}
         </div>
       </div>
+
+      {setFilter === "meteocons" && (
+        <div className="flex items-center gap-1.5">
+          {(["fill", "line"] as const).map((s) => (
+            <button key={s} type="button" onClick={() => setMcStyle(s)}
+              className={`px-2.5 h-6 rounded-md text-[10px] font-medium transition-colors border ${
+                mcStyle === s
+                  ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-200"
+                  : "border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
+              }`}>
+              {s === "fill" ? t("Gefüllt") : t("Umriss")}
+            </button>
+          ))}
+          <span className="text-[10px] text-[var(--mf-fg)]/35">{t("122 Icons, lokal gebündelt — funktioniert offline")}</span>
+        </div>
+      )}
 
       {showResults ? (
         loading ? (

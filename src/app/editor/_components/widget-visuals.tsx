@@ -17,6 +17,7 @@ import {
   Rss,
   QrCode,
   Activity,
+  Leaf,
 } from "lucide-react";
 
 // Einheitliche Optik pro Widget-Typ: Icon + Akzentfarbe. Wird von der
@@ -41,6 +42,7 @@ export const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: st
   "RssWidget.tsx":             { hex: "#f59e0b", glow: "rgba(245,158,11,0.25)",  tint: "rgba(245,158,11,0.12)"  }, // amber
   "QrWidget.tsx":              { hex: "#06b6d4", glow: "rgba(6,182,212,0.25)",   tint: "rgba(6,182,212,0.12)"   }, // cyan
   "StatusWidget.tsx":          { hex: "#0ea5e9", glow: "rgba(14,165,233,0.25)",  tint: "rgba(14,165,233,0.12)"  }, // sky
+  "EnvironmentWidget.tsx":     { hex: "#84cc16", glow: "rgba(132,204,22,0.25)",  tint: "rgba(132,204,22,0.12)"  }, // lime
 };
 
 export const DEFAULT_ACCENT = { hex: "#64748b", glow: "rgba(100,116,139,0.2)", tint: "rgba(100,116,139,0.1)" };
@@ -82,6 +84,8 @@ export function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <QrCode size={size} />;
     case "StatusWidget.tsx":
       return <Activity size={size} />;
+    case "EnvironmentWidget.tsx":
+      return <Leaf size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":

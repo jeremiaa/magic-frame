@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-night" clip-path="url(#clip0_3086_22930)">
+<g id="Mask group">
+<mask id="mask0_3086_22930" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Solar Panel Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 128H0V0H128V128ZM52 35C46.4772 35 42 39.4772 42 45V83C42 88.5229 46.4772 93 52 93H76C81.5228 93 86 88.5228 86 83V45C86 39.4771 81.5228 35 76 35H52Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_3086_22930)">
+<g id="Moon">
+<path id="Moon_2" d="M77.766 29C71.1498 29.714 66 35.241 66 41.9586C66 49.1608 71.918 55 79.2177 55C85.371 55 90.5267 50.8459 92 45.2293C83.2173 46.171 75.4773 37.7199 77.766 29Z" fill="#72B9D5"/>
+</g>
+</g>
+</g>
+<g id="Solar Panel">
+<rect id="Panel" x="47" y="40" width="34" height="48" rx="5" stroke="#304878" stroke-width="2"/>
+<path id="Lines" d="M48 55.5263H80M48 71.2632H80M64 41L64 87" stroke="#304878" stroke-width="2"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3086_22930">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

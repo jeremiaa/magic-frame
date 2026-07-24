@@ -1,0 +1,22 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="flag-rain" clip-path="url(#clip0_1837_4491)">
+<g id="Flag" clip-path="url(#clip1_1837_4491)">
+<g id="Pole">
+<path id="Vector" d="M44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9533 33.0514 46.8674 33.3033C46.563 34.1953 46 35.0504 46 35.9929V96H43V35.9929C43 35.0504 42.437 34.1953 42.1326 33.3033C42.0467 33.0514 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="#CBD5E1"/>
+</g>
+<rect id="Flag_2" x="50.5" y="32.5" width="23" height="23" rx="2.5" fill="url(#paint0_linear_1837_4491)" stroke="#1D4ED8"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1837_4491" x1="62" y1="32" x2="62" y2="56" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2563EB"/>
+<stop offset="1" stop-color="#1D4ED8"/>
+</linearGradient>
+<clipPath id="clip0_1837_4491">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_1837_4491">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

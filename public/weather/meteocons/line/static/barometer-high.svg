@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="barometer-high">
+<g id="Barometer">
+<circle id="Housing" cx="64" cy="64" r="38.5" stroke="#1E293B" stroke-width="3"/>
+<g id="Lines">
+<path id="Line 1" d="M64 33V42" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 7" d="M42.0797 42.0797L48.4437 48.4436" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 5" d="M85.9203 42.0797L79.5563 48.4436" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 3" d="M95 64L86 64" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 8" d="M79.5563 79.5564L85.9203 85.9203" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 6" d="M48.4437 79.5564L42.0797 85.9203" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 4" d="M42 64L33 64" stroke="#1E293B" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
+<g id="Barometer_2">
+<g id="Pointer">
+<circle id="Needle Mount" cx="64" cy="64" r="5" fill="#EF4444"/>
+<rect id="Needle" x="62" y="40" width="4" height="33" rx="2" fill="#EF4444"/>
+<circle id="Holder" cx="64" cy="64" r="3" fill="#475569"/>
+</g>
+</g>
+</g>
+</svg>

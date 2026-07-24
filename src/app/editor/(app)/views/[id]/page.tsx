@@ -38,6 +38,7 @@ import {
   Rss,
   QrCode,
   Activity,
+  Leaf,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -74,6 +75,7 @@ const WIDGET_CATALOG: {
   { type: "TodosWidget.tsx", label: "Todos", icon: <ClipboardList size={16} /> },
   { type: "ImageWidget.tsx", label: "Bild", icon: <ImageIcon size={16} /> },
   { type: "SensorWidget.tsx", label: "Sensor", icon: <Gauge size={16} /> },
+  { type: "EnvironmentWidget.tsx", label: "Umwelt", icon: <Leaf size={16} /> },
   { type: "CameraWidget.tsx", label: "Kamera", icon: <Video size={16} /> },
   { type: "MediaPlayerWidget.tsx", label: "Media Player", icon: <Music size={16} /> },
   { type: "RssWidget.tsx", label: "RSS Feed", icon: <Rss size={16} /> },
@@ -490,10 +492,19 @@ export default function ViewEditor({
       })()
     : null;
 
+  // Randlos-Modus: kein Grid-Padding, keine Metadata-Reserve, Kachelabstand
+  // aus den View-Settings — Zeilenhöhe muss dieselbe Realität rechnen wie das
+  // Raster selbst, sonst enden die 24 Reihen mitten im Canvas und maxRows
+  // verriegelt den Rest ("hängt oben fest").
+  const edgeOn = settings?.edgeToEdge === true;
+  const editorGap = edgeOn ? Math.max(0, Math.min(16, Number(settings?.tileGap ?? 0) || 0)) : 16;
+
   // rowHeight-Formel generalisiert: (Grid-Höhe − Padding 16 − 23×16 Margins) / 24.
   // Die bisherigen Konstanten sind exakt dieser Ausdruck mit 900/700er-Canvas
   // und 65px Metadata-Leiste — Standard bleibt damit unverändert.
-  const rowHeight = displayCanvas
+  const rowHeight = edgeOn
+    ? Math.max(4, Math.floor(((displayCanvas ? displayCanvas.h : orientation === "portrait" ? 900 : 700) - editorGap * 23) / 24))
+    : displayCanvas
     ? Math.max(4, Math.floor((displayCanvas.h - (wallpaper.showMetadata !== false ? 65 : 0) - 16 - 368) / 24))
     : orientation === "portrait"
       ? Math.floor((835 - 16 - 368) / 24)
@@ -513,7 +524,8 @@ export default function ViewEditor({
   useEffect(() => {
     const el = gridAreaRef.current;
     if (!el) return;
-    const MARGIN = 16;
+    // Randlos: Abstand aus den Settings (0–16), sonst wie immer 16.
+    const MARGIN = editorGap;
     const measure = () => {
       const h = el.clientHeight;
       if (!h || h <= 0 || rowHeight <= 0) {
@@ -530,7 +542,7 @@ export default function ViewEditor({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [rowHeight, orientation]);
+  }, [rowHeight, orientation, editorGap]);
 
   useEffect(() => {
     const s = io();
@@ -1159,8 +1171,8 @@ export default function ViewEditor({
 
               <div
                 ref={gridAreaRef}
-                className="absolute inset-x-0 top-0 p-4 z-10 slider-container editor-grid"
-                style={{ bottom: `${metaBarPx}px` }}
+                className={`absolute inset-x-0 top-0 z-10 slider-container editor-grid ${settings?.edgeToEdge ? "p-0" : "p-4"}`}
+                style={{ bottom: settings?.edgeToEdge ? 0 : `${metaBarPx}px` }}
               >
                 <ResponsiveGridLayout
                   className="layout"
@@ -1171,7 +1183,8 @@ export default function ViewEditor({
                   onLayoutChange={onLayoutChange}
                   isDraggable={true}
                   isResizable={true}
-                  margin={[16, 16]}
+                  margin={[editorGap, editorGap]}
+                  containerPadding={edgeOn ? [0, 0] : undefined}
                   compactType={null}
                   allowOverlap={true}
                   preventCollision={false}
@@ -1318,6 +1331,7 @@ export default function ViewEditor({
                 <InspectorPanel
                   activeWidget={activeWidget}
                   layout={layout}
+                  edgeToEdge={edgeOn}
                   onClose={() => setActiveSettingsId(null)}
                   updateLayoutGrid={updateLayoutGrid}
                   updateOpacity={updateOpacity}
@@ -1470,6 +1484,40 @@ export default function ViewEditor({
               >
                 {t("Alle Widgets auf „Automatisch“ setzen")}
               </button>
+            </div>
+
+            {/* Randlos-Modus (opt-in): Widgets bis an den Bildschirmrand —
+                DAKboard-Mosaik. Ecken werden automatisch eckig. */}
+            <div className="flex flex-col gap-2 border-t border-[var(--mf-bdr)]/10 pt-3">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={settings?.edgeToEdge === true}
+                    onChange={(e) => setSettings({ ...settings, edgeToEdge: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
+                </div>
+                <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Randlos (bis zum Bildschirmrand)")}</span>
+              </label>
+              <p className="text-[11px] text-[var(--mf-fg)]/40">
+                {t("Widgets füllen den Bildschirm ohne Außenrand — Ecken werden automatisch eckig. Ideal für Vollbild-Layouts wie Foto über Kalender.")}
+              </p>
+              {settings?.edgeToEdge === true && (
+                <div>
+                  <label className="text-xs font-medium text-[var(--mf-fg)]/60 mb-1.5 flex justify-between">
+                    <span>{t("Kachelabstand")}</span>
+                    <span className="text-sky-400">{Number(settings?.tileGap ?? 0) || 0}px</span>
+                  </label>
+                  <input
+                    type="range" min={0} max={16} step={2}
+                    value={Number(settings?.tileGap ?? 0) || 0}
+                    onChange={(e) => setSettings({ ...settings, tileGap: parseInt(e.target.value) })}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-sky-500 bg-[var(--mf-elev)]/10"
+                  />
+                </div>
+              )}
             </div>
 
             <p className="text-[11px] text-[var(--mf-fg)]/50 border-t border-[var(--mf-bdr)]/10 pt-3">{t("Nicht vergessen: oben Speichern, sonst greift die Änderung nicht.")}</p>

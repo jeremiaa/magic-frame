@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Icon } from "@iconify/react";
+import { Icon } from "./WidgetIcon";
 import { QrCode as QrIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 

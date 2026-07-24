@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="rainbow-cloud" clip-path="url(#clip0_1941_12442)">
+<g id="Rainbow">
+<path id="Purple" fill-rule="evenodd" clip-rule="evenodd" d="M64 66C73.2047 66 80 72.7953 80 82H84C84 70.9543 75.0457 62 64 62C52.9543 62 44 70.9543 44 82H48C48 72.7953 54.7953 66 64 66Z" fill="#009BD1"/>
+<path id="Blue" fill-rule="evenodd" clip-rule="evenodd" d="M64 62C75.0457 62 84 70.9543 84 82H88C88 68.7452 77.2548 58 64 58C50.7452 58 40 68.7452 40 82H44C44 70.9543 52.9543 62 64 62Z" fill="#6DC72F"/>
+<path id="Green" fill-rule="evenodd" clip-rule="evenodd" d="M64 58C77.2548 58 88 68.7452 88 82H92C92 66.536 79.464 54 64 54C48.536 54 36 66.536 36 82H40C40 68.7452 50.7452 58 64 58Z" fill="#EAD300"/>
+<path id="Yellow" fill-rule="evenodd" clip-rule="evenodd" d="M64 54C79.464 54 92 66.536 92 82H96C96 64.3269 81.6731 50 64 50C46.3269 50 32 64.3269 32 82H36C36 66.536 48.536 54 64 54Z" fill="#FFB32A"/>
+<path id="Red" fill-rule="evenodd" clip-rule="evenodd" d="M64 50C81.6731 50 96 64.3269 96 82H100C100 62.1177 83.8823 46 64 46C44.1177 46 28 62.1177 28 82H32C32 64.3269 46.3269 50 64 50Z" fill="#FF1B02"/>
+</g>
+<g id="Cloud">
+<path id="Cloud_2" d="M85.8392 64.6934C88.2444 60.9584 93.2146 59.529 97.3177 61.1768C101.361 62.8006 103.814 67.1888 102.71 71.4365L102.54 72.0898L103.215 72.0615C106.496 71.924 109.5 74.4646 109.5 77.7744C109.5 80.9759 106.669 83.4999 103.489 83.5H76.9769C73.7679 83.5008 70.8449 81.1182 70.5287 77.9072C70.2136 74.7068 72.6168 71.8414 75.764 71.2705L76.2552 71.1816L76.1674 70.6904C75.7734 68.4931 76.8117 66.2493 78.6849 65.0273C80.6105 63.7713 83.177 63.7069 85.1683 64.8564L85.5814 65.0938L85.8392 64.6934Z" fill="url(#paint0_linear_1941_12442)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1941_12442" x1="90.0002" y1="60" x2="90.0002" y2="84" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<clipPath id="clip0_1941_12442">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

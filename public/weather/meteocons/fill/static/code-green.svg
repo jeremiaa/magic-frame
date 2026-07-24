@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="code-green">
+<g id="Alarm">
+<path id="Exclamation" d="M59.2061 39.5488C61.3084 35.8094 66.6916 35.8094 68.7939 39.5488L90.5811 78.3047C92.6421 81.9709 89.9929 86.4999 85.7871 86.5H42.2129C38.0071 86.4999 35.3579 81.9709 37.4189 78.3047L59.2061 39.5488Z" fill="url(#paint0_linear_1837_4280)" stroke="#059669"/>
+<path id="ExclamationMark" d="M65.2636 68.65H62.7736L61.3636 60.28V54.64H66.6436V60.28L65.2636 68.65ZM66.6736 76H61.3336V70.99H66.6736V76Z" fill="white"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1837_4280" x1="64" y1="36.5" x2="64" y2="86.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#10B981"/>
+<stop offset="1" stop-color="#059669"/>
+</linearGradient>
+</defs>
+</svg>

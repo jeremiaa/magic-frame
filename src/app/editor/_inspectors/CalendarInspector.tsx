@@ -49,6 +49,39 @@ export default function CalendarInspector({
               : view === "agenda" ? t("Nach Tagen gruppiert mit Überschriften.")
               : t("Volles Monatsgitter mit Terminen in den Tagen.")}
           </p>
+          {view === "month" && (
+             <div className="mt-3 rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-surface)]/40 p-3 space-y-3">
+                <div className="flex flex-wrap gap-x-6 gap-y-3">
+                   {([
+                      ["showMonthTitle", t("Monatsname"), cfg.showMonthTitle !== false],
+                      ["showWeekNumbers", t("Kalenderwochen"), cfg.showWeekNumbers === true],
+                   ] as [string, string, boolean][]).map(([key, label, checked]) => (
+                      <label key={key} className="flex items-center gap-3 cursor-pointer group">
+                         <div className="relative">
+                            <input type="checkbox" checked={checked}
+                               onChange={(e) => updateConfig(activeWidget.i, key, e.target.checked)}
+                               className="sr-only peer" />
+                            <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-violet-500"></div>
+                         </div>
+                         <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{label}</span>
+                      </label>
+                   ))}
+                </div>
+                <div>
+                   <label className="text-xs font-medium text-[var(--mf-fg)]/60 mb-1.5 flex justify-between">
+                      <span>{t("Termin-Schriftgröße")}</span>
+                      <span className="text-violet-400">{Math.round((Number(cfg.monthTextScale) || 1) * 100)}%</span>
+                   </label>
+                   <input type="range" min={60} max={200} step={10}
+                      value={Math.round((Number(cfg.monthTextScale) || 1) * 100)}
+                      onChange={(e) => updateConfig(activeWidget.i, "monthTextScale", parseInt(e.target.value) / 100)}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-violet-500 bg-[var(--mf-elev)]/10" />
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
+                      {t("Skaliert nur die Termine im Gitter — Datum und Wochentage bleiben.")}
+                   </p>
+                </div>
+             </div>
+          )}
        </div>
        <div>
           <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Darstellungs-Design")}</label>

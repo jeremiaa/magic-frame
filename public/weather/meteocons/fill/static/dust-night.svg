@@ -1,0 +1,37 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="dust-night" clip-path="url(#clip0_1858_23059)">
+<g id="Mask group">
+<mask id="mask0_1858_23059" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Mask" d="M0 0H128L0 128V0Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_1858_23059)">
+<g id="Moon">
+<path id="Moon_2" d="M60.3018 32.582C55.2817 53.6999 73.6001 74.3477 95.3252 72.5146C91.5193 85.7702 79.1986 95.4998 64.5361 95.5C46.8375 95.5 32.5001 81.3444 32.5 63.8984C32.5 47.8688 44.6066 34.6278 60.3018 32.582Z" fill="url(#paint0_linear_1858_23059)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+<g id="Dust">
+<circle id="Dust 1" cx="54" cy="87" r="3" fill="#FCD966"/>
+<circle id="Dust 2" cx="63" cy="87" r="3" fill="#FCD966"/>
+<circle id="Dust 3" cx="63" cy="78" r="3" fill="#FCD966"/>
+<circle id="Dust 4" cx="72" cy="78" r="3" fill="#FCD966"/>
+<circle id="Dust 5" cx="72" cy="69" r="3" fill="#FCD966"/>
+<circle id="Dust 6" cx="81" cy="69" r="3" fill="#FCD966"/>
+<circle id="Dust 7" cx="81" cy="60" r="3" fill="#FCD966"/>
+<circle id="Dust 8" cx="90" cy="60" r="3" fill="#FCD966"/>
+<circle id="Dust 9" cx="90" cy="51" r="3" fill="#FCD966"/>
+<circle id="Dust 10" cx="99" cy="51" r="3" fill="#FCD966"/>
+<circle id="Dust 11" cx="99" cy="42" r="3" fill="#FCD966"/>
+<circle id="Dust 12" cx="108" cy="42" r="3" fill="#FCD966"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_23059" x1="64" y1="32" x2="64" y2="96" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+<clipPath id="clip0_1858_23059">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

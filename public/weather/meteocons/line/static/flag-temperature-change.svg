@@ -1,0 +1,18 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="flag-temperature-change" clip-path="url(#clip0_2045_37381)">
+<g id="Flag" clip-path="url(#clip1_2045_37381)">
+<g id="Pole">
+<path id="Vector" d="M44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9533 33.0514 46.8674 33.3033C46.563 34.1953 46 35.0504 46 35.9929V96H43V35.9929C43 35.0504 42.437 34.1953 42.1326 33.3033C42.0467 33.0514 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="#CBD5E1"/>
+</g>
+<path id="Flag_2" d="M73.6423 41.247C76.0528 42.2908 76.0528 45.7092 73.6422 46.753L54.1921 55.1752C52.2112 56.0329 50 54.5807 50 52.4222V35.5778C50 33.4192 52.2112 31.9671 54.1921 32.8248L73.6423 41.247Z" fill="#0F172A"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_37381">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_2045_37381">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

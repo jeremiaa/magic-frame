@@ -33,6 +33,7 @@ import {
   Package,
   ShieldCheck,
   AlertOctagon,
+  Leaf,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
@@ -56,6 +57,7 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "TodosWidget.tsx":          { color: "rgba(99,102,241,0.55)",  Icon: ClipboardList },
   "ImageWidget.tsx":          { color: "rgba(168,85,247,0.55)",  Icon: ImageIcon },
   "SensorWidget.tsx":         { color: "rgba(20,184,166,0.55)",  Icon: Gauge },
+  "EnvironmentWidget.tsx":    { color: "rgba(132,204,22,0.55)",  Icon: Leaf },
   "CameraWidget.tsx":         { color: "rgba(244,63,94,0.55)",   Icon: Video },
 };
 const GRID_COLS = 24;

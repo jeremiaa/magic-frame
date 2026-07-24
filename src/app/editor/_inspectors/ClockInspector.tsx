@@ -181,9 +181,44 @@ export default function ClockInspector({
                     >
                        <option value="lucide">{t("Lucide (Klar, Umriss)")}</option>
                        <option value="solid">{t("Solid (Gefüllt, Flach)")}</option>
-                       <option value="celestial">{t("Celestial (3D, Animiert)")}</option>
-                       <option value="forecast">{t("Forecast (Colored Glass)")}</option>
+                       <option value="meteocons">{t("Meteocons (Farbig, Animierbar)")}</option>
                     </select>
+                    {((activeWidget.config as any)?.iconSet === 'meteocons') && (
+                       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+                          <div className="inline-flex rounded-lg border border-[var(--mf-bdr)]/10 overflow-hidden">
+                             {([['fill', t("Gefüllt")], ['line', t("Umriss")]] as const).map(([val, lbl]) => {
+                                const active = ((activeWidget.config as any)?.meteoconsStyle || 'fill') === val;
+                                return (
+                                   <button key={val} type="button"
+                                      onClick={() => updateConfig(activeWidget.i, 'meteoconsStyle', val)}
+                                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${active ? 'bg-cyan-500/15 text-cyan-300' : 'text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]/80'}`}>
+                                      {lbl}
+                                   </button>
+                                );
+                             })}
+                          </div>
+                          <label className="flex items-center gap-2 cursor-pointer group">
+                             <div className="relative">
+                                <input type="checkbox"
+                                   checked={(activeWidget.config as any)?.meteoconsAnimated ?? false}
+                                   onChange={(e) => updateConfig(activeWidget.i, 'meteoconsAnimated', e.target.checked)}
+                                   className="sr-only peer" />
+                                <div className="w-9 h-5 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                             </div>
+                             <span className="text-xs font-medium text-[var(--mf-fg)]/70">{t("Animiert")}</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer group">
+                             <div className="relative">
+                                <input type="checkbox"
+                                   checked={(activeWidget.config as any)?.meteoconsMoonPhase ?? true}
+                                   onChange={(e) => updateConfig(activeWidget.i, 'meteoconsMoonPhase', e.target.checked)}
+                                   className="sr-only peer" />
+                                <div className="w-9 h-5 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                             </div>
+                             <span className="text-xs font-medium text-[var(--mf-fg)]/70">{t("Echte Mondphasen")}</span>
+                          </label>
+                       </div>
+                    )}
                  </div>
                  <div>
                     <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Temperatur-Einheit")}</label>

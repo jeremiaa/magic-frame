@@ -1,0 +1,24 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-alert" clip-path="url(#clip0_3086_22916)">
+<g id="Mask group">
+<mask id="mask0_3086_22916" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Alert Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 128H0V0H128V128ZM80.1963 64C77.8869 60 72.1131 60 69.8037 64L57.6797 85C55.3703 89 58.2572 94 62.876 94H87.124C91.7428 94 94.6297 89 92.3203 85L80.1963 64Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_3086_22916)">
+<g id="Solar Panel">
+<rect id="Panel" x="39" y="40" width="34" height="48" rx="5" stroke="#304878" stroke-width="2"/>
+<path id="Lines" d="M40 55.5263H72M40 71.2632H72M56 41L56 87" stroke="#304878" stroke-width="2"/>
+</g>
+</g>
+</g>
+<g id="Alert">
+<path id="Exclamation" d="M72.4019 65.5C73.5566 63.5 76.4434 63.5 77.5981 65.5L89.7224 86.5C90.8771 88.5 89.4338 91 87.1244 91H62.8756C60.5662 91 59.1229 88.5 60.2776 86.5L72.4019 65.5Z" fill="#202939"/>
+<path id="ExclamationMark" d="M75.7582 81.59H74.2642L73.4182 76.568V73.184H76.5862V76.568L75.7582 81.59ZM76.6042 86H73.4002V82.994H76.6042V86Z" fill="white"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3086_22916">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

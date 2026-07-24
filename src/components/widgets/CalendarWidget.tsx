@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   parseISO, isToday, isTomorrow, isSameDay, addDays, isValid, format,
   startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
-  isSameMonth, differenceInCalendarDays,
+  isSameMonth, differenceInCalendarDays, getISOWeek,
 } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -88,15 +88,40 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const monthAnchor = startOfMonth(new Date());
   const gridStart = startOfWeek(monthAnchor, { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthAnchor), { weekStartsOn });
+  // Monats-Extras: Titel default AN (View ist neu, bricht niemanden),
+  // Kalenderwochen opt-in, Termin-Schrift skalierbar (60–200 %).
+  const showMonthTitle = config?.showMonthTitle !== false;
+  const showWeekNumbers = config?.showWeekNumbers === true;
+  const monthTextScale = Math.max(0.6, Math.min(2, Number(config?.monthTextScale) || 1));
 
   // Karten-Fläche wie bei allen anderen Karten-Widgets (Status/Media/Notify):
   // EINE Fläche über useGlassStyle — dieselbe Deckkraft, dasselbe Hell/Dunkel
   // (cardTheme, folgt auch der zentralen View-Steuerung), dieselben runden
   // Ecken. Keine konkurrierenden Hintergrund-Systeme mehr.
   const glass = useGlassStyle(config);
-  const isLight = glass.isLight;
-  const fg = isLight ? "rgba(15,23,42,0.92)" : "#ffffff";
-  const fgDim = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.5)";
+  // Auto-Hell (zentrale View-Steuerung) greift NUR, wo der Kalender selbst
+  // eine helle Fläche zeichnet: Agenda/Monat-Panel mit Deckkraft > 0. Die
+  // Listen-Ansicht lebt direkt auf dem Wallpaper — dort bleibt die Schrift
+  // bei "auto" immer weiß (+Schatten), sonst kippt sie tagsüber bei hellem
+  // View-Theme ins Unsichtbare (dunkle Schrift auf dunklem Wallpaper).
+  // Explizites cardTheme="light" bleibt eine bewusste Entscheidung und gewinnt.
+  const autoLightOk = view !== "list" && glass.cardOpacity > 0;
+  const isLight = config?.cardTheme === "light" ? true : glass.isLight && autoLightOk;
+  // Explizite Schriftfarbe aus dem "Text & Farbe"-Tab gewinnt IMMER — das
+  // Theme (hell/dunkel) liefert nur den Default, wenn keine Farbe gesetzt ist.
+  // (Vor dem Karten-Umbau wurde config.color vom Tile geerbt — das hier stellt
+  // genau das wieder her.)
+  const customColor = typeof config?.color === "string" ? config.color.trim() : "";
+  const withAlpha = (c: string, a: number): string => {
+    const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c);
+    if (!m) return c;
+    let h = m[1];
+    if (h.length === 3) h = h.split("").map((x) => x + x).join("");
+    const n = parseInt(h, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  };
+  const fg = customColor || (isLight ? "rgba(15,23,42,0.92)" : "#ffffff");
+  const fgDim = customColor ? withAlpha(customColor, 0.55) : isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.5)";
   const cardRgb = isLight ? "255,255,255" : "0,0,0";
   const borderCls = isLight ? "border-black/10" : "border-white/10";
 
@@ -462,10 +487,29 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     }
     const weekdayHead = eachDayOfInterval({ start: gridStart, end: addDays(gridStart, 6) });
     const perCell = 3; // Termine pro Zelle, Rest als "+N"
+    // Optionale KW-Spalte: schmale erste Spalte vor den 7 Wochentagen.
+    const colsTemplate = showWeekNumbers ? "1.6em repeat(7, minmax(0,1fr))" : "repeat(7, minmax(0,1fr))";
+    const evFont = (base: number) => `${base * monthTextScale}em`;
     return (
       <div className="w-full h-full flex flex-col text-[0.9em]">
+        {/* Monatsname + Jahr — gibt dem Gitter den Kalender-Kontext */}
+        {showMonthTitle && (
+          <div className="flex items-baseline gap-[0.4em] shrink-0 mb-[0.35em] px-[0.15em]">
+            <span className="font-semibold text-[1.05em] leading-none capitalize" style={{ color: fg }}>
+              {format(monthAnchor, "LLLL", { locale: dfLocale })}
+            </span>
+            <span className="text-[0.8em] leading-none" style={{ color: fgDim }}>
+              {format(monthAnchor, "yyyy")}
+            </span>
+          </div>
+        )}
         {/* Wochentage */}
-        <div className="grid grid-cols-7 shrink-0 mb-[0.3em]">
+        <div className="grid shrink-0 mb-[0.3em]" style={{ gridTemplateColumns: colsTemplate }}>
+          {showWeekNumbers && (
+            <div className="text-center uppercase tracking-wider font-medium text-[0.6em]" style={{ color: fgDim }}>
+              {locale === "en" ? "Wk" : "KW"}
+            </div>
+          )}
           {weekdayHead.map((d) => (
             <div key={+d} className="text-center uppercase tracking-wider font-medium text-[0.7em]" style={{ color: fgDim }}>
               {format(d, "eee", { locale: dfLocale })}
@@ -473,15 +517,25 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           ))}
         </div>
         {/* 6 Wochen */}
-        <div className="grid grid-cols-7 grid-rows-6 flex-1 gap-[0.15em] min-h-0">
-          {gridDays.map((d) => {
+        <div className="grid grid-rows-6 flex-1 gap-[0.15em] min-h-0" style={{ gridTemplateColumns: colsTemplate }}>
+          {gridDays.flatMap((d, i) => {
             const key = format(d, "yyyy-MM-dd");
             const inMonth = isSameMonth(d, monthAnchor);
             const today = isToday(d);
             const dayEvents = (byDay.get(key) || []).slice().sort((a, b) => a.start.localeCompare(b.start));
             const shown = dayEvents.slice(0, perCell);
             const extra = dayEvents.length - shown.length;
-            return (
+            const cells: ReactNode[] = [];
+            if (showWeekNumbers && i % 7 === 0) {
+              cells.push(
+                <div key={`kw-${key}`} className="flex items-start justify-center pt-[0.3em]">
+                  <span className="text-[0.6em] font-medium tabular-nums leading-none" style={{ color: fgDim }}>
+                    {getISOWeek(d)}
+                  </span>
+                </div>,
+              );
+            }
+            cells.push(
               <div key={key} className="flex flex-col min-h-0 overflow-hidden rounded-[0.4em] px-[0.25em] py-[0.15em]"
                    style={{ backgroundColor: inMonth ? `rgba(${isLight ? "0,0,0" : "255,255,255"},0.04)` : "transparent" }}>
                 <div className="flex justify-end shrink-0">
@@ -495,14 +549,14 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     const color = ev.feedColor || accentColor;
                     if (ev.isAllDay) {
                       return (
-                        <div key={ev.id} className="rounded-[0.25em] px-[0.3em] text-[0.6em] leading-[1.5] truncate text-white" style={{ backgroundColor: color }}>
+                        <div key={ev.id} className="rounded-[0.25em] px-[0.3em] leading-[1.5] truncate text-white" style={{ backgroundColor: color, fontSize: evFont(0.6) }}>
                           {ev.title}
                         </div>
                       );
                     }
                     const start = parseISO(ev.start);
                     return (
-                      <div key={ev.id} className="flex items-center gap-[0.25em] text-[0.6em] leading-[1.5] truncate">
+                      <div key={ev.id} className="flex items-center gap-[0.25em] leading-[1.5] truncate" style={{ fontSize: evFont(0.6) }}>
                         <span className="shrink-0 rounded-full w-[0.4em] h-[0.4em]" style={{ backgroundColor: color }} />
                         <span className="truncate" style={{ color: fg }}>
                           <span style={{ color: fgDim }}>{isValid(start) ? format(start, timePattern) : ""}</span> {ev.title}
@@ -511,11 +565,12 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     );
                   })}
                   {extra > 0 && (
-                    <div className="text-[0.58em] leading-none pl-[0.3em]" style={{ color: fgDim }}>+{extra}</div>
+                    <div className="leading-none pl-[0.3em]" style={{ color: fgDim, fontSize: evFont(0.58) }}>+{extra}</div>
                   )}
                 </div>
-              </div>
+              </div>,
             );
+            return cells;
           })}
         </div>
       </div>
@@ -542,7 +597,9 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const usePanel = view !== "list";
   return (
     <div className="w-full h-full overflow-hidden relative rounded-3xl flex flex-col"
-         style={{ ...(usePanel ? glass.cardStyle : {}), color: fg }}>
+         // Radius folgt dem View: normal 1.5rem, im Randlos-Modus 0 (CSS-Var
+         // vom Canvas — DAKboard-Mosaik ohne schwarze Eck-Lücken).
+         style={{ ...(usePanel ? glass.cardStyle : {}), color: fg, borderRadius: "var(--mf-tile-radius, 1.5rem)" }}>
       <div className={`relative flex flex-col w-full h-full overflow-hidden ${usePanel ? (isMonth ? "p-[0.6em]" : "p-[0.7em]") : (isMonth ? "" : "mt-[1em] justify-center")} ${view === "list" && !isLight ? "drop-shadow-md" : ""}`}>
         {content}
       </div>

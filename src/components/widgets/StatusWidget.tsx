@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Icon } from "@iconify/react";
+import { Icon } from "./WidgetIcon";
 import { Activity } from "lucide-react";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { useGlassStyle } from "@/lib/ui/glass";

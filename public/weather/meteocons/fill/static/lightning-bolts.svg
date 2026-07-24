@@ -1,0 +1,18 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="lightning-bolts">
+<g id="Lightning">
+<path id="Lightning Bolt" d="M65.1729 43.5L57.5566 58.041L57.1729 58.7725H69.002L50.9521 82.8916L54.4893 66.0117L54.6162 65.4092H46.7041L54.3555 43.5H65.1729Z" fill="url(#paint0_linear_1931_4140)" stroke="#F6A823" stroke-miterlimit="10"/>
+<path id="Lightning Bolt Small" d="M79.1729 43.5L75.5566 50.4043L75.1738 51.1367H81.001L72.9521 61.8916L74.4893 54.5576L74.6162 53.9551H70.7041L74.3555 43.5H79.1729Z" fill="url(#paint1_linear_1931_4140)" stroke="#F6A823" stroke-miterlimit="10"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1931_4140" x1="58.528" y1="41.0377" x2="78.4144" y2="52.4572" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F7B23B"/>
+<stop offset="1" stop-color="#F6A823"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1931_4140" x1="76.264" y1="42.0188" x2="86.2072" y2="47.7286" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F7B23B"/>
+<stop offset="1" stop-color="#F6A823"/>
+</linearGradient>
+</defs>
+</svg>

@@ -1,0 +1,13 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="thermometer-mercury" clip-path="url(#clip0_2045_38642)">
+<g id="Thermometer Mercury">
+<circle id="Reservoir" cx="64" cy="83" r="9" fill="#DC2626"/>
+<rect id="Value" x="61" y="50" width="6" height="29" rx="3" fill="#DC2626"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_38642">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

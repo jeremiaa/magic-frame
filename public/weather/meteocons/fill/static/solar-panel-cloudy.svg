@@ -1,0 +1,21 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-cloudy">
+<g id="Cloud">
+<path id="Cloud_2" d="M75.8392 34.6934C78.2444 30.9584 83.2146 29.529 87.3177 31.1768C91.3609 32.8006 93.8139 37.1888 92.7103 41.4365L92.5404 42.0898L93.2152 42.0615C96.4961 41.924 99.5004 44.4646 99.5004 47.7744C99.5001 50.9759 96.6685 53.4999 93.4886 53.5H66.9769C63.7679 53.5008 60.8449 51.1182 60.5287 47.9072C60.2136 44.7068 62.6168 41.8414 65.764 41.2705L66.2552 41.1816L66.1674 40.6904C65.7734 38.4931 66.8117 36.2493 68.6849 35.0273C70.6105 33.7713 73.177 33.7069 75.1683 34.8564L75.5814 35.0938L75.8392 34.6934Z" fill="url(#paint0_linear_3086_22376)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+</g>
+<g id="Solar Panel">
+<rect id="Panel" x="46.5" y="39.5" width="35" height="49" rx="5.5" fill="url(#paint1_linear_3086_22376)" stroke="#212A3B"/>
+<path id="Lines" d="M64.5 40V54.5H81V55.5H64.5V71.5H81V72.5H64.5V88H63.5V72.5H47V71.5H63.5V55.5H47V54.5H63.5V40H64.5Z" fill="#304878"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3086_22376" x1="80.0002" y1="30" x2="80.0002" y2="54" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<linearGradient id="paint1_linear_3086_22376" x1="64" y1="39" x2="64" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#304878"/>
+<stop offset="1" stop-color="#212A3B"/>
+</linearGradient>
+</defs>
+</svg>

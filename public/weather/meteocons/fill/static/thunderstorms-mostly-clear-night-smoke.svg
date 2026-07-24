@@ -1,0 +1,51 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="thunderstorms-mostly-clear-night-smoke" clip-path="url(#clip0_1858_10128)">
+<g id="Sky">
+<g id="Moon">
+<path id="Moon_2" d="M52.2529 42.5869C48.9384 57.2007 61.6736 71.1024 76.3213 70.0273C73.6524 78.9635 65.298 85.5 55.3682 85.5C43.2847 85.4999 33.5 75.8355 33.5 63.9297C33.5002 53.0673 41.6473 44.0798 52.2529 42.5869Z" fill="url(#paint0_linear_1858_10128)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="Clouds">
+<g id="Cloud">
+<path id="Cloud_2" d="M58.0142 59.8887C61.3362 54.3602 68.3654 51.9679 74.3081 54.5254C80.2916 57.1004 83.5145 63.9169 81.9858 70.2227L81.8296 70.8701L82.4946 70.8408C87.4096 70.6202 91.4995 74.7706 91.4995 79.6602C91.4993 84.3966 87.6454 88.499 82.8833 88.499C70.5116 88.4877 58.1361 88.5 45.7671 88.5C40.9828 88.5012 36.9766 84.6313 36.5405 79.8877C36.1039 75.1358 39.3371 70.5714 44.0405 69.6572L44.5181 69.5635L44.438 69.084C43.8796 65.7473 45.2906 62.2583 48.063 60.3203C50.7975 58.4089 54.4854 58.3015 57.3228 60.0566L57.7534 60.3223L58.0142 59.8887Z" fill="url(#paint1_linear_1858_10128)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+</g>
+</g>
+</g>
+<g id="Smoke">
+<path id="Smoke 1" d="M62.5 101.5C64.7091 101.5 66.5 103.291 66.5 105.5C66.5 107.709 64.7091 109.5 62.5 109.5C60.2909 109.5 58.5 107.709 58.5 105.5C58.5 103.291 60.2909 101.5 62.5 101.5Z" fill="url(#paint2_linear_1858_10128)" stroke="#94A3B8" stroke-miterlimit="10"/>
+<path id="Smoke 2" d="M53.5 86.5C57.366 86.5 60.5 89.634 60.5 93.5C60.5 97.366 57.366 100.5 53.5 100.5C49.634 100.5 46.5 97.366 46.5 93.5C46.5 89.634 49.634 86.5 53.5 86.5Z" fill="url(#paint3_linear_1858_10128)" stroke="#94A3B8" stroke-miterlimit="10"/>
+<path id="Smoke 3" d="M71.5 68.5C77.0228 68.5 81.5 72.9772 81.5 78.5C81.5 84.0228 77.0228 88.5 71.5 88.5C65.9772 88.5 61.5 84.0228 61.5 78.5C61.5 72.9772 65.9772 68.5 71.5 68.5Z" fill="url(#paint4_linear_1858_10128)" stroke="#94A3B8" stroke-miterlimit="10"/>
+</g>
+<g id="Lightning">
+<path id="Lightning Bolt" d="M71.1729 68.5L63.5566 83.041L63.1729 83.7725H75.002L56.9521 107.892L60.4893 91.0117L60.6162 90.4092H52.7041L60.3555 68.5H71.1729Z" fill="url(#paint5_linear_1858_10128)" stroke="#F6A823" stroke-miterlimit="10"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_10128" x1="55" y1="42" x2="55" y2="86" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1858_10128" x1="64.0007" y1="53" x2="64.0007" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<linearGradient id="paint2_linear_1858_10128" x1="62.5" y1="101" x2="62.5" y2="110" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B0BCCD"/>
+<stop offset="1" stop-color="#94A3B8"/>
+</linearGradient>
+<linearGradient id="paint3_linear_1858_10128" x1="53.5" y1="86" x2="53.5" y2="101" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B0BCCD"/>
+<stop offset="1" stop-color="#94A3B8"/>
+</linearGradient>
+<linearGradient id="paint4_linear_1858_10128" x1="71.5" y1="68" x2="71.5" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#B0BCCD"/>
+<stop offset="1" stop-color="#94A3B8"/>
+</linearGradient>
+<linearGradient id="paint5_linear_1858_10128" x1="64.528" y1="66.0377" x2="84.4144" y2="77.4572" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F7B23B"/>
+<stop offset="1" stop-color="#F6A823"/>
+</linearGradient>
+<clipPath id="clip0_1858_10128">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

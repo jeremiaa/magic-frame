@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Icon } from '@iconify/react';
+import { Icon } from './WidgetIcon';
 
 import EntityModal from "./ha/EntityModal";
 import Sparkline from "./ha/Sparkline";

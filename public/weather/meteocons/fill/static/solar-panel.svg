@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel">
+<g id="Solar Panel">
+<rect id="Panel" x="46.5" y="39.5" width="35" height="49" rx="5.5" fill="url(#paint0_linear_3086_22203)" stroke="#212A3B"/>
+<path id="Lines" d="M64.5 40V54.5H81V55.5H64.5V71.5H81V72.5H64.5V88H63.5V72.5H47V71.5H63.5V55.5H47V54.5H63.5V40H64.5Z" fill="#304878"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3086_22203" x1="64" y1="39" x2="64" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#304878"/>
+<stop offset="1" stop-color="#212A3B"/>
+</linearGradient>
+</defs>
+</svg>

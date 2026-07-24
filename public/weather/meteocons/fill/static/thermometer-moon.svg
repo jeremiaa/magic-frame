@@ -1,0 +1,37 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="thermometer-moon" clip-path="url(#clip0_1844_15734)">
+<g id="Thermometer Mercury">
+<circle id="Reservoir" cx="64" cy="83" r="9" fill="#DC2626"/>
+<rect id="Value" x="61" y="50" width="6" height="29" rx="3" fill="#DC2626"/>
+</g>
+<g id="Thermometer Glass" clip-path="url(#clip1_1844_15734)">
+<g id="Mask group">
+<mask id="mask0_1844_15734" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M0 0H128V128H0V0ZM64 97C71.75 97 78 90.8254 78 83.1923C78.009 80.9709 77.4686 78.78 76.4244 76.8042C75.3802 74.8285 73.8627 73.1258 72 71.8398V38.779C72 36.7159 71.1572 34.7373 69.6569 33.2784C68.1566 31.8196 66.1218 31 64 31C61.8783 31 59.8435 31.8196 58.3432 33.2784C56.8429 34.7373 56 36.7159 56 38.779V71.8641C54.1408 73.1478 52.6255 74.8466 51.5814 76.8178C50.5374 78.789 49.9951 80.975 50 83.1923C50 90.8254 56.25 97 64 97Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_1844_15734)">
+<g id="Moon">
+<path id="Moon_2" d="M76.1152 39.5947C74.3777 48.1625 81.7532 56.2141 90.3135 55.7832C88.6732 60.8338 83.8891 64.4999 78.2178 64.5C71.188 64.5 65.5002 58.8786 65.5 51.959C65.5 45.7451 70.0879 40.5838 76.1152 39.5947Z" fill="url(#paint0_linear_1844_15734)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+<path id="Glass" d="M50.5 83.1914C50.4952 81.0566 51.0175 78.951 52.0234 77.0518C53.0294 75.1525 54.4901 73.514 56.2841 72.2754C56.4192 72.1821 56.4999 72.0284 56.5 71.8643V38.7793C56.5 36.8534 57.2864 35.0029 58.6914 33.6367C60.0969 32.27 62.0064 31.5 64 31.5C65.9935 31.5 67.903 32.27 69.3086 33.6367C70.7136 35.0029 71.5 36.8534 71.5 38.7793V42.0469H65C64.7239 42.0469 64.5 42.2708 64.5 42.5469C64.5 42.823 64.7238 43.0469 65 43.0469H71.5V49.8262H65C64.7238 49.8262 64.5 50.05 64.5 50.3262C64.5001 50.6022 64.7239 50.8262 65 50.8262H71.5V57.6045H65C64.724 57.6045 64.5002 57.8286 64.5 58.1045C64.5 58.3806 64.7238 58.6045 65 58.6045H71.5V71.8398C71.5 72.004 71.5807 72.1576 71.7158 72.251C73.5132 73.4919 74.9763 75.1344 75.9824 77.0381C76.9884 78.9416 77.5086 81.0518 77.5 83.1904V83.1924C77.4999 90.5431 71.4801 96.5 64 96.5C56.5199 96.5 50.5 90.5431 50.5 83.1924V83.1914Z" fill="url(#paint1_linear_1844_15734)" stroke="#BFDBFE" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1844_15734" x1="78" y1="39" x2="78" y2="65" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1844_15734" x1="64" y1="31" x2="64" y2="97.1215" gradientUnits="userSpaceOnUse">
+<stop stop-color="#DBEAFE" stop-opacity="0.25"/>
+<stop offset="1" stop-color="#BFDBFE" stop-opacity="0.25"/>
+</linearGradient>
+<clipPath id="clip0_1844_15734">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_1844_15734">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

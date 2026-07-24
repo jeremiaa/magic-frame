@@ -1,0 +1,27 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="tornado-alert" clip-path="url(#clip0_3112_28600)">
+<g id="Mask group">
+<mask id="mask0_3112_28600" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Alert Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 128H0V0H128V128ZM97.1963 67C94.8869 63 89.1131 63 86.8037 67L74.6797 88C72.3703 92 75.2572 97 79.876 97H104.124C108.743 97 111.63 92 109.32 88L97.1963 67Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_3112_28600)">
+<g id="Tornado">
+<path id="Line 5" d="M56 90H72" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 4" d="M47 77H81" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 3" d="M42 64H87" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 2" d="M37 51H91" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 1" d="M32 38H96" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+</g>
+<g id="Alert">
+<path id="Exclamation" d="M89.4019 68.5C90.5566 66.5 93.4434 66.5 94.5981 68.5L106.722 89.5C107.877 91.5 106.434 94 104.124 94H79.8756C77.5662 94 76.1229 91.5 77.2776 89.5L89.4019 68.5Z" fill="#202939"/>
+<path id="ExclamationMark" d="M92.7582 84.59H91.2642L90.4182 79.568V76.184H93.5862V79.568L92.7582 84.59ZM93.6042 89H90.4002V85.994H93.6042V89Z" fill="white"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3112_28600">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

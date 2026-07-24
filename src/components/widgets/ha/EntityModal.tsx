@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Icon } from "@iconify/react";
+import { Icon } from "../WidgetIcon";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 interface EntityModalProps {

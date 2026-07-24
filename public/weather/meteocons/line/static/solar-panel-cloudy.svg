@@ -1,0 +1,23 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-cloudy" clip-path="url(#clip0_3086_22933)">
+<g id="Mask group">
+<mask id="mask0_3086_22933" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Solar Panel Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 128H0V0H128V128ZM52 35C46.4772 35 42 39.4772 42 45V83C42 88.5229 46.4772 93 52 93H76C81.5228 93 86 88.5228 86 83V45C86 39.4771 81.5228 35 76 35H52Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_3086_22933)">
+<g id="Cloud">
+<path id="Cloud_2" d="M93.1943 41.5621C94.3665 37.05 91.7602 32.4225 87.5043 30.7133C83.1919 28.9813 77.9612 30.4743 75.4186 34.423C73.2648 33.1797 70.496 33.2496 68.4119 34.609C66.3808 35.934 65.2434 38.372 65.675 40.7789C62.2998 41.3911 59.6874 44.4688 60.0307 47.9561C60.3748 51.4511 63.5394 54.0008 66.9767 54C75.8126 54 84.6514 53.9925 93.4884 54C96.9105 54 100 51.2849 100 47.774C100 44.1428 96.7209 41.4142 93.1943 41.5621Z" fill="#E6EFFC"/>
+</g>
+</g>
+</g>
+<g id="Solar Panel">
+<rect id="Panel" x="47" y="40" width="34" height="48" rx="5" stroke="#304878" stroke-width="2"/>
+<path id="Lines" d="M48 55.5263H80M48 71.2632H80M64 41L64 87" stroke="#304878" stroke-width="2"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3086_22933">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

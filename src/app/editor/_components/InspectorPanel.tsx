@@ -22,6 +22,7 @@ import {
 } from "../_inspectors/CompanionInspectors";
 import { ImageInspector } from "../_inspectors/ImageInspector";
 import { SensorInspector } from "../_inspectors/SensorInspector";
+import { EnvironmentInspector } from "../_inspectors/EnvironmentInspector";
 import CameraInspector from "../_inspectors/CameraInspector";
 import { MediaPlayerInspector } from "../_inspectors/MediaPlayerInspector";
 import RssInspector from "../_inspectors/RssInspector";
@@ -33,6 +34,8 @@ import HAEntityInput from "./HAEntityInput";
 type InspectorPanelProps = {
   activeWidget: WidgetLayoutItem;
   layout: WidgetLayoutItem[];
+  /** View läuft im Randlos-Modus → "Schwebende Karte"-Schalter anbieten. */
+  edgeToEdge?: boolean;
   onClose: () => void;
   updateLayoutGrid: (i: string, key: string, value: number) => void;
   updateOpacity: (i: string, opacity: number) => void;
@@ -77,6 +80,7 @@ const NO_MULTICOL_CONTENT = new Set<string>([
   "TodosWidget.tsx",
   "ImageWidget.tsx",
   "SensorWidget.tsx",
+  "EnvironmentWidget.tsx",
   "CameraWidget.tsx",
   // Die Status-Felder sind EIN zusammenhängender Block (break-inside: avoid),
   // der sich nicht auf zwei Spalten verteilen lässt — er füllte Spalte 1 und
@@ -223,6 +227,7 @@ function LayoutTab({
   updateOpacity,
   updateConfig,
   updateLabel,
+  edgeToEdge,
 }: InspectorPanelProps) {
   const t = useT();
   return (
@@ -335,6 +340,20 @@ function LayoutTab({
               />
             </Field>
           </>
+        )}
+        {edgeToEdge && (
+          <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
+            <SectionHeader title="Randlos-Modus" />
+            <Toggle
+              label="Schwebende Karte (dockt nicht an)"
+              checked={activeWidget.config?.floatingCard ?? false}
+              onChange={(v) => updateConfig(activeWidget.i, "floatingCard", v)}
+              accent="cyan"
+            />
+            <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2 leading-relaxed">
+              {t("Standard: Widgets docken eckig ans Randlos-Raster an. Schwebend behält runde Ecken — für Widgets, die über dem Hintergrund-Raster liegen (z. B. Wetter über dem Foto).")}
+            </p>
+          </div>
         )}
         <div className="mt-6 pt-5 border-t border-[var(--mf-bdr)]/10">
           <SectionHeader title="Sichtbarkeit" />
@@ -606,6 +625,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "ImageWidget.tsx" && (
         <ImageInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "EnvironmentWidget.tsx" && (
+        <EnvironmentInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type === "SensorWidget.tsx" && (
         <SensorInspector widget={activeWidget} updateConfig={updateConfig} />

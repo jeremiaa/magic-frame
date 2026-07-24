@@ -1,0 +1,8 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel">
+<g id="Solar Panel">
+<rect id="Panel" x="47" y="40" width="34" height="48" rx="5" stroke="#304878" stroke-width="2"/>
+<path id="Lines" d="M48 55.5263H80M48 71.2632H80M64 41L64 87" stroke="#304878" stroke-width="2"/>
+</g>
+</g>
+</svg>

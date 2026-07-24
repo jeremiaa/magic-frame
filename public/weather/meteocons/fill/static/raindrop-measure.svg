@@ -1,0 +1,24 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="raindrop-measure">
+<path id="Ruler" d="M84 34H92V94H84M86 64H92M88 78H92M88 48H92" stroke="#E5E7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Background" d="M64.5 34.9072C70.2518 43.6142 74.9613 50.7046 78.2588 56.9551C81.6339 63.3527 83.5 68.8178 83.5 74.1748C83.5 84.8565 74.9898 93.5 64.5 93.5C54.0106 93.5 45.5 84.832 45.5 74.1748C45.5 68.8305 47.366 63.3715 50.7412 56.9736C54.0388 50.723 58.7481 43.6263 64.5 34.9072Z" fill="url(#paint0_linear_1858_257)" stroke="#BFDBFE" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="Mask group">
+<mask id="mask0_1858_257" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="45" y="64" width="39" height="30">
+<rect id="Water Level" x="45" y="64" width="39" height="30" fill="black"/>
+</mask>
+<g mask="url(#mask0_1858_257)">
+<path id="Raindrop" d="M64.5 34.9072C70.2518 43.6142 74.9613 50.7046 78.2588 56.9551C81.6339 63.3527 83.5 68.8178 83.5 74.1748C83.5 84.8565 74.9898 93.5 64.5 93.5C54.0106 93.5 45.5 84.832 45.5 74.1748C45.5 68.8305 47.366 63.3715 50.7412 56.9736C54.0388 50.723 58.7481 43.6263 64.5 34.9072Z" fill="url(#paint1_linear_1858_257)" stroke="#1D4ED8" stroke-miterlimit="10"/>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_257" x1="64.5" y1="34" x2="64.5" y2="94.1105" gradientUnits="userSpaceOnUse">
+<stop stop-color="#DBEAFE" stop-opacity="0.25"/>
+<stop offset="1" stop-color="#BFDBFE" stop-opacity="0.25"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1858_257" x1="64.5" y1="34" x2="64.5" y2="94" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2563EB"/>
+<stop offset="1" stop-color="#1D4ED8"/>
+</linearGradient>
+</defs>
+</svg>

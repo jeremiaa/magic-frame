@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="raindrop-measure">
+<path id="Ruler" d="M84 34H92V94H84M86 64H92M88 78H92M88 48H92" stroke="#E5E7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Background" d="M64.501 37.6348C69.6919 45.4943 73.9163 51.9377 76.9326 57.6553C80.2595 63.9615 82 69.1717 82 74.1748C82 84.0518 74.1379 92 64.5 92C54.8637 92 47 84.0284 47 74.1748C47 69.1848 48.74 63.9811 52.0674 57.6738C55.0843 51.9552 59.3092 45.5059 64.501 37.6348Z" stroke="#BFDBFE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="Mask group">
+<mask id="mask0_2045_37822" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="45" y="64" width="39" height="30">
+<rect id="Water Level" x="45" y="64" width="39" height="30" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_37822)">
+<path id="Raindrop" d="M64.501 37.6348C69.6919 45.4943 73.9163 51.9377 76.9326 57.6553C80.2595 63.9615 82 69.1717 82 74.1748C82 84.0518 74.1379 92 64.5 92C54.8637 92 47 84.0284 47 74.1748C47 69.1848 48.74 63.9811 52.0674 57.6738C55.0843 51.9552 59.3092 45.5059 64.501 37.6348Z" stroke="#1D4ED8" stroke-width="4" stroke-miterlimit="10"/>
+</g>
+</g>
+</g>
+</svg>

@@ -1,0 +1,18 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="wind-alert">
+<g id="Alert">
+<path id="Exclamation" d="M98.835 70.75C99.7972 69.0833 102.203 69.0833 103.165 70.75L115.289 91.75C116.251 93.4167 115.049 95.5 113.124 95.5H88.876C87.0115 95.5 85.8243 93.5447 86.627 91.9072L86.7109 91.75L98.835 70.75Z" fill="url(#paint0_linear_1868_4374)" stroke="#202939"/>
+<path id="ExclamationMark" d="M101.758 86.59H100.264L99.4182 81.568V78.184H102.586V81.568L101.758 86.59ZM102.604 91H99.4002V87.994H102.604V91Z" fill="white"/>
+</g>
+<g id="Wind">
+<path id="Wind Line 1" d="M87.79 40.1352C93.9756 33.347 105 38.4049 105 47.4463C105 53.2746 100.522 58 95 58H24" stroke="#E2E8F0" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Wind Line 1_2" d="M60.1281 87.868C66.4202 94.5186 78 89.8717 78 80.5556C78 74.7263 73.3503 70 67.6154 70C61.8805 70 24 70 24 70" stroke="#E2E8F0" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1868_4374" x1="101" y1="69" x2="101" y2="96" gradientUnits="userSpaceOnUse">
+<stop stop-color="#364D6E"/>
+<stop offset="1" stop-color="#202939"/>
+</linearGradient>
+</defs>
+</svg>

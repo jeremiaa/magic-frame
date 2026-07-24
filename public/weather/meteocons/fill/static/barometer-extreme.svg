@@ -1,0 +1,32 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="barometer-extreme">
+<g id="Barometer">
+<circle id="Housing" cx="64" cy="64" r="39.5" fill="url(#paint0_linear_1843_8435)" stroke="#1E293B"/>
+<g id="Lines">
+<path id="Line 1" d="M64 33V42" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 7" d="M42.0797 42.0797L48.4437 48.4436" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 5" d="M85.9203 42.0797L79.5563 48.4436" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 3" d="M95 64L86 64" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 8" d="M79.5563 79.5564L85.9203 85.9203" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 6" d="M48.4437 79.5564L42.0797 85.9203" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+<path id="Line 4" d="M42 64L33 64" stroke="#64748B" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
+<g id="Barometer_2">
+<g id="Pointer" clip-path="url(#clip0_1843_8435)">
+<circle id="Needle Mount" cx="64" cy="64" r="5" transform="rotate(135 64 64)" fill="#EF4444"/>
+<rect id="Needle" x="82.3848" y="79.5564" width="4" height="33" rx="2" transform="rotate(135 82.3848 79.5564)" fill="#EF4444"/>
+<circle id="Holder" cx="64" cy="64" r="2.5" transform="rotate(135 64 64)" fill="#475569" stroke="#293649"/>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1843_8435" x1="64" y1="24" x2="64" y2="104" gradientUnits="userSpaceOnUse">
+<stop stop-color="#334155"/>
+<stop offset="1" stop-color="#1E293B"/>
+</linearGradient>
+<clipPath id="clip0_1843_8435">
+<rect width="10" height="48" fill="white" transform="translate(84.5061 77.435) rotate(135)"/>
+</clipPath>
+</defs>
+</svg>

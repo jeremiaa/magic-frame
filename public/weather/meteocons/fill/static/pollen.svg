@@ -1,0 +1,43 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="pollen">
+<g id="Pollen">
+<path id="Pollen 7" d="M90 67.5C91.3807 67.5 92.5 68.6193 92.5 70C92.5 71.3807 91.3807 72.5 90 72.5C88.6193 72.5 87.5 71.3807 87.5 70C87.5 68.6193 88.6193 67.5 90 67.5Z" fill="url(#paint0_linear_3104_25647)" stroke="#FACC15"/>
+<path id="Pollen 6" d="M80 58.5C80.8284 58.5 81.5 59.1716 81.5 60C81.5 60.8284 80.8284 61.5 80 61.5C79.1716 61.5 78.5 60.8284 78.5 60C78.5 59.1716 79.1716 58.5 80 58.5Z" fill="url(#paint1_linear_3104_25647)" stroke="#FACC15"/>
+<path id="Pollen 5" d="M74 64.5C75.933 64.5 77.5 66.067 77.5 68C77.5 69.933 75.933 71.5 74 71.5C72.067 71.5 70.5 69.933 70.5 68C70.5 66.067 72.067 64.5 74 64.5Z" fill="url(#paint2_linear_3104_25647)" stroke="#FACC15"/>
+<path id="Pollen 4" d="M64 55.5C65.3807 55.5 66.5 56.6193 66.5 58C66.5 59.3807 65.3807 60.5 64 60.5C62.6193 60.5 61.5 59.3807 61.5 58C61.5 56.6193 62.6193 55.5 64 55.5Z" fill="url(#paint3_linear_3104_25647)" stroke="#FACC15"/>
+<path id="Pollen 3" d="M54 64.5C55.933 64.5 57.5 66.067 57.5 68C57.5 69.933 55.933 71.5 54 71.5C52.067 71.5 50.5 69.933 50.5 68C50.5 66.067 52.067 64.5 54 64.5Z" fill="url(#paint4_linear_3104_25647)" stroke="#FACC15"/>
+<path id="Pollen 2" d="M48 58.5C48.8284 58.5 49.5 59.1716 49.5 60C49.5 60.8284 48.8284 61.5 48 61.5C47.1716 61.5 46.5 60.8284 46.5 60C46.5 59.1716 47.1716 58.5 48 58.5Z" fill="url(#paint5_linear_3104_25647)" stroke="#FACC15"/>
+<path id="Pollen 1" d="M38 67.5C39.3807 67.5 40.5 68.6193 40.5 70C40.5 71.3807 39.3807 72.5 38 72.5C36.6193 72.5 35.5 71.3807 35.5 70C35.5 68.6193 36.6193 67.5 38 67.5Z" fill="url(#paint6_linear_3104_25647)" stroke="#FACC15"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3104_25647" x1="90" y1="67.5132" x2="90" y2="71.4605" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+<linearGradient id="paint1_linear_3104_25647" x1="80" y1="58.3421" x2="80" y2="60.9737" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+<linearGradient id="paint2_linear_3104_25647" x1="74" y1="64.6842" x2="74" y2="69.9474" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+<linearGradient id="paint3_linear_3104_25647" x1="64" y1="55.5132" x2="64" y2="59.4605" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+<linearGradient id="paint4_linear_3104_25647" x1="54" y1="64.6842" x2="54" y2="69.9474" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+<linearGradient id="paint5_linear_3104_25647" x1="48" y1="58.3421" x2="48" y2="60.9737" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+<linearGradient id="paint6_linear_3104_25647" x1="38" y1="67.5132" x2="38" y2="71.4605" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FDE047"/>
+<stop offset="1" stop-color="#FACC15"/>
+</linearGradient>
+</defs>
+</svg>

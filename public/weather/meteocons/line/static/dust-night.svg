@@ -1,0 +1,33 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="dust-night" clip-path="url(#clip0_2045_28787)">
+<g id="Mask group">
+<mask id="mask0_2045_28787" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Mask" d="M0 0H128L0 128V0Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_28787)">
+<g id="Moon">
+<path id="Moon_2" d="M58.4004 34.416C54.9191 55.2254 72.5264 74.4529 93.2227 74.1201C88.98 85.6985 77.7637 93.9998 64.5361 94C47.6469 94 34.0001 80.497 34 63.8984C34 49.3677 44.4604 37.2181 58.4004 34.416Z" stroke="#72B9D5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+<g id="Dust">
+<circle id="Dust 1" cx="54" cy="87" r="3" fill="#FCD966"/>
+<circle id="Dust 2" cx="63" cy="87" r="3" fill="#FCD966"/>
+<circle id="Dust 3" cx="63" cy="78" r="3" fill="#FCD966"/>
+<circle id="Dust 4" cx="72" cy="78" r="3" fill="#FCD966"/>
+<circle id="Dust 5" cx="72" cy="69" r="3" fill="#FCD966"/>
+<circle id="Dust 6" cx="81" cy="69" r="3" fill="#FCD966"/>
+<circle id="Dust 7" cx="81" cy="60" r="3" fill="#FCD966"/>
+<circle id="Dust 8" cx="90" cy="60" r="3" fill="#FCD966"/>
+<circle id="Dust 9" cx="90" cy="51" r="3" fill="#FCD966"/>
+<circle id="Dust 10" cx="99" cy="51" r="3" fill="#FCD966"/>
+<circle id="Dust 11" cx="99" cy="42" r="3" fill="#FCD966"/>
+<circle id="Dust 12" cx="108" cy="42" r="3" fill="#FCD966"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_28787">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

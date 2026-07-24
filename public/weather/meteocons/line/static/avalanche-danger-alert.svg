@@ -1,0 +1,28 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="avalanche-danger-alert">
+<g id="Danger Zone">
+<path id="Exclamation" d="M58.7698 39.3039C61.0632 35.2241 66.9368 35.2241 69.2302 39.3038L91.0171 78.0598C93.2655 82.0594 90.3752 87 85.7869 87H42.2131C37.6248 87 34.7345 82.0594 36.9829 78.0598L58.7698 39.3039Z" fill="#DC2626"/>
+<g id="Mask group">
+<mask id="mask0_2045_37410" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="42" y="42" width="44" height="40">
+<path id="Clip" d="M62.2512 43.03C63.0143 41.6567 64.9857 41.6567 65.7488 43.03L85.7444 79.0188C86.4871 80.3557 85.5225 82 83.9956 82H44.0044C42.4775 82 41.5129 80.3556 42.2556 79.0188L62.2512 43.03Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_37410)">
+<g id="Inner">
+<rect id="Background" x="41" y="42" width="44" height="40" fill="url(#paint0_linear_2045_37410)"/>
+<path id="Hill" d="M47 83L86 67V83H47Z" fill="white"/>
+<path id="Cube" d="M55.0329 70.5595C54.6102 69.539 55.0949 68.3691 56.1153 67.9464L60.7347 66.033C61.7552 65.6103 62.9252 66.0949 63.3479 67.1153L65.2613 71.7347C65.684 72.7552 65.1994 73.9252 64.1789 74.3479L59.5595 76.2613C58.539 76.684 57.3691 76.1994 56.9464 75.1789L55.0329 70.5595Z" fill="white"/>
+<circle id="Debris 1" cx="51.5" cy="77.5" r="1.5" fill="white"/>
+<circle id="Debris 2" cx="72.5" cy="70.5" r="1.5" fill="white"/>
+<path id="Debris 3" d="M69.037 66.1861C68.8257 65.6758 69.068 65.0909 69.5782 64.8795L73.2737 63.3488C73.784 63.1374 74.369 63.3797 74.5803 63.89L74.963 64.8139C75.1743 65.3241 74.932 65.9091 74.4218 66.1204L70.7263 67.6512C70.216 67.8625 69.6311 67.6202 69.4197 67.11L69.037 66.1861Z" fill="white"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2045_37410" x1="63" y1="39.8825" x2="63" y2="96.0391" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+</defs>
+</svg>

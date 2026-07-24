@@ -18,6 +18,7 @@ import MediaPlayerWidget from "./MediaPlayerWidget";
 import RssWidget from "./RssWidget";
 import QrWidget from "./QrWidget";
 import StatusWidget from "./StatusWidget";
+import EnvironmentWidget from "./EnvironmentWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
 
 // Die EINE Render-Map "type → Widget-Komponente". Genutzt vom Live-View
@@ -39,6 +40,7 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
   if (type === "TodosWidget.tsx") return <TodosWidget config={config} />;
   if (type === "ImageWidget.tsx") return <ImageWidget config={config} dashboardId={dashboardId} />;
   if (type === "SensorWidget.tsx") return <SensorWidget config={config} />;
+  if (type === "EnvironmentWidget.tsx") return <EnvironmentWidget config={config} />;
   if (type === "CameraWidget.tsx") return <CameraWidget config={config} />;
   if (type === "RssWidget.tsx") return <RssWidget config={config} />;
   if (type === "QrWidget.tsx") return <QrWidget config={config} />;

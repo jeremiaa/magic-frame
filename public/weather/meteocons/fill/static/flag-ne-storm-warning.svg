@@ -1,0 +1,28 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="flag-ne-storm-warning" clip-path="url(#clip0_1837_4564)">
+<g id="Flag" clip-path="url(#clip1_1837_4564)">
+<g id="Pole">
+<path id="Vector" d="M44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9533 33.0514 46.8674 33.3033C46.563 34.1953 46 35.0504 46 35.9929V96H43V35.9929C43 35.0504 42.437 34.1953 42.1326 33.3033C42.0467 33.0514 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="#CBD5E1"/>
+</g>
+<path id="Flag_2" d="M82.5859 41.6113C84.9343 42.3377 84.9343 45.6623 82.5859 46.3887L53.7383 55.3105C52.13 55.8077 50.5 54.6053 50.5 52.9219V35.0781C50.5 33.3947 52.13 32.1923 53.7383 32.6895L82.5859 41.6113Z" fill="url(#paint0_linear_1837_4564)" stroke="#DC2626"/>
+<rect id="Flag_3" x="50.5" y="59.5" width="23" height="23" rx="2.5" fill="url(#paint1_linear_1837_4564)" stroke="#DC2626"/>
+<rect id="Flag Black" x="58" y="67" width="8" height="8" rx="1" fill="black"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1837_4564" x1="53" y1="32" x2="53" y2="56" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1837_4564" x1="62" y1="59" x2="62" y2="83" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<clipPath id="clip0_1837_4564">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_1837_4564">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

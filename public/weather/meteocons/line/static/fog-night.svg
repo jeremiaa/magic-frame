@@ -1,0 +1,18 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="fog-night">
+<g id="Mask group">
+<mask id="mask0_2045_28797" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="75">
+<rect id="Mask" width="128" height="75" fill="black"/>
+</mask>
+<g mask="url(#mask0_2045_28797)">
+<g id="Moon">
+<path id="Moon_2" d="M59.9971 41.8213C57.731 56.0775 69.747 69.1997 83.9111 69.085C80.9651 76.908 73.344 82.5 64.3682 82.5C52.8243 82.4999 43.5 73.2706 43.5 61.9297C43.5001 52.0638 50.5587 43.8035 59.9971 41.8213Z" stroke="#72B9D5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+<g id="Precipitation">
+<path id="Line 2" d="M40 81H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 1" d="M40 89H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+</svg>

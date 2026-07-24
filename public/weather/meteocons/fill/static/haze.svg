@@ -1,0 +1,24 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="haze" clip-path="url(#clip0_1858_9516)">
+<g id="Sky">
+<g id="Clouds">
+<g id="Cloud">
+<path id="Cloud_2" d="M55.2625 48.4746C60.1228 40.6111 70.2976 37.38 78.8152 40.9434C87.3215 44.5023 92.1381 54.0026 89.9031 62.9648L89.7419 63.6143L90.4109 63.585C97.4205 63.2791 103.5 68.9917 103.5 76.0283C103.5 82.8395 97.7719 88.4997 90.9773 88.5H37.9539C31.1276 88.5018 25.203 83.1709 24.5593 76.3604C23.9159 69.5518 28.7371 63.2124 35.4431 61.9453L35.9265 61.8535L35.8425 61.3691C35.0258 56.6239 37.1259 51.7168 41.1052 49.0127C45.0952 46.3014 50.4461 46.1537 54.5798 48.6396L55.0027 48.8945L55.2625 48.4746Z" fill="url(#paint0_linear_1858_9516)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+</g>
+</g>
+</g>
+<g id="Precipitation">
+<path id="Line 2" d="M40 95H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="12 9"/>
+<path id="Line 1" d="M40 103H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="12 9"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_9516" x1="64.0009" y1="39" x2="64.0009" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<clipPath id="clip0_1858_9516">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,39 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="soil-temperature" clip-path="url(#clip0_2029_4073)">
+<g id="Soil">
+<rect id="Dark Soil" x="37.5" y="68.5" width="53" height="23" rx="8.5" fill="url(#paint0_linear_2029_4073)" stroke="#5B3D28"/>
+<rect id="Light Soil" x="38" y="75" width="52" height="16" rx="8" fill="url(#paint1_linear_2029_4073)"/>
+<g id="Pellets">
+<path d="M71 81C71 81.5523 70.5523 82 70 82C69.4477 82 69 81.5523 69 81C69 80.4477 69.4477 80 70 80C70.5523 80 71 80.4477 71 81Z" fill="#5B3D28"/>
+<path d="M65 85C65 85.5523 64.5523 86 64 86C63.4477 86 63 85.5523 63 85C63 84.4477 63.4477 84 64 84C64.5523 84 65 84.4477 65 85Z" fill="#5B3D28"/>
+<path d="M53 85C53 85.5523 52.5523 86 52 86C51.4477 86 51 85.5523 51 85C51 84.4477 51.4477 84 52 84C52.5523 84 53 84.4477 53 85Z" fill="#5B3D28"/>
+<path d="M59 81C59 81.5523 58.5523 82 58 82C57.4477 82 57 81.5523 57 81C57 80.4477 57.4477 80 58 80C58.5523 80 59 80.4477 59 81Z" fill="#5B3D28"/>
+<path d="M77 85C77 85.5523 76.5523 86 76 86C75.4477 86 75 85.5523 75 85C75 84.4477 75.4477 84 76 84C76.5523 84 77 84.4477 77 85Z" fill="#5B3D28"/>
+</g>
+</g>
+<g id="Thermometer Mercury">
+<circle id="Reservoir" cx="64" cy="56.5" r="4.5" fill="#DC2626"/>
+<rect id="Value" x="62.5" y="40" width="3" height="14.5" rx="1.5" fill="#DC2626"/>
+</g>
+<g id="Thermometer Glass">
+<path id="Glass" d="M64 30.75C64.9968 30.75 65.9515 31.135 66.6543 31.8184C67.3568 32.5015 67.75 33.4267 67.75 34.3896V36.0234H64.5C64.3619 36.0234 64.25 36.1354 64.25 36.2734C64.25 36.4115 64.3619 36.5234 64.5 36.5234H67.75V39.9131H64.5C64.3619 39.9131 64.25 40.025 64.25 40.1631C64.25 40.3011 64.362 40.4131 64.5 40.4131H67.75V43.8027H64.5C64.3619 43.8027 64.25 43.9147 64.25 44.0527C64.2501 44.1907 64.362 44.3027 64.5 44.3027H67.75V50.9199C67.75 51.0021 67.7908 51.0793 67.8584 51.126C68.7568 51.7464 69.4882 52.567 69.9912 53.5186C70.4942 54.4702 70.7542 55.5255 70.75 56.5947V56.5957C70.75 60.2711 67.7401 63.25 64 63.25C60.2599 63.25 57.25 60.2711 57.25 56.5957L57.2617 56.1963C57.3169 55.2668 57.5717 54.3572 58.0117 53.5264C58.5146 52.5768 59.2447 51.757 60.1416 51.1377C60.2092 51.091 60.25 51.0138 60.25 50.9316V34.3896C60.25 33.4267 60.6432 32.5015 61.3457 31.8184C62.0484 31.135 63.0032 30.75 64 30.75Z" fill="url(#paint2_linear_2029_4073)" stroke="#BFDBFE" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2029_4073" x1="64" y1="68" x2="64" y2="92" gradientUnits="userSpaceOnUse">
+<stop stop-color="#654427"/>
+<stop offset="1" stop-color="#5B3D28"/>
+</linearGradient>
+<linearGradient id="paint1_linear_2029_4073" x1="64" y1="75" x2="64" y2="91" gradientUnits="userSpaceOnUse">
+<stop stop-color="#7B5B44"/>
+<stop offset="1" stop-color="#6D4930"/>
+</linearGradient>
+<linearGradient id="paint2_linear_2029_4073" x1="64" y1="30.5" x2="64" y2="63.5608" gradientUnits="userSpaceOnUse">
+<stop stop-color="#DBEAFE" stop-opacity="0.25"/>
+<stop offset="1" stop-color="#BFDBFE" stop-opacity="0.25"/>
+</linearGradient>
+<clipPath id="clip0_2029_4073">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

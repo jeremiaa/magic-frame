@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Icon } from "@iconify/react";
+import { Icon } from "./WidgetIcon";
 import { useGlassStyle } from "@/lib/ui/glass";
 import MediaPlayerWidget from "./MediaPlayerWidget";
 import RssWidget from "./RssWidget";

@@ -1,0 +1,22 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="flag-temperature-change" clip-path="url(#clip0_1837_4510)">
+<g id="Flag" clip-path="url(#clip1_1837_4510)">
+<g id="Pole">
+<path id="Vector" d="M44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9533 33.0514 46.8674 33.3033C46.563 34.1953 46 35.0504 46 35.9929V96H43V35.9929C43 35.0504 42.437 34.1953 42.1326 33.3033C42.0467 33.0514 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="#CBD5E1"/>
+</g>
+<path id="Flag_2" d="M73.4434 41.7061C75.4522 42.5759 75.4522 45.4241 73.4434 46.2939L53.9932 54.7168C52.3426 55.4312 50.5 54.2206 50.5 52.4219V35.5781C50.5 33.7794 52.3425 32.5688 53.9932 33.2832L73.4434 41.7061Z" fill="url(#paint0_linear_1837_4510)" stroke="#0F172A"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1837_4510" x1="52.5" y1="32.5" x2="63.6979" y2="44.8311" gradientUnits="userSpaceOnUse">
+<stop stop-color="#1E293B"/>
+<stop offset="1" stop-color="#0F172A"/>
+</linearGradient>
+<clipPath id="clip0_1837_4510">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_1837_4510">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

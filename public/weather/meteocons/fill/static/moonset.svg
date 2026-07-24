@@ -1,0 +1,26 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="moonset" clip-path="url(#clip0_1858_7898)">
+<g id="Horizon">
+<path id="Horizon_2" d="M37 91.9863H53.7456C55.1989 91.9863 56.6029 92.5138 57.6966 93.4708L62.0245 97.2577C63.1556 98.2474 64.8444 98.2474 65.9755 97.2577L70.3034 93.4708C71.3971 92.5138 72.8011 91.9863 74.2544 91.9863H91" stroke="#202939" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="Mask group">
+<mask id="mask0_1858_7898" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="9" width="128" height="83">
+<path id="Mask" d="M0 9H128V86H73.2195C71.7873 86 70.4023 86.5124 69.3148 87.4445L64 92L58.6852 87.4445C57.5977 86.5124 56.2127 86 54.7805 86H0V9Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_1858_7898)">
+<g id="Moon">
+<path id="Moon_2" d="M60.3018 34.582C55.2817 55.6999 73.6001 76.3477 95.3252 74.5146C91.5193 87.7702 79.1986 97.4998 64.5361 97.5C46.8375 97.5 32.5001 83.3444 32.5 65.8984C32.5 49.8688 44.6066 36.6278 60.3018 34.582Z" fill="url(#paint0_linear_1858_7898)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_7898" x1="64" y1="34" x2="64" y2="98" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+<clipPath id="clip0_1858_7898">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

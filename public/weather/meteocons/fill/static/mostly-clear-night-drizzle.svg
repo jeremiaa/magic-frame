@@ -1,0 +1,34 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="mostly-clear-night-drizzle" clip-path="url(#clip0_1858_8542)">
+<g id="Sky">
+<g id="Moon">
+<path id="Moon_2" d="M52.2529 42.5869C48.9384 57.2007 61.6736 71.1024 76.3213 70.0273C73.6524 78.9635 65.298 85.5 55.3682 85.5C43.2847 85.4999 33.5 75.8355 33.5 63.9297C33.5002 53.0673 41.6473 44.0798 52.2529 42.5869Z" fill="url(#paint0_linear_1858_8542)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="Clouds">
+<g id="Cloud">
+<path id="Cloud_2" d="M58.0142 59.8887C61.3362 54.3602 68.3654 51.9679 74.3081 54.5254C80.2916 57.1004 83.5145 63.9169 81.9858 70.2227L81.8296 70.8701L82.4946 70.8408C87.4096 70.6202 91.4995 74.7706 91.4995 79.6602C91.4993 84.3966 87.6454 88.499 82.8833 88.499C70.5116 88.4877 58.1361 88.5 45.7671 88.5C40.9828 88.5012 36.9766 84.6313 36.5405 79.8877C36.1039 75.1358 39.3371 70.5714 44.0405 69.6572L44.5181 69.5635L44.438 69.084C43.8796 65.7473 45.2906 62.2583 48.063 60.3203C50.7975 58.4089 54.4854 58.3015 57.3228 60.0566L57.7534 60.3223L58.0142 59.8887Z" fill="url(#paint1_linear_1858_8542)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+</g>
+</g>
+</g>
+<g id="Precipitation">
+<g id="Raindrops">
+<path id="Raindrop 1" d="M52 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" transform="translate(0, 8)"/>
+<path id="Raindrop 2" d="M64 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" transform="translate(0, 0)"/>
+<path id="Raindrop 3" d="M76 87V90" stroke="#0A5AD4" stroke-width="4" stroke-linecap="round" transform="translate(0, 8)"/>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_8542" x1="55" y1="42" x2="55" y2="86" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1858_8542" x1="64.0007" y1="53" x2="64.0007" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<clipPath id="clip0_1858_8542">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,32 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-alert" clip-path="url(#clip0_3086_22501)">
+<g id="Mask group">
+<mask id="mask0_3086_22501" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Alert Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 128H0V0H128V128ZM80.1963 64C77.8869 60 72.1131 60 69.8037 64L57.6797 85C55.3703 89 58.2572 94 62.876 94H87.124C91.7428 94 94.6297 89 92.3203 85L80.1963 64Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_3086_22501)">
+<g id="Solar Panel">
+<rect id="Panel" x="38.5" y="39.5" width="35" height="49" rx="5.5" fill="url(#paint0_linear_3086_22501)" stroke="#212A3B"/>
+<path id="Lines" d="M56.5 40V54.5H73V55.5H56.5V71.5H73V72.5H56.5V88H55.5V72.5H39V71.5H55.5V55.5H39V54.5H55.5V40H56.5Z" fill="#304878"/>
+</g>
+</g>
+</g>
+<g id="Alert">
+<path id="Exclamation" d="M72.835 65.75C73.7972 64.0833 76.2028 64.0833 77.165 65.75L89.2891 86.75C90.2513 88.4167 89.0485 90.5 87.124 90.5H62.876C61.0115 90.5 59.8243 88.5447 60.627 86.9072L60.7109 86.75L72.835 65.75Z" fill="url(#paint1_linear_3086_22501)" stroke="#202939"/>
+<path id="ExclamationMark" d="M75.7582 81.59H74.2642L73.4182 76.568V73.184H76.5862V76.568L75.7582 81.59ZM76.6042 86H73.4002V82.994H76.6042V86Z" fill="white"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3086_22501" x1="56" y1="39" x2="56" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#304878"/>
+<stop offset="1" stop-color="#212A3B"/>
+</linearGradient>
+<linearGradient id="paint1_linear_3086_22501" x1="75" y1="64" x2="75" y2="91" gradientUnits="userSpaceOnUse">
+<stop stop-color="#364D6E"/>
+<stop offset="1" stop-color="#202939"/>
+</linearGradient>
+<clipPath id="clip0_3086_22501">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,34 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="wind-direction-w">
+<g id="Wind Direction">
+<circle id="Housing" cx="64" cy="64" r="39.5" fill="url(#paint0_linear_1910_19234)" stroke="#1E293B"/>
+<g id="Letters">
+<path id="North" d="M65.2493 36.02V31.88H67.0893V39H65.2193L62.7493 34.88V39H60.8993V31.88H62.7493L65.2493 36.02Z" fill="#64748B"/>
+<path id="East" d="M92.116 65.12V66.42H95.976V68H90.246V60.88H95.876V62.43H92.116V63.6H95.416V65.12H92.116Z" fill="#64748B"/>
+<path id="South" d="M64.0481 97.23C63.0948 97.23 62.3448 97.0133 61.7981 96.58C61.2514 96.14 60.9581 95.5167 60.9181 94.71H62.7681C62.8148 95.39 63.2548 95.73 64.0881 95.73C64.8148 95.73 65.1781 95.4933 65.1781 95.02C65.1781 94.8333 65.1114 94.69 64.9781 94.59C64.8514 94.4833 64.6348 94.39 64.3281 94.31L62.9281 93.98C61.7014 93.6933 61.0881 93.0167 61.0881 91.95C61.0881 91.2967 61.3248 90.76 61.7981 90.34C62.2714 89.92 62.9781 89.71 63.9181 89.71C64.8181 89.71 65.5214 89.91 66.0281 90.31C66.5348 90.7033 66.8081 91.2633 66.8481 91.99H65.0381C64.9581 91.43 64.5814 91.15 63.9081 91.15C63.6148 91.15 63.3814 91.21 63.2081 91.33C63.0414 91.4433 62.9581 91.5967 62.9581 91.79C62.9581 92.09 63.1848 92.2967 63.6381 92.41L65.0981 92.75C66.4181 93.0633 67.0781 93.7767 67.0781 94.89C67.0781 95.6233 66.8081 96.1967 66.2681 96.61C65.7281 97.0233 64.9881 97.23 64.0481 97.23Z" fill="#64748B"/>
+<path id="West" d="M37.1605 64.01L37.9505 60.88H39.8205L37.7505 68H35.9505L35.0005 63.45L34.0905 68H32.2505L30.1805 60.88H32.0705L32.8605 64.01L33.1905 65.7L33.4805 64.01L34.1505 60.88H35.8705L36.5605 64.01L36.8405 65.67L37.1605 64.01Z" fill="#64748B"/>
+</g>
+</g>
+<g id="Wind Direction_2">
+<g id="Pointer" filter="url(#filter0_d_1910_19234)">
+<path id="Pointer Up" d="M83.3429 56.9841L42.669 62.3682C40.4437 62.6628 40.4437 64.3373 42.669 64.6319L83.343 70.0159C84.3541 70.1498 84.8933 68.8615 84.0881 68.2352L79.0149 64.2894C78.5001 63.889 78.5001 63.111 79.0149 62.7107L84.0881 58.7648C84.8933 58.1386 84.3541 56.8503 83.3429 56.9841Z" fill="white"/>
+<circle id="Holder" cx="64" cy="63.5" r="1.5" transform="rotate(-90 64 63.5)" fill="#475569" stroke="#293649"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_1910_19234" x="41" y="56.9744" width="43.4775" height="14.0512" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.117647 0 0 0 0 0.160784 0 0 0 0 0.231373 0 0 0 1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1910_19234"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1910_19234" result="shape"/>
+</filter>
+<linearGradient id="paint0_linear_1910_19234" x1="64" y1="24" x2="64" y2="104" gradientUnits="userSpaceOnUse">
+<stop stop-color="#334155"/>
+<stop offset="1" stop-color="#1E293B"/>
+</linearGradient>
+</defs>
+</svg>

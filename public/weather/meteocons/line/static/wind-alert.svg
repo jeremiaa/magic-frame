@@ -1,0 +1,12 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="wind-alert">
+<g id="Alert">
+<path id="Exclamation" d="M98.4019 70.5C99.5566 68.5 102.443 68.5 103.598 70.5L115.722 91.5C116.877 93.5 115.434 96 113.124 96H88.8756C86.5662 96 85.1229 93.5 86.2776 91.5L98.4019 70.5Z" fill="#202939"/>
+<path id="ExclamationMark" d="M101.758 86.59H100.264L99.4182 81.568V78.184H102.586V81.568L101.758 86.59ZM102.604 91H99.4002V87.994H102.604V91Z" fill="white"/>
+</g>
+<g id="Wind">
+<path id="Wind Line 1" d="M87.79 40.1352C93.9756 33.347 105 38.4049 105 47.4463C105 53.2746 100.522 58 95 58H24" stroke="#E2E8F0" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Wind Line 1_2" d="M60.1281 87.868C66.4202 94.5186 78 89.8717 78 80.5556C78 74.7263 73.3503 70 67.6154 70C61.8805 70 24 70 24 70" stroke="#E2E8F0" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+</svg>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Droplets, Wind, Sun } from "lucide-react";
-import { wmoToIcon, wmoToText } from "@/lib/weather/wmo";
+import { wmoToIcon, wmoToText, moonPhaseFraction } from "@/lib/weather/wmo";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function ClockWidget({ config }: { config?: any }) {
@@ -211,7 +211,7 @@ export default function ClockWidget({ config }: { config?: any }) {
           <div className="flex flex-col gap-1 mt-1">
              <div className="flex items-center gap-2">
                 <div style={{ width: '1.5em', height: '1.5em' }} className="shrink-0 opacity-90 inline-block drop-shadow-md">
-                   {wmoToIcon(weather.current.weather_code, isDay, config.iconSet)}
+                   {wmoToIcon(weather.current.weather_code, isDay, config.iconSet, { style: (config as any)?.meteoconsStyle, animated: (config as any)?.meteoconsAnimated, moonPhase: ((config as any)?.meteoconsMoonPhase ?? true) ? moonPhaseFraction(new Date()) : undefined })}
                 </div>
                 <span style={{ fontSize: '1.2em' }} className="font-bold drop-shadow-md tracking-wide">
                    {config.location ? config.location.split(',')[0] : t("Wetter")}, {Math.round(weather.current.temperature_2m)}{unitTemp === "fahrenheit" ? "°F" : "°C"}

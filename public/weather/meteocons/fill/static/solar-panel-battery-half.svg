@@ -1,0 +1,31 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-battery-half" clip-path="url(#clip0_3086_22616)">
+<g id="Mask group">
+<mask id="mask0_3086_22616" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+<path id="Battery Mask" fill-rule="evenodd" clip-rule="evenodd" d="M128 128H0V0H128V128ZM78 67C76.963 67 76.0183 67.3947 75.3076 68.042C72.3202 68.3854 70 70.9206 70 74V86C70 89.3137 72.6863 92 76 92H82C85.3137 92 88 89.3137 88 86V74C88 70.9202 85.6793 68.385 82.6914 68.042C81.9808 67.395 81.0367 67 80 67H78Z" fill="black"/>
+</mask>
+<g mask="url(#mask0_3086_22616)">
+<g id="Solar Panel">
+<rect id="Panel" x="43.5" y="39.5" width="35" height="49" rx="5.5" fill="url(#paint0_linear_3086_22616)" stroke="#212A3B"/>
+<path id="Lines" d="M61.5 40V54.5H78V55.5H61.5V71.5H78V72.5H61.5V88H60.5V72.5H44V71.5H60.5V55.5H44V54.5H60.5V40H61.5Z" fill="#304878"/>
+</g>
+</g>
+</g>
+<g id="Battery">
+<g id="Shell">
+<path d="M82 88V89H76V88H82ZM84 86V74C84 72.8954 83.1046 72 82 72H76C74.8954 72 74 72.8954 74 74V86C74 87.1046 74.8954 88 76 88V89C74.3949 89 73.0842 87.7394 73.0039 86.1543L73 86V74C73 72.3431 74.3431 71 76 71H82C83.6569 71 85 72.3431 85 74V86L84.9961 86.1543C84.9158 87.7394 83.6051 89 82 89V88C83.1046 88 84 87.1046 84 86Z" fill="#F8AF18"/>
+<path d="M77 71C77 70.4477 77.4477 70 78 70H80C80.5523 70 81 70.4477 81 71H77Z" fill="#F8AF18"/>
+</g>
+<rect id="Level" x="75" y="77" width="8" height="10" rx="1" fill="#F8AF18"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3086_22616" x1="61" y1="39" x2="61" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#304878"/>
+<stop offset="1" stop-color="#212A3B"/>
+</linearGradient>
+<clipPath id="clip0_3086_22616">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

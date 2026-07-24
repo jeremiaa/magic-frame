@@ -1,0 +1,46 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="windsock-calm" clip-path="url(#clip0_3129_28969)">
+<g id="Windsock" clip-path="url(#clip1_3129_28969)">
+<g id="Pole">
+<path id="_Pole Detail" d="M44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9533 33.0514 46.8674 33.3033C46.563 34.1953 46 35.0504 46 35.9929V96H43V35.9929C43 35.0504 42.437 34.1953 42.1326 33.3033C42.0467 33.0514 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="#CBD5E1"/>
+</g>
+<g id="Sock">
+<path id="_Sock Detail" d="M50.2973 46.4922L48.7861 43.6207C48.3988 42.8849 47.802 42.2804 47.0712 41.8837C45.4725 41.0158 43.5432 41.0158 41.9445 41.8837C41.2137 42.2804 40.6169 42.8849 40.2297 43.6207L38.7184 46.4922" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Segment 1" d="M51.3984 45.9922C52.9693 45.9923 54.1552 47.3 53.9932 48.7568L53.2822 53.9922L35.7344 53.9922L35.0234 48.7568C34.8614 47.3 36.0463 45.9923 37.6172 45.9922L51.3984 45.9922Z" fill="url(#paint0_linear_3129_28969)" stroke="#DC2626"/>
+<path id="Segment 2" d="M52.4908 59.9922L36.5259 59.9922L35.8658 54.9922L53.15 54.9922L52.4908 59.9922Z" fill="url(#paint1_linear_3129_28969)" stroke="#F1F5F9"/>
+<path id="Segment 3" d="M51.3068 68.9922L37.7101 68.9922L36.6574 60.9922L52.3586 60.9922L51.3068 68.9922Z" fill="url(#paint2_linear_3129_28969)" stroke="#DC2626"/>
+<path id="Segment 4" d="M50.5174 74.9922L38.4998 74.9922L37.8416 69.9922L51.1746 69.9922L50.5174 74.9922Z" fill="url(#paint3_linear_3129_28969)" stroke="#F1F5F9"/>
+<path id="Segment 5" d="M49.8012 80.4268L49.8002 80.4346C49.7171 81.1448 49.4711 82.0681 49.017 82.7979C48.5672 83.5207 47.959 83.9922 47.1391 83.9922L41.8764 83.9922C41.0565 83.9922 40.4483 83.5207 39.9985 82.7979C39.5444 82.0681 39.2984 81.1447 39.2153 80.4346L39.2143 80.4268L38.6323 75.9922L50.3842 75.9922L49.8012 80.4268Z" fill="url(#paint4_linear_3129_28969)" stroke="#DC2626"/>
+</g>
+<rect id="Ring" x="42" y="40" width="5" height="2" rx="1" fill="#94A3B8"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3129_28969" x1="54.8721" y1="49.9922" x2="34.011" y2="49.9922" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<linearGradient id="paint1_linear_3129_28969" x1="53.7203" y1="57.4922" x2="34.7729" y2="57.4922" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="#F1F5F9"/>
+</linearGradient>
+<linearGradient id="paint2_linear_3129_28969" x1="52.9289" y1="64.9922" x2="35.979" y2="64.9922" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<linearGradient id="paint3_linear_3129_28969" x1="51.7449" y1="72.4922" x2="37.0081" y2="72.4922" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="#F1F5F9"/>
+</linearGradient>
+<linearGradient id="paint4_linear_3129_28969" x1="50.9545" y1="79.9922" x2="38.2421" y2="79.9922" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<clipPath id="clip0_3129_28969">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_3129_28969">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

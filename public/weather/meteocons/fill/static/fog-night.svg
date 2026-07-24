@@ -1,0 +1,24 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="fog-night">
+<g id="Mask group">
+<mask id="mask0_1868_4607" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="75">
+<rect id="Mask" width="128" height="75" fill="black"/>
+</mask>
+<g mask="url(#mask0_1868_4607)">
+<g id="Moon">
+<path id="Moon_2" d="M61.2529 40.5869C57.9384 55.2007 70.6736 69.1024 85.3213 68.0273C82.6524 76.9635 74.298 83.5 64.3682 83.5C52.2847 83.4999 42.5 73.8355 42.5 61.9297C42.5002 51.0673 50.6473 42.0798 61.2529 40.5869Z" fill="url(#paint0_linear_1868_4607)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+<g id="Precipitation">
+<path id="Line 2" d="M40 81H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 1" d="M40 89H88" stroke="#E2E8F0" stroke-width="3" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1868_4607" x1="64" y1="40" x2="64" y2="84" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+</defs>
+</svg>

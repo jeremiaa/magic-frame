@@ -1,0 +1,26 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="windsock" clip-path="url(#clip0_3129_29012)">
+<g id="Windsock" clip-path="url(#clip1_3129_29012)">
+<g id="Pole">
+<path id="_Pole Detail" d="M44.5 30C45.8807 30 47 31.1193 47 32.5C47 32.7813 46.9533 33.0514 46.8674 33.3033C46.563 34.1953 46 35.0504 46 35.9929V96H43V35.9929C43 35.0504 42.437 34.1953 42.1326 33.3033C42.0467 33.0514 42 32.7813 42 32.5C42 31.1193 43.1193 30 44.5 30Z" fill="#CBD5E1"/>
+</g>
+<g id="Sock">
+<path id="_Sock Detail" d="M50 35.2105L47.1286 36.7218C46.3927 37.1091 45.7883 37.7058 45.3915 38.4366C44.5237 40.0353 44.5237 41.9646 45.3915 43.5633C45.7883 44.2941 46.3927 44.8909 47.1286 45.2782L50 46.7895" stroke="#64748B" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Segment 1" d="M49 34.1096C49 32.2565 50.5542 30.8147 52.3313 31.0194L58 31.7895V50.2105L52.3313 50.9806C50.5542 51.1853 49 49.7435 49 47.8904V34.1096Z" fill="#EF4444"/>
+<path id="Segment 2" d="M58 31.7875L64 32.5789V49.421L58 50.2124V31.7875Z" fill="#F1F5F9"/>
+<path id="Segment 3" d="M64 32.5789L73 33.7631V48.2368L64 49.421V32.5789Z" fill="#EF4444"/>
+<path id="Segment 4" d="M73 33.7629L79 34.5526V47.4471L73 48.2371V33.7629Z" fill="#F1F5F9"/>
+<path id="Segment 5" d="M79 34.5533L84 35.2105C85.5193 35.3882 88 36.2632 88 38.3684V43.6316C88 45.7369 85.5193 46.6118 84 46.7895L79 47.4467V34.5533Z" fill="#EF4444"/>
+</g>
+<rect id="Ring" x="42" y="40" width="5" height="2" rx="1" fill="#94A3B8"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3129_29012">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+<clipPath id="clip1_3129_29012">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

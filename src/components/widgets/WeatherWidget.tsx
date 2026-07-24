@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { Droplets, Wind, Sunrise, Sunset, Sun } from "lucide-react";
-import { wmoToIcon } from "@/lib/weather/wmo";
+import { wmoToIcon, uvToMeteoconName, windToBeaufortMeteoconName, moonPhaseFraction } from "@/lib/weather/wmo";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const clampN = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -50,12 +50,33 @@ function weatherBgCss(code: number, isNight: boolean): string {
 
 type StatIconKey = "droplets" | "wind" | "sunrise" | "sunset" | "uv";
 
-function StatIcon({ k, sizeEm = 1 }: { k: StatIconKey; iconSet?: string; sizeEm?: number }) {
-  // Stat-Icons sind immer Line-Icons (Lucide), unabhängig vom Wetter-iconSet.
-  // Vorher gab's einen Emoji-Branch für celestial/forecast — sah inkonsistent
-  // aus zwischen Hauptkarte und Subtext.
+// Stage 2: welchen Meteocons-Namen ein Stat-Icon bekommt. UV und Wind sind
+// wertabhängig (uv-index-N farbcodiert, wind-beaufort-N nach Windstärke).
+function statMeteoconName(k: StatIconKey, value?: number, windUnit?: string): string | null {
+  if (k === "droplets") return "humidity";
+  if (k === "sunrise") return "sunrise";
+  if (k === "sunset") return "sunset";
+  if (k === "uv") return typeof value === "number" ? uvToMeteoconName(value) : "uv-index";
+  if (k === "wind") return typeof value === "number" ? windToBeaufortMeteoconName(value, windUnit) : "wind";
+  return null;
+}
+
+function StatIcon({ k, sizeEm = 1, iconSet, meteoStyle, value, windUnit }: {
+  k: StatIconKey; iconSet?: string; sizeEm?: number;
+  meteoStyle?: "fill" | "line"; value?: number; windUnit?: string;
+}) {
   const style: CSSProperties = { width: `${sizeEm}em`, height: `${sizeEm}em` };
   const cls = "opacity-80";
+  // Meteocons (Opt-in via meteoconsStats): eigene, statische Stat-Icons.
+  // Sonst immer Lucide-Line-Icons, unabhängig vom Wetter-iconSet — das ist
+  // die Grundregel für konsistente Info-Zeilen.
+  if (iconSet === "meteocons") {
+    const name = statMeteoconName(k, value, windUnit);
+    if (name) {
+      const s = meteoStyle === "line" ? "line" : "fill";
+      return <img src={`/weather/meteocons/${s}/static/${name}.svg`} style={{ ...style, width: `${sizeEm * 1.25}em`, height: `${sizeEm * 1.25}em` }} className="object-contain shrink-0 -my-[0.15em]" alt="" />;
+    }
+  }
   if (k === "droplets") return <Droplets style={style} strokeWidth={2} className={cls} />;
   if (k === "wind") return <Wind style={style} strokeWidth={2} className={cls} />;
   if (k === "sunrise") return <Sunrise style={style} strokeWidth={2} />;
@@ -231,6 +252,15 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
 
   const uv = typeof data.current?.uv_index === "number" ? data.current.uv_index : undefined;
   const iconSet = config?.iconSet;
+  // Stat-Icons (UV/Wind/Feuchte/Sonnenzeiten) bleiben standardmäßig Lucide —
+  // das ist die dokumentierte Grundregel. Die wertbasierten Meteocons-Varianten
+  // (uv-index-N, wind-beaufort-N) sind reines Opt-in über meteoconsStats.
+  const statIconSet = iconSet === "meteocons" && config?.meteoconsStats === true ? "meteocons" : "lucide";
+  // Größe der Vorschau-/Stunden-Icons, einstellbar in % (Default 100 = wie
+  // bisher: 1.4em Vorschau, 1.2em Stunden-Strip).
+  const fcIconScale = (config?.forecastIconSize ?? 100) / 100;
+  // Größe des Haupticons (aktuelles Wetter), Default 100 = 2.2em wie bisher.
+  const curIconScale = (config?.currentIconSize ?? 100) / 100;
 
   // Hourly-Strip
   const showHourly = !!config?.showHourly;
@@ -261,9 +291,10 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
   })();
 
   return (
-    <div className={`relative flex flex-col w-full h-full overflow-hidden ${weatherBgOn ? "rounded-[1.4em] p-[0.8em]" : ""}`}>
+    <div className={`relative flex flex-col w-full h-full overflow-hidden ${weatherBgOn ? "p-[0.8em]" : ""}`}
+         style={weatherBgOn ? { borderRadius: "var(--mf-inner-radius, 1.4em)" } : undefined}>
       {weatherBgOn && (
-        <div className="absolute inset-0 rounded-[1.4em] overflow-hidden pointer-events-none" aria-hidden="true" style={{ opacity: weatherBgOpacity / 100 }}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true" style={{ opacity: weatherBgOpacity / 100, borderRadius: "var(--mf-inner-radius, 1.4em)" }}>
           {/* skaliert + geblurrt = weiche, unscharfe Wetterstimmung */}
           <div className="absolute inset-0" style={{ background: weatherBgCss(currentCode, isNight), filter: `blur(${weatherBgBlur}px)`, transform: "scale(1.25)" }} />
           {/* leichte Abdunkelung für Text-Lesbarkeit */}
@@ -272,7 +303,10 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
       )}
       <div className={`relative z-[1] flex items-center justify-center flex-1 overflow-hidden ${flexDirectionClass}`}>
       {/* Current Weather */}
-      <div className="flex flex-col min-w-0 overflow-hidden shrink-0">
+      {/* Kein overflow-hidden hier: das würde das per transform vergrößerte
+          Haupticon abschneiden. Location/Subtext kürzen sich über ihr eigenes
+          text-ellipsis; der äußere Content-Container clippt am Widget-Rand. */}
+      <div className="flex flex-col min-w-0 shrink-0">
         {location && (
            <span
               style={{ fontSize: `${locationSizeEm}em`, opacity: locationOpacity }}
@@ -283,8 +317,12 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
         )}
         <div className="flex items-center gap-[0.5em]">
           <span style={{ fontSize: '4.2em' }} className="tracking-tighter leading-none">{currentTemp}{tempSuffix}</span>
-          <div style={{ width: '2.2em', height: '2.2em' }} className="shrink-0">
-             {wmoToIcon(currentCode, !isNight, config?.iconSet)}
+          {/* Größe per transform statt Box-Maße → das Icon skaliert in den
+              vorhandenen Freiraum (Zeilenhöhe kommt von der 4.2em-Temperatur),
+              ohne das Widget zu vergrößern. Origin links = wächst nach rechts,
+              überlappt die Temperatur nicht. */}
+          <div style={{ width: '2.2em', height: '2.2em', transform: `scale(${curIconScale})`, transformOrigin: 'left center' }} className="shrink-0">
+             {wmoToIcon(currentCode, !isNight, config?.iconSet, { style: config?.meteoconsStyle, animated: config?.meteoconsAnimated, moonPhase: (config?.meteoconsMoonPhase ?? true) ? moonPhaseFraction(new Date(nowTick)) : undefined })}
           </div>
         </div>
         <div
@@ -304,19 +342,19 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
           >
             {config?.showHumidity && humidity !== undefined && (
               <span className="inline-flex items-center gap-[0.3em]">
-                 <StatIcon k="droplets" iconSet={iconSet} />
+                 <StatIcon k="droplets" iconSet={statIconSet} meteoStyle={config?.meteoconsStyle} />
                  {humidity}%
               </span>
             )}
             {config?.showWind && windSpeed !== undefined && (
               <span className="inline-flex items-center gap-[0.3em]">
-                 <StatIcon k="wind" iconSet={iconSet} />
+                 <StatIcon k="wind" iconSet={statIconSet} meteoStyle={config?.meteoconsStyle} value={windSpeed} windUnit={unitWind} />
                  {Math.round(windSpeed)} {windUnitLabel}
               </span>
             )}
             {config?.showUv && uv !== undefined && (
               <span className="inline-flex items-center gap-[0.3em]">
-                 <StatIcon k="uv" iconSet={iconSet} />
+                 <StatIcon k="uv" iconSet={statIconSet} meteoStyle={config?.meteoconsStyle} value={uv} />
                  UV {Math.round(uv)}
               </span>
             )}
@@ -326,13 +364,13 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
           <div style={{ fontSize: `${subtextSizeEm * 0.8}em` }} className="mt-[0.3em] opacity-60 inline-flex items-center gap-[0.8em]">
             {sunrise && (
                <span className="inline-flex items-center gap-[0.3em]">
-                  <StatIcon k="sunrise" iconSet={iconSet} />
+                  <StatIcon k="sunrise" iconSet={statIconSet} meteoStyle={config?.meteoconsStyle} />
                   {formatHm(sunrise)}
                </span>
             )}
             {sunset && (
                <span className="inline-flex items-center gap-[0.3em]">
-                  <StatIcon k="sunset" iconSet={iconSet} />
+                  <StatIcon k="sunset" iconSet={statIconSet} meteoStyle={config?.meteoconsStyle} />
                   {formatHm(sunset)}
                </span>
             )}
@@ -346,8 +384,13 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
           {forecast.map((day: any, i: number) => (
             <div key={i} className="flex flex-col items-center gap-[0.4em]">
               <span style={{ fontSize: '0.9em' }} className="opacity-80 tracking-wide font-medium">{day.day}</span>
-              <div style={{ width: '1.4em', height: '1.4em' }} className="opacity-90 drop-shadow-sm">
-                 {wmoToIcon(day.code, true, config?.iconSet)}
+              {/* transform statt Box → Icon wächst in den Zeilenabstand,
+                  Spaltenhöhe (und damit das Widget) bleibt konstant. */}
+              <div style={{ width: '1.4em', height: '1.4em', transform: `scale(${fcIconScale})` }} className="opacity-90 drop-shadow-sm">
+                 {/* Vorhersage per Default statisch — 5-20 gleichzeitige
+                     Animationen ruckeln auf Tablets/TVs. iconAnimatedAll
+                     (Opt-in) animiert auch hier. */}
+                 {wmoToIcon(day.code, true, config?.iconSet, { style: config?.meteoconsStyle, animated: (config?.meteoconsAnimated ?? false) && (config?.iconAnimatedAll ?? false) })}
               </div>
               <div className="flex flex-col items-center leading-tight mt-1" style={{ fontSize: '0.85em' }}>
                 <span className="font-bold">{day.max}{tempSuffix}</span>
@@ -371,8 +414,8 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
                 <span style={{ fontSize: '0.65em' }} className="opacity-70 uppercase tracking-wider font-medium whitespace-nowrap">
                   {h.label}
                 </span>
-                <div style={{ width: '1.2em', height: '1.2em' }} className="opacity-90 drop-shadow-sm">
-                  {wmoToIcon(h.code, h.isDay, config?.iconSet)}
+                <div style={{ width: '1.2em', height: '1.2em', transform: `scale(${fcIconScale})` }} className="opacity-90 drop-shadow-sm">
+                  {wmoToIcon(h.code, h.isDay, config?.iconSet, { style: config?.meteoconsStyle, animated: (config?.meteoconsAnimated ?? false) && (config?.iconAnimatedAll ?? false) })}
                 </div>
                 {h.pop > 5 && (
                   <span style={{ fontSize: '0.55em' }} className="text-cyan-300 font-medium leading-none">

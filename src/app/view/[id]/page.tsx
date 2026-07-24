@@ -244,9 +244,22 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     return () => clearTimeout(id);
   }, [viewSettings?.autoRefreshHours]);
 
+  // Randlos-Modus (opt-in pro View): kein Außenrand, keine Bodenreserve,
+  // Kachelabstand einstellbar (Default 0 im Randlos-Modus). Bestehende Views
+  // (edgeToEdge unset) rechnen exakt wie bisher — kein Pixel ändert sich.
+  const edgeToEdge = viewSettings?.edgeToEdge === true;
+  const tileGap = edgeToEdge
+    ? Math.max(0, Math.min(16, Number(viewSettings?.tileGap ?? 0) || 0))
+    : 16;
+
   useEffect(() => {
      if (typeof window !== "undefined") {
        const computeRowHeight = () => {
+          if (edgeToEdge) {
+             // Randlos: volle Höhe minus 23 Kachelabstände.
+             const availableH = window.innerHeight - tileGap * 23;
+             return Math.max(10, Math.floor(availableH / 24));
+          }
           // Bottom offset is 65px. Padding top is 32px (md:pt-8).
           // 23 vertical gaps of 16px = 368px.
           const availableH = (window.innerHeight - 65) - 32 - 368;
@@ -281,7 +294,8 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
           cancelAnimationFrame(raf);
        };
      }
-  }, []);
+     // edgeToEdge/tileGap kommen async mit den View-Settings — neu rechnen.
+  }, [edgeToEdge, tileGap]);
 
   // Dummy Wallpapers for initial view
   const wallpapers = [
@@ -462,14 +476,25 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     <div className="relative w-screen h-screen overflow-hidden text-white font-sans bg-black">
       <WallpaperEngine dashboardId={dashboardId} config={wallpaperConfig} />
 
-      <div className="absolute inset-x-0 top-0 z-20 dashboard-static-grid p-4 md:px-8 md:pt-8" style={{ bottom: '65px' }}>
+      <div
+        className={`absolute inset-x-0 top-0 z-20 dashboard-static-grid ${edgeToEdge ? "p-0" : "p-4 md:px-8 md:pt-8"}`}
+        style={{
+          bottom: edgeToEdge ? 0 : "65px",
+          ["--mf-tile-radius" as any]: edgeToEdge ? "0px" : "1.5rem",
+          // Nur im Randlos-Modus gesetzt: Widget-interne Flächen (Bild-Radius,
+          // Wetter-Hintergrund …) nutzen sie mit je eigenem Fallback — normale
+          // Views sehen dadurch exakt ihre bisherigen Radien.
+          ...(edgeToEdge ? ({ ["--mf-inner-radius" as any]: "0px" } as Record<string, string>) : {}),
+        }}
+      >
          <ResponsiveGridLayout
            className="layout"
            layouts={{ lg: layout }}
            breakpoints={{ lg: 0 }}
            cols={{ lg: 24 }}
            rowHeight={rowHeight}
-           margin={[16, 16]}
+           margin={[tileGap, tileGap]}
+           containerPadding={edgeToEdge ? [0, 0] : undefined}
            isDraggable={false}  // Static for the live dashboard
            isResizable={false}  // Static for the live dashboard
            compactType={null}
@@ -481,9 +506,20 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
                (w.type === 'HomeAssistantWidget.tsx') ||
                (w.type === 'HANotificationWidget.tsx') ||
                (w.type === 'CalendarWidget.tsx');
-             const hasOuterBox = !isCardBased && w.bgOpacity > 0;
-             const outerBgOpacity = isCardBased ? 0 : w.bgOpacity / 100;
+             // Bild + Kamera füllen ihre Kachel selbst randlos — die Host-Box
+             // (bgOpacity + Innen-Padding) ist dort seit #39 als sinnlos aus
+             // dem Inspector verbannt; Alt-Configs mit Restwert bekamen sie
+             // trotzdem. Jetzt konsequent: nie eine Box um Bild/Kamera.
+             const fillsOwnTile = w.type === 'ImageWidget.tsx' || w.type === 'CameraWidget.tsx';
+             const hasOuterBox = !isCardBased && !fillsOwnTile && w.bgOpacity > 0;
+             const outerBgOpacity = (isCardBased || fillsOwnTile) ? 0 : w.bgOpacity / 100;
              const paddingClass = isCardBased ? 'p-0' : (hasOuterBox ? 'p-4 md:p-6' : 'p-0');
+             // Schwebende Karte im Randlos-Modus: Widget liegt ÜBER dem
+             // Hintergrund-Raster (z. B. Wetter auf dem Foto) und behält den
+             // normalen runden Karten-Look. "initial" macht die Innen-Radius-
+             // Variable ungültig → Widget-interne Flächen fallen auf ihre
+             // Normal-Radien zurück.
+             const floating = edgeToEdge && w.config?.floatingCard === true;
              const justifyClass = isCardBased ? 'justify-start' : 'justify-center';
 
               return (
@@ -492,9 +528,13 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
                  style={{ zIndex: typeof w.config?.zIndex === "number" ? w.config.zIndex : index }}
                >
                  <div className={`w-full h-full flex ${justifyClass} flex-col ${paddingClass} rounded-3xl overflow-hidden transition-opacity duration-500 ${(userHiddenWidgets[w.i] || autoHiddenWidgets[w.i] || triggerHiddenWidgets[w.i]) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-                      style={{ 
+                      style={{
                         containerType: 'size',
-                        backgroundColor: `rgba(0,0,0, ${outerBgOpacity})`, 
+                        // Randlos-Modus: eckige Kacheln (CSS-Var vom Canvas);
+                        // schwebende Karten behalten den normalen Radius.
+                        borderRadius: floating ? '1.5rem' : 'var(--mf-tile-radius, 1.5rem)',
+                        ...(floating ? ({ ['--mf-inner-radius' as any]: 'initial' } as Record<string, string>) : {}),
+                        backgroundColor: `rgba(0,0,0, ${outerBgOpacity})`,
                         backdropFilter: outerBgOpacity > 0 ? "blur(12px)" : "none",
                         border: outerBgOpacity > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
                         transform: (w.config?.offsetX || w.config?.offsetY) ? `translate(${w.config?.offsetX || 0}px, ${w.config?.offsetY || 0}px)` : "none",

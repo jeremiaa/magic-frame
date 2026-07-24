@@ -1,0 +1,16 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="tornado" clip-path="url(#clip0_3111_28341)">
+<g id="Tornado">
+<path id="Line 5" d="M56 90H72" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 4" d="M47 77H81" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 3" d="M42 64H87" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 2" d="M37 51H91" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Line 1" d="M32 38H96" stroke="#94A3B8" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_3111_28341">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

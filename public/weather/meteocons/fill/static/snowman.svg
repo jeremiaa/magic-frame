@@ -1,0 +1,73 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="snowman" clip-path="url(#clip0_2045_50276)">
+<g id="Snowman">
+<circle id="Body" cx="64" cy="76" r="20.5" fill="url(#paint0_linear_2045_50276)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+<g id="Buttons">
+<circle id="Top Button" cx="64" cy="69" r="2" fill="#364D6E"/>
+<circle id="Middle Button" cx="64" cy="75" r="2" fill="#364D6E"/>
+<circle id="Bottom Button" cx="64" cy="81" r="2" fill="#364D6E"/>
+</g>
+<g id="Arms">
+<circle id="Right Arm" cx="83.5" cy="68.5" r="4" fill="url(#paint1_linear_2045_50276)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+<circle id="Left Arm" cx="44.5" cy="68.5" r="4" fill="url(#paint2_linear_2045_50276)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+</g>
+<circle id="Head" cx="64" cy="46" r="14.5" fill="url(#paint3_linear_2045_50276)" stroke="#E6EFFC" stroke-miterlimit="10"/>
+<path id="Mouth" d="M59.5 51.5L60.3448 51.8754C62.6718 52.9097 65.3282 52.9097 67.6552 51.8754L68.5 51.5" stroke="#364D6E" stroke-width="2" stroke-linecap="round"/>
+<path id="Nose" d="M63.7373 45.5449C63.9005 45.4837 64.0796 45.4873 64.2305 45.541C64.2786 45.5582 64.3264 45.5893 64.3535 45.7363C64.3838 45.9005 64.3647 46.1299 64.3047 46.3701C64.2613 46.5441 64.2398 46.7197 64.2246 46.873C64.2082 47.0393 64.2004 47.1649 64.1826 47.2998C64.1477 47.5651 64.0932 47.6936 64.0156 47.7705C63.9362 47.8491 63.8064 47.9176 63.6338 47.9326L57.1133 48.4961C56.7339 48.5289 56.5591 48.3355 56.5146 48.1973C56.4911 48.1235 56.4968 48.0537 56.5264 47.9951C56.5548 47.9389 56.6251 47.8545 56.7969 47.79L56.7959 47.7891L63.7158 45.5527L63.7373 45.5449Z" fill="url(#paint4_linear_2045_50276)" stroke="#F97316"/>
+<g id="Eyes">
+<circle id="Left Eye" cx="59" cy="42" r="2" fill="#364D6E"/>
+<circle id="Right Eye" cx="69" cy="42" r="2" fill="#364D6E"/>
+</g>
+<g id="Hat">
+<rect id="Hat Top" x="57.5" y="22.5" width="13" height="14" rx="1.5" fill="url(#paint5_linear_2045_50276)" stroke="#202939"/>
+<rect id="Hat Base" x="51.5" y="31.5" width="25" height="5" rx="1.5" fill="url(#paint6_linear_2045_50276)" stroke="#202939"/>
+<line id="Hat Line" x1="57" y1="31.5" x2="71" y2="31.5" stroke="#DC2626"/>
+</g>
+<g id="Shawl">
+<rect id="Shawl Hanging" x="68.5" y="58.5" width="5" height="8" rx="1.5" fill="url(#paint7_linear_2045_50276)" stroke="#DC2626"/>
+<path id="Shawl Base" d="M74.918 55.6875C75.2227 55.6368 75.5 55.8717 75.5 56.1807V59.1533C75.4998 59.3975 75.323 59.6063 75.082 59.6465L70.8223 60.3564C66.3053 61.1092 61.6947 61.1092 57.1777 60.3564L52.918 59.6465C52.677 59.6063 52.5002 59.3975 52.5 59.1533V56.1807C52.5 55.8717 52.7773 55.6368 53.082 55.6875L57.0127 56.3428C61.6388 57.1138 66.3612 57.1138 70.9873 56.3428L74.918 55.6875Z" fill="url(#paint8_linear_2045_50276)" stroke="#DC2626"/>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_2045_50276" x1="64" y1="55" x2="64" y2="97" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<linearGradient id="paint1_linear_2045_50276" x1="83.5" y1="64" x2="83.5" y2="73" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<linearGradient id="paint2_linear_2045_50276" x1="44.5" y1="64" x2="44.5" y2="73" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<linearGradient id="paint3_linear_2045_50276" x1="64" y1="31" x2="64" y2="61" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F3F7FE"/>
+<stop offset="1" stop-color="#E6EFFC"/>
+</linearGradient>
+<linearGradient id="paint4_linear_2045_50276" x1="60.308" y1="45.3421" x2="60.308" y2="47.9737" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FB923C"/>
+<stop offset="1" stop-color="#F97316"/>
+</linearGradient>
+<linearGradient id="paint5_linear_2045_50276" x1="64" y1="23.125" x2="64" y2="33.25" gradientUnits="userSpaceOnUse">
+<stop stop-color="#364D6E"/>
+<stop offset="1" stop-color="#202939"/>
+</linearGradient>
+<linearGradient id="paint6_linear_2045_50276" x1="64" y1="31.45" x2="64" y2="35.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#364D6E"/>
+<stop offset="1" stop-color="#202939"/>
+</linearGradient>
+<linearGradient id="paint7_linear_2045_50276" x1="71" y1="58.7697" x2="71" y2="64.6908" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<linearGradient id="paint8_linear_2045_50276" x1="64" y1="54.5132" x2="64" y2="58.4605" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EF4444"/>
+<stop offset="1" stop-color="#DC2626"/>
+</linearGradient>
+<clipPath id="clip0_2045_50276">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

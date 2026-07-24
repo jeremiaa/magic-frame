@@ -1,0 +1,20 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="raindrops">
+<g id="Raindrop">
+<path id="Vector" d="M54.5 34.9072C60.2518 43.6142 64.9613 50.7046 68.2588 56.9551C71.6339 63.3527 73.5 68.8178 73.5 74.1748C73.5 84.8565 64.9898 93.5 54.5 93.5C44.0106 93.5 35.5 84.832 35.5 74.1748C35.5 68.8305 37.366 63.3715 40.7412 56.9736C44.0388 50.723 48.7481 43.6263 54.5 34.9072Z" fill="url(#paint0_linear_1858_254)" stroke="#1D4ED8" stroke-miterlimit="10"/>
+</g>
+<g id="Raindrop_2">
+<path id="Vector_2" d="M74.5 34.9072C80.2518 43.6142 84.9613 50.7046 88.2588 56.9551C91.6339 63.3527 93.5 68.8178 93.5 74.1748C93.5 84.8565 84.9898 93.5 74.5 93.5C64.0106 93.5 55.5 84.832 55.5 74.1748C55.5 68.8305 57.366 63.3715 60.7412 56.9736C64.0388 50.723 68.7481 43.6263 74.5 34.9072Z" fill="url(#paint1_linear_1858_254)" stroke="#1D4ED8" stroke-miterlimit="10"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_1858_254" x1="54.5" y1="34" x2="54.5" y2="94" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2563EB"/>
+<stop offset="1" stop-color="#1D4ED8"/>
+</linearGradient>
+<linearGradient id="paint1_linear_1858_254" x1="74.5" y1="34" x2="74.5" y2="94" gradientUnits="userSpaceOnUse">
+<stop stop-color="#2563EB"/>
+<stop offset="1" stop-color="#1D4ED8"/>
+</linearGradient>
+</defs>
+</svg>

@@ -1,0 +1,12 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="moon-full" clip-path="url(#clip0_2049_4415)">
+<g id="Moon Phase">
+<circle id="Moon" cx="64" cy="64" r="30.5" stroke="#72B9D5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2049_4415">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

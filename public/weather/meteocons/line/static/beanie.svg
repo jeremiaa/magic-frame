@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="beanie" clip-path="url(#clip0_2045_50336)">
+<g id="Beanie">
+<path id="Rectangle 6" d="M64 54C71.732 54 78 60.268 78 68V76H50V68C50 60.268 56.268 54 64 54Z" stroke="#DC2626" stroke-width="2"/>
+<rect id="Rectangle 5" x="48" y="76" width="32" height="10" rx="2" stroke="#E6EFFC" stroke-width="2" stroke-miterlimit="10"/>
+<circle id="Ellipse 1" cx="64" cy="46" r="4" stroke="#E6EFFC" stroke-width="2" stroke-miterlimit="10"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_2045_50336">
+<rect width="128" height="128" fill="white"/>
+</clipPath>
+</defs>
+</svg>

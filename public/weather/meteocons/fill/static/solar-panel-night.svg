@@ -1,0 +1,21 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="solar-panel-night">
+<g id="Moon">
+<path id="Moon_2" d="M77.1152 29.5947C75.3777 38.1625 82.7532 46.2141 91.3135 45.7832C89.6732 50.8338 84.8891 54.4999 79.2178 54.5C72.188 54.5 66.5002 48.8786 66.5 41.959C66.5 35.7451 71.0879 30.5838 77.1152 29.5947Z" fill="url(#paint0_linear_3086_22649)" stroke="#72B9D5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g id="Solar Panel">
+<rect id="Panel" x="46.5" y="39.5" width="35" height="49" rx="5.5" fill="url(#paint1_linear_3086_22649)" stroke="#212A3B"/>
+<path id="Lines" d="M64.5 40V54.5H81V55.5H64.5V71.5H81V72.5H64.5V88H63.5V72.5H47V71.5H63.5V55.5H47V54.5H63.5V40H64.5Z" fill="#304878"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_3086_22649" x1="79" y1="29" x2="79" y2="55" gradientUnits="userSpaceOnUse">
+<stop stop-color="#86C3DB"/>
+<stop offset="1" stop-color="#72B9D5"/>
+</linearGradient>
+<linearGradient id="paint1_linear_3086_22649" x1="64" y1="39" x2="64" y2="89" gradientUnits="userSpaceOnUse">
+<stop stop-color="#304878"/>
+<stop offset="1" stop-color="#212A3B"/>
+</linearGradient>
+</defs>
+</svg>

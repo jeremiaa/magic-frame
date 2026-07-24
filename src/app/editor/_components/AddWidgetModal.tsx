@@ -50,6 +50,10 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                 <div className="text-3xl mb-2 text-teal-400">🌡️</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Sensor")}</div>
              </button>
+             <button onClick={() => addWidget("EnvironmentWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-lime-500/10 border border-[var(--mf-bdr)]/10 hover:border-lime-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-lime-400">🌿</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Umwelt")}</div>
+             </button>
              <button onClick={() => addWidget("CameraWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-rose-500/10 border border-[var(--mf-bdr)]/10 hover:border-rose-500/30 rounded-xl p-4 text-center transition-colors">
                 <div className="text-3xl mb-2 text-rose-400">📷</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Kamera")}</div>

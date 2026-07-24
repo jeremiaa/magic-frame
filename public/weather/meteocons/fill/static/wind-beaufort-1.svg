@@ -1,0 +1,9 @@
+<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="wind-beaufort-1">
+<g id="Wind">
+<path id="Wind Line 1" d="M87.79 40.1352C93.9756 33.347 105 38.4049 105 47.4463C105 53.2746 100.522 58 95 58H24" stroke="#E2E8F0" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path id="Wind Line 1_2" d="M60.1281 87.868C66.4202 94.5186 78 89.8717 78 80.5556C78 74.7263 73.3503 70 67.6154 70C61.8805 70 24 70 24 70" stroke="#E2E8F0" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+</g>
+<path id="1" d="M104.206 91H100.84V82.99H97.6723V80.74H98.2123C99.1363 80.74 99.8683 80.542 100.408 80.146C100.912 79.774 101.242 79.168 101.398 78.328L101.434 78.184H104.206V91Z" fill="#202939"/>
+</g>
+</svg>

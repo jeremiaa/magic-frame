@@ -23,8 +23,12 @@ export default function ImageWidget({ config, dashboardId }: { config?: any; das
   const intervalSec: number = Math.max(5, config?.intervalSec ?? 30);
   const fitClass = FIT_CLASS[config?.fit as string] ?? "object-cover";
   // Expliziter Ecken-Radius: rounded-[inherit] erbt vom direkten Parent (= 0),
-  // darum blieb das Bild eckig. Default 16 px = dezent abgerundet.
-  const cornerRadius: number = config?.cornerRadius ?? 16;
+  // darum blieb das Bild eckig. Default 16 px = dezent abgerundet — außer der
+  // View läuft im Randlos-Modus: dann setzt der Canvas --mf-img-radius auf 0
+  // und das Bild füllt eckig bis an die Kachelkante ("zusammensnappen").
+  // Ein explizit gesetzter Radius bleibt User-Wille und gewinnt immer.
+  const cornerRadius: number | string =
+    typeof config?.cornerRadius === "number" ? config.cornerRadius : "var(--mf-inner-radius, 16px)";
 
   const [slides, setSlides] = useState<Slide[]>([]);
   const [error, setError] = useState("");
