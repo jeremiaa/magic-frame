@@ -1,51 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import ICAL from "ical.js";
 import { getSession } from "@/lib/auth/session";
-import { fetchGoogleEvents, fetchMicrosoftEvents, plainText, floatingAllDay } from "@/lib/calendar-auth/providers";
-import { getAppSettings } from "@/lib/settings/store";
-
-// #65: Home-Assistant-Kalender (calendar.* Entitäten) als Feed-Quelle. HA hat
-// eine REST-API dafür: GET /api/calendars/<entity>?start=&end= → Termine im
-// Fenster. Token/URL kommen aus den App-Einstellungen (wie die anderen
-// HA-Routen). Kein Session-Zwang → funktioniert auch auf der öffentlichen /view.
-async function fetchHaCalendar(
-  entity: string,
-  windowStart: Date,
-  windowEnd: Date,
-): Promise<any[]> {
-  const settings = await getAppSettings();
-  if (!settings.haUrl || !settings.haToken) throw new Error("Home Assistant not configured");
-  const base = settings.haUrl.replace(/\/+$/, "");
-  const url = `${base}/api/calendars/${encodeURIComponent(entity)}?start=${encodeURIComponent(windowStart.toISOString())}&end=${encodeURIComponent(windowEnd.toISOString())}`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${settings.haToken}`, "Content-Type": "application/json" },
-    cache: "no-store",
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) throw new Error(`Home Assistant returned ${res.status}`);
-  const items = (await res.json()) as any[];
-  return (Array.isArray(items) ? items : []).map((ev, i) => {
-    // Ganztägig: HA liefert start.date (ohne Uhrzeit); sonst start.dateTime.
-    const startStr: string = ev?.start?.dateTime || ev?.start?.date || "";
-    const endStr: string = ev?.end?.dateTime || ev?.end?.date || startStr;
-    const isAllDay = !ev?.start?.dateTime && !!ev?.start?.date;
-    const start = new Date(startStr);
-    const end = new Date(endStr);
-    return {
-      id: ev?.uid || `${entity}-${startStr}-${i}`,
-      title: ev?.summary || "(ohne Titel)",
-      // #70: ganztägig ohne Zeitzone ausliefern, sonst rutscht der Termin
-      // westlich von UTC auf den Vortag.
-      start: (isAllDay ? floatingAllDay(startStr) : null)
-        ?? (isNaN(start.getTime()) ? startStr : start.toISOString()),
-      end: (isAllDay ? floatingAllDay(endStr) : null)
-        ?? (isNaN(end.getTime()) ? endStr : end.toISOString()),
-      isAllDay,
-      description: plainText(ev?.description),
-      location: plainText(ev?.location, 120),
-    };
-  });
-}
+import {
+  fetchGoogleEvents,
+  fetchMicrosoftEvents,
+  fetchHomeAssistantEvents,
+  plainText,
+  floatingAllDay,
+} from "@/lib/calendar-auth/providers";
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10 * 60 * 1000;
@@ -330,8 +292,13 @@ export async function GET(request: NextRequest) {
               limit: perFeedLimit,
             });
           } else if (type === "homeassistant") {
-            if (!feed.calendarId) throw new Error("missing_entity");
-            events = await fetchHaCalendar(feed.calendarId, windowStart, windowEnd);
+            if (!feed.calendarId) throw new Error("missing_entityId");
+            events = await fetchHomeAssistantEvents({
+              entityId: feed.calendarId,
+              windowStart,
+              windowEnd,
+              limit: perFeedLimit,
+            });
           } else {
             if (!feed.url) throw new Error("missing_url");
             events = await fetchIcal(feed.url, windowStart, windowEnd, perFeedLimit);
