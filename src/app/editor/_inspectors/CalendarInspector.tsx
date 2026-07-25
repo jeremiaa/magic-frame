@@ -55,6 +55,9 @@ export default function CalendarInspector({
                    {([
                       ["showMonthTitle", t("Monatsname"), cfg.showMonthTitle !== false],
                       ["showWeekNumbers", t("Kalenderwochen"), cfg.showWeekNumbers === true],
+                      ["monthShowTime", t("Uhrzeit"), cfg.monthShowTime !== false],
+                      ["monthShowLocation", t("Ort"), cfg.monthShowLocation === true],
+                      ["monthShowDescription", t("Beschreibung"), cfg.monthShowDescription === true],
                    ] as [string, string, boolean][]).map(([key, label, checked]) => (
                       <label key={key} className="flex items-center gap-3 cursor-pointer group">
                          <div className="relative">
@@ -66,6 +69,42 @@ export default function CalendarInspector({
                          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{label}</span>
                       </label>
                    ))}
+                </div>
+                <p className="text-[11px] text-[var(--mf-fg)]/40 -mt-1">
+                   {t("Ohne Uhrzeit bleibt dem Titel deutlich mehr Platz in der Tages-Spalte.")}
+                </p>
+                <div className="pt-1 border-t border-[var(--mf-bdr)]/10" />
+                <div>
+                   <label className="text-xs font-medium text-[var(--mf-fg)]/60 block mb-1.5">{t("Termine pro Tag")}</label>
+                   <div className="grid grid-cols-3 gap-1.5">
+                      {([["auto", t("Automatisch")], ["all", t("Alle")], ["fixed", t("Feste Anzahl")]] as const).map(([val, lbl]) => {
+                         const cur = cfg.monthPerDay ?? "auto";
+                         const active = val === "fixed" ? typeof cur === "number" : cur === val;
+                         return (
+                            <button key={val} type="button"
+                               onClick={() => updateConfig(activeWidget.i, "monthPerDay", val === "fixed" ? 3 : val)}
+                               className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors border ${active ? "border-violet-500 bg-violet-500/10 text-[var(--mf-fg)]" : "border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/60 hover:border-[var(--mf-bdr)]/30"}`}>
+                               {lbl}
+                            </button>
+                         );
+                      })}
+                   </div>
+                   {typeof cfg.monthPerDay === "number" && (
+                      <div className="mt-2">
+                         <label className="text-xs font-medium text-[var(--mf-fg)]/60 mb-1.5 flex justify-between">
+                            <span>{t("Anzahl")}</span>
+                            <span className="text-violet-400">{cfg.monthPerDay}</span>
+                         </label>
+                         <input type="range" min={1} max={12} step={1} value={cfg.monthPerDay}
+                            onChange={(e) => updateConfig(activeWidget.i, "monthPerDay", parseInt(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-violet-500 bg-[var(--mf-elev)]/10" />
+                      </div>
+                   )}
+                   <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
+                      {(cfg.monthPerDay ?? "auto") === "all"
+                         ? t("Zeigt jeden Termin — volle Tage werden in der Spalte scrollbar (Touch).")
+                         : t("Automatisch füllt jeden Tag so weit, wie die Spalte hoch ist. Der Rest erscheint als Farbpunkte mit Anzahl.")}
+                   </p>
                 </div>
                 <div>
                    <label className="text-xs font-medium text-[var(--mf-fg)]/60 mb-1.5 flex justify-between">

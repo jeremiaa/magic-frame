@@ -7,7 +7,42 @@ export type ProviderEvent = {
   start: string;
   end: string;
   isAllDay: boolean;
+  // Optional — nur gefüllt, wenn der Anbieter sie liefert. Die Monatsansicht
+  // kann Beschreibung/Ort pro Termin einblenden (opt-in im Inspector).
+  description?: string;
+  location?: string;
 };
+
+// Ganztags-Termine sind SCHWEBENDE Datumsangaben ohne Zeitzone ("2026-07-25"
+// heißt überall auf der Welt der 25.). Sie in einen absoluten Zeitpunkt zu
+// verwandeln (…T00:00:00Z) war Issue #70: der Browser rechnet den Zeitpunkt in
+// seine eigene Zone zurück, und westlich von UTC landet Mitternacht auf dem
+// VORTAG — Nutzer in den USA sahen jeden Ganztags-Termin einen Tag zu früh.
+// Darum bewusst OHNE "Z"/Offset ausliefern: Date/parseISO lesen das als lokale
+// Zeit, und der Kalendertag stimmt in jeder Zeitzone.
+export function floatingAllDay(dateLike: string | null | undefined): string | null {
+  const day = String(dateLike ?? "").slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? `${day}T00:00:00` : null;
+}
+
+// Beschreibungen kommen als HTML (Google) oder mit CRLF/Escapes (iCal) —
+// für eine Kalenderzelle brauchen wir eine kurze, saubere Textzeile.
+export function plainText(input: unknown, max = 300): string | undefined {
+  if (typeof input !== "string" || !input.trim()) return undefined;
+  const txt = input
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/(p|div|li|tr|h[1-6])>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/\\n/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return txt ? txt.slice(0, max) : undefined;
+}
 
 export type ProviderCalendar = {
   id: string;
@@ -51,9 +86,14 @@ export async function fetchGoogleEvents(params: {
     return {
       id: ev.id,
       title: ev.summary ?? "(kein Titel)",
-      start: start ? new Date(start).toISOString() : new Date().toISOString(),
-      end: end ? new Date(end).toISOString() : new Date().toISOString(),
+      // #70: ganztägig bleibt schwebend, sonst echter UTC-Zeitpunkt.
+      start: (isAllDay ? floatingAllDay(ev.start?.date) : null)
+        ?? (start ? new Date(start).toISOString() : new Date().toISOString()),
+      end: (isAllDay ? floatingAllDay(ev.end?.date) : null)
+        ?? (end ? new Date(end).toISOString() : new Date().toISOString()),
       isAllDay,
+      description: plainText(ev.description),
+      location: plainText(ev.location, 120),
     };
   });
 }
@@ -100,7 +140,9 @@ export async function fetchMicrosoftEvents(params: {
   url.searchParams.set("$orderby", "start/dateTime");
   url.searchParams.set(
     "$select",
-    "id,subject,start,end,isAllDay,showAs",
+    // bodyPreview + location: Graph liefert sie nur, wenn sie im $select
+    // stehen — sonst kommen die Felder schlicht nicht mit.
+    "id,subject,start,end,isAllDay,showAs,bodyPreview,location",
   );
 
   const res = await fetch(url.toString(), {
@@ -121,8 +163,14 @@ export async function fetchMicrosoftEvents(params: {
     return {
       id: ev.id,
       title: ev.subject ?? "(kein Titel)",
-      start: start ? new Date(start).toISOString() : new Date().toISOString(),
-      end: end ? new Date(end).toISOString() : new Date().toISOString(),
+      description: plainText(ev.bodyPreview),
+      location: plainText(ev.location?.displayName, 120),
+      // #70: Graph liefert auch ganztägig ein dateTime — davon nur den
+      // Datumsanteil nehmen und schwebend lassen (kein Z).
+      start: (ev.isAllDay ? floatingAllDay(ev.start?.dateTime) : null)
+        ?? (start ? new Date(start).toISOString() : new Date().toISOString()),
+      end: (ev.isAllDay ? floatingAllDay(ev.end?.dateTime) : null)
+        ?? (end ? new Date(end).toISOString() : new Date().toISOString()),
       isAllDay: !!ev.isAllDay,
     };
   });

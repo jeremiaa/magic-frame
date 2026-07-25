@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import ICAL from "ical.js";
 import { getSession } from "@/lib/auth/session";
-import { fetchGoogleEvents, fetchMicrosoftEvents } from "@/lib/calendar-auth/providers";
+import { fetchGoogleEvents, fetchMicrosoftEvents, plainText, floatingAllDay } from "@/lib/calendar-auth/providers";
 import { getAppSettings } from "@/lib/settings/store";
 
 // #65: Home-Assistant-Kalender (calendar.* Entitäten) als Feed-Quelle. HA hat
@@ -34,9 +34,15 @@ async function fetchHaCalendar(
     return {
       id: ev?.uid || `${entity}-${startStr}-${i}`,
       title: ev?.summary || "(ohne Titel)",
-      start: isNaN(start.getTime()) ? startStr : start.toISOString(),
-      end: isNaN(end.getTime()) ? endStr : end.toISOString(),
+      // #70: ganztägig ohne Zeitzone ausliefern, sonst rutscht der Termin
+      // westlich von UTC auf den Vortag.
+      start: (isAllDay ? floatingAllDay(startStr) : null)
+        ?? (isNaN(start.getTime()) ? startStr : start.toISOString()),
+      end: (isAllDay ? floatingAllDay(endStr) : null)
+        ?? (isNaN(end.getTime()) ? endStr : end.toISOString()),
       isAllDay,
+      description: plainText(ev?.description),
+      location: plainText(ev?.location, 120),
     };
   });
 }
@@ -158,6 +164,17 @@ async function fetchIcal(
   const windowStartIcal = ICAL.Time.fromJSDate(windowStart);
   const windowEndIcal = ICAL.Time.fromJSDate(windowEnd);
 
+  // #70: Bei DATE-Werten (ganztägig) NICHT über toJSDate()/toISOString gehen —
+  // das bindet den Tag an die Server-Zeitzone. Die Y-M-D-Felder der ICAL.Time
+  // sind bereits der gemeinte Kalendertag.
+  const stamp = (t: any): string => {
+    if (t?.isDate) {
+      const p = (n: number) => String(n).padStart(2, "0");
+      return `${t.year}-${p(t.month)}-${p(t.day)}T00:00:00`;
+    }
+    return t.toJSDate().toISOString();
+  };
+
   const pushStandalone = (event: ICAL.Event) => {
     try {
       const startJS = event.startDate.toJSDate();
@@ -166,9 +183,11 @@ async function fetchIcal(
         events.push({
           id: event.uid || Math.random().toString(),
           title: event.summary,
-          start: startJS.toISOString(),
-          end: endJS.toISOString(),
+          start: stamp(event.startDate),
+          end: stamp(event.endDate),
           isAllDay: event.startDate.isDate,
+          description: plainText(event.description),
+          location: plainText(event.location, 120),
         });
       }
     } catch (err) {
@@ -194,9 +213,11 @@ async function fetchIcal(
         events.push({
           id: `${event.uid}-${next.toUnixTime()}`,
           title: occurrence.item.summary,
-          start: occurrence.startDate.toJSDate().toISOString(),
-          end: occurrence.endDate.toJSDate().toISOString(),
+          start: stamp(occurrence.startDate),
+          end: stamp(occurrence.endDate),
           isAllDay: occurrence.startDate.isDate,
+          description: plainText(occurrence.item.description),
+          location: plainText(occurrence.item.location, 120),
         });
       }
     } catch (err) {

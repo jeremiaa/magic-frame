@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   parseISO, isToday, isTomorrow, isSameDay, addDays, isValid, format,
   startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -18,6 +18,8 @@ type CalendarEvent = {
   isAllDay: boolean;
   feedId?: string;
   feedColor?: string;
+  description?: string;
+  location?: string;
 };
 
 type FeedConfig = {
@@ -93,6 +95,53 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const showMonthTitle = config?.showMonthTitle !== false;
   const showWeekNumbers = config?.showWeekNumbers === true;
   const monthTextScale = Math.max(0.6, Math.min(2, Number(config?.monthTextScale) || 1));
+  // Was pro Termin in der Zelle steht — alles einzeln schaltbar. Die Uhrzeit
+  // kostet bei ~1/7 Spaltenbreite rund 40 % der Zeile, darum abschaltbar.
+  const monthShowTime = config?.monthShowTime !== false;
+  const monthShowDescription = config?.monthShowDescription === true;
+  const monthShowLocation = config?.monthShowLocation === true;
+  // Termine pro Tag: "auto" füllt die gemessene Zellenhöhe, "all" zeigt jeden
+  // Termin (Zelle scrollt), eine Zahl deckelt hart.
+  const monthPerDayCfg = config?.monthPerDay ?? "auto";
+  const monthShowAll = monthPerDayCfg === "all";
+  const monthFixedPerDay =
+    typeof monthPerDayCfg === "number" && monthPerDayCfg > 0 ? Math.min(50, monthPerDayCfg) : null;
+
+  // Zeilen pro Zelle aus der ECHTEN Zellenhöhe rechnen statt fix 3. Gemessen
+  // wird der Gitter-Container (6 Wochenzeilen) + seine berechnete Schriftgröße;
+  // daraus ergibt sich, wie viele Termin-Zeilen tatsächlich reinpassen.
+  const monthGridRef = useRef<HTMLDivElement | null>(null);
+  const [monthMetrics, setMonthMetrics] = useState<{ cell: number; font: number }>({ cell: 0, font: 0 });
+  useEffect(() => {
+    const el = monthGridRef.current;
+    if (!el || !isMonth) return;
+    const measure = () => {
+      const font = parseFloat(getComputedStyle(el).fontSize) || 0;
+      const gaps = 5 * 0.15 * font; // gap-[0.15em] zwischen den 6 Zeilen
+      const cell = Math.max(0, (el.clientHeight - gaps) / 6);
+      setMonthMetrics((p) => (Math.abs(p.cell - cell) < 0.5 && p.font === font ? p : { cell, font }));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isMonth]);
+
+  // Höhe einer Termin-Einheit: Titelzeile + optional Ort + optional Beschreibung.
+  const monthExtraLines = (monthShowLocation ? 1 : 0) + (monthShowDescription ? 1 : 0);
+  const autoPerDay = (() => {
+    const { cell, font } = monthMetrics;
+    if (!cell || !font) return 3; // bis zur ersten Messung: bisheriger Wert
+    const titleLine = 0.6 * monthTextScale * 1.5;      // Termin-Titel
+    const subLine = 0.52 * monthTextScale * 1.35;      // Ort / Beschreibung
+    const unit = (titleLine + monthExtraLines * subLine + 0.12) * font;
+    const dayNum = 1.08 * font;                        // Tageszahl oben
+    const usable = cell - dayNum - 0.3 * font;         // Zellen-Padding
+    return Math.max(1, Math.floor(usable / unit));
+  })();
+  const monthPerDay = monthShowAll
+    ? Number.MAX_SAFE_INTEGER
+    : (monthFixedPerDay ?? autoPerDay);
 
   // Karten-Fläche wie bei allen anderen Karten-Widgets (Status/Media/Notify):
   // EINE Fläche über useGlassStyle — dieselbe Deckkraft, dasselbe Hell/Dunkel
@@ -486,7 +535,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
       else byDay.set(key, [ev]);
     }
     const weekdayHead = eachDayOfInterval({ start: gridStart, end: addDays(gridStart, 6) });
-    const perCell = 3; // Termine pro Zelle, Rest als "+N"
+    const perCell = monthPerDay; // gemessen, fest eingestellt oder "alle"
     // Optionale KW-Spalte: schmale erste Spalte vor den 7 Wochentagen.
     const colsTemplate = showWeekNumbers ? "1.6em repeat(7, minmax(0,1fr))" : "repeat(7, minmax(0,1fr))";
     const evFont = (base: number) => `${base * monthTextScale}em`;
@@ -517,7 +566,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           ))}
         </div>
         {/* 6 Wochen */}
-        <div className="grid grid-rows-6 flex-1 gap-[0.15em] min-h-0" style={{ gridTemplateColumns: colsTemplate }}>
+        <div ref={monthGridRef} className="grid grid-rows-6 flex-1 gap-[0.15em] min-h-0" style={{ gridTemplateColumns: colsTemplate }}>
           {gridDays.flatMap((d, i) => {
             const key = format(d, "yyyy-MM-dd");
             const inMonth = isSameMonth(d, monthAnchor);
@@ -544,29 +593,67 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     {format(d, "d")}
                   </span>
                 </div>
-                <div className="flex flex-col gap-[0.12em] mt-[0.1em] min-h-0 overflow-hidden">
+                <div className="flex flex-col mt-[0.1em] min-h-0 flex-1">
+                <div className={`flex flex-col gap-[0.12em] min-h-0 flex-1 ${monthShowAll ? "overflow-y-auto no-scrollbar" : "overflow-hidden"}`}
+                     style={monthShowAll ? { scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties : undefined}>
                   {shown.map((ev) => {
                     const color = ev.feedColor || accentColor;
+                    // Zusatzzeilen (Ort/Beschreibung) hängen unter dem Titel und
+                    // sind bewusst kleiner + gedimmt, damit der Titel führt.
+                    const subLines = (
+                      <>
+                        {monthShowLocation && ev.location && (
+                          <div className="truncate leading-[1.35]" style={{ color: fgDim, fontSize: evFont(0.52) }}>
+                            {ev.location}
+                          </div>
+                        )}
+                        {monthShowDescription && ev.description && (
+                          <div className="truncate leading-[1.35]" style={{ color: fgDim, fontSize: evFont(0.52) }}>
+                            {ev.description}
+                          </div>
+                        )}
+                      </>
+                    );
                     if (ev.isAllDay) {
                       return (
-                        <div key={ev.id} className="rounded-[0.25em] px-[0.3em] leading-[1.5] truncate text-white" style={{ backgroundColor: color, fontSize: evFont(0.6) }}>
-                          {ev.title}
+                        <div key={ev.id} className="min-w-0">
+                          <div className="rounded-[0.25em] px-[0.3em] leading-[1.5] truncate text-white" style={{ backgroundColor: color, fontSize: evFont(0.6) }}>
+                            {ev.title}
+                          </div>
+                          <div className="pl-[0.3em]">{subLines}</div>
                         </div>
                       );
                     }
                     const start = parseISO(ev.start);
+                    const time = monthShowTime && isValid(start) ? format(start, timePattern) : "";
                     return (
-                      <div key={ev.id} className="flex items-center gap-[0.25em] leading-[1.5] truncate" style={{ fontSize: evFont(0.6) }}>
-                        <span className="shrink-0 rounded-full w-[0.4em] h-[0.4em]" style={{ backgroundColor: color }} />
-                        <span className="truncate" style={{ color: fg }}>
-                          <span style={{ color: fgDim }}>{isValid(start) ? format(start, timePattern) : ""}</span> {ev.title}
-                        </span>
+                      <div key={ev.id} className="min-w-0">
+                        <div className="flex items-center gap-[0.25em] leading-[1.5] truncate" style={{ fontSize: evFont(0.6) }}>
+                          <span className="shrink-0 rounded-full w-[0.4em] h-[0.4em]" style={{ backgroundColor: color }} />
+                          <span className="truncate" style={{ color: fg }}>
+                            {time && <span style={{ color: fgDim }}>{time} </span>}
+                            {ev.title}
+                          </span>
+                        </div>
+                        <div className="pl-[0.65em]">{subLines}</div>
                       </div>
                     );
                   })}
-                  {extra > 0 && (
-                    <div className="leading-none pl-[0.3em]" style={{ color: fgDim, fontSize: evFont(0.58) }}>+{extra}</div>
-                  )}
+                </div>
+                {extra > 0 && (
+                  // Überlauf: farbige Punkte der restlichen Termine + Anzahl —
+                  // zeigt auf einen Blick, wie voll der Tag noch ist ("+15"
+                  // allein sagt darüber nichts). Als Geschwister der Terminliste
+                  // (nicht darin), damit die Reihe auch dann sichtbar bleibt,
+                  // wenn die Termine die Zelle exakt ausfüllen.
+                  <div className="flex items-center gap-[0.16em] pl-[0.1em] mt-[0.05em] shrink-0" style={{ fontSize: evFont(0.6) }}>
+                    {dayEvents.slice(perCell, perCell + 7).map((ev) => (
+                      <span key={`d-${ev.id}`} className="shrink-0 rounded-full w-[0.34em] h-[0.34em]"
+                            style={{ backgroundColor: ev.feedColor || accentColor }} />
+                    ))}
+                    <span className="ml-[0.15em] leading-none" style={{ color: fgDim, fontSize: "0.9em" }}>+{extra}</span>
+                  </div>
+                )}
                 </div>
               </div>,
             );

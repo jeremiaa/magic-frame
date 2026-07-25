@@ -110,6 +110,13 @@ const calendarConfig = baseConfig.extend({
   showMonthTitle: z.boolean().optional(),
   showWeekNumbers: z.boolean().optional(),
   monthTextScale: z.number().optional(),
+  // Monatsgitter: was pro Termin in der Tages-Spalte steht + wie viele
+  // Termine ("auto" = füllt die gemessene Spaltenhöhe, "all" = alle, Zahl =
+  // fest gedeckelt).
+  monthShowTime: z.boolean().optional(),
+  monthShowLocation: z.boolean().optional(),
+  monthShowDescription: z.boolean().optional(),
+  monthPerDay: z.union([z.literal("auto"), z.literal("all"), z.number()]).optional(),
   limit: z.number().optional(),
   days: z.number().optional(),
   hideOnEmpty: z.boolean().optional(),

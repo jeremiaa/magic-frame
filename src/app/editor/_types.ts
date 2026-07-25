@@ -118,6 +118,10 @@ export interface WidgetLayoutItem {
     showMonthTitle?: boolean;
     showWeekNumbers?: boolean;
     monthTextScale?: number;
+    monthShowTime?: boolean;
+    monthShowLocation?: boolean;
+    monthShowDescription?: boolean;
+    monthPerDay?: 'auto' | 'all' | number;
     entityId?: string;
     icon?: string;
     hideWhen?: string;
