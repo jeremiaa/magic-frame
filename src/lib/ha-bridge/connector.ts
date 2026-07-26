@@ -13,7 +13,14 @@ export class HAConnector {
 
   connect() {
     console.log(`[HA Bridge] Connecting to ${this.url}...`);
-    this.ws = new WebSocket(`${this.url}/api/websocket`);
+    // Der Supervisor-Proxy (HA-Add-on) legt den WebSocket unter
+    // /core/websocket ab — OHNE das sonst übliche /api davor. Direkt
+    // angesprochene HA-Instanzen bleiben bei /api/websocket.
+    const base = this.url.replace(/\/+$/, "");
+    const wsUrl = base.endsWith("/core") && base.includes("supervisor")
+      ? `${base}/websocket`
+      : `${base}/api/websocket`;
+    this.ws = new WebSocket(wsUrl);
 
     this.ws.on('open', () => {
       console.log('[HA Bridge] Connected to Home Assistant WebSocket');

@@ -1,4 +1,5 @@
 import "server-only";
+import { supervisorHaCredentials } from "@/lib/runtime/addon";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -44,6 +45,12 @@ export async function getAppSettings(): Promise<AppSettingsShape> {
   if (row && (row.haUrl || row.haToken)) {
     return { haUrl: row.haUrl, haToken: row.haToken, ...immich };
   }
+  // Als HA-Add-on ohne eigene Eingabe: über den Supervisor-Proxy verbinden.
+  // Damit muss niemand mehr einen langlebigen Token anlegen — die Integration
+  // funktioniert direkt nach der Installation. Eigene Eingaben oben gewinnen
+  // weiterhin (wer auf eine ANDERE HA-Instanz zeigen will, kann das).
+  const sup = supervisorHaCredentials();
+  if (sup) return { ...sup, ...immich };
   const legacy = await legacyFromDashboardOne();
   if (row) {
     return {

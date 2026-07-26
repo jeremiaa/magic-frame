@@ -22,15 +22,39 @@ import fs from "fs";
  * Für die bestehende docker-compose-Installation trifft nichts davon zu —
  * dort bleibt alles exakt wie bisher.
  */
+let cached: boolean | null = null;
+
 export function isAddonMode(): boolean {
+  // Gemerkt: getAppSettings() ruft das bei jeder Anfrage auf, und ein
+  // synchroner Dateisystem-Zugriff pro Request wäre unnötig. Der Modus kann
+  // sich zur Laufzeit ohnehin nicht ändern.
+  if (cached !== null) return cached;
+
   const flag = (process.env.MAGIC_FRAME_ADDON ?? "").trim().toLowerCase();
-  if (flag === "1" || flag === "true" || flag === "yes") return true;
-  if (flag === "0" || flag === "false" || flag === "no") return false;
+  if (flag === "1" || flag === "true" || flag === "yes") return (cached = true);
+  if (flag === "0" || flag === "false" || flag === "no") return (cached = false);
 
   try {
-    if (fs.existsSync("/data/options.json")) return true;
+    if (fs.existsSync("/data/options.json")) return (cached = true);
   } catch {
     /* Dateisystem nicht lesbar — dann eben das Env-Signal unten */
   }
-  return Boolean(process.env.SUPERVISOR_TOKEN);
+  return (cached = Boolean(process.env.SUPERVISOR_TOKEN));
+}
+
+/**
+ * Home Assistant über den Supervisor-Proxy — im Add-on braucht niemand mehr
+ * einen langlebigen Zugriffstoken anzulegen: der Supervisor legt
+ * SUPERVISOR_TOKEN in die Umgebung und proxyt Core unter http://supervisor/core.
+ * Setzt `homeassistant_api: true` in der Add-on-config.yaml voraus.
+ *
+ * Gibt null zurück, wenn wir nicht im Add-on laufen oder kein Token da ist.
+ */
+export const SUPERVISOR_CORE_URL = "http://supervisor/core";
+
+export function supervisorHaCredentials(): { haUrl: string; haToken: string } | null {
+  if (!isAddonMode()) return null;
+  const token = process.env.SUPERVISOR_TOKEN;
+  if (!token) return null;
+  return { haUrl: SUPERVISOR_CORE_URL, haToken: token };
 }
