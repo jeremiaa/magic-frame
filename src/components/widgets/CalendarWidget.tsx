@@ -132,11 +132,13 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const autoPerDay = (() => {
     const { cell, font } = monthMetrics;
     if (!cell || !font) return 3; // bis zur ersten Messung: bisheriger Wert
-    const titleLine = 0.6 * monthTextScale * 1.5;      // Termin-Titel
+    // Muss zu den Werten im Rendering passen: Titel 0.58em/1.55,
+    // Zusatzzeilen 0.52em/1.35, 1px Abstand zwischen den Terminen.
+    const titleLine = 0.58 * monthTextScale * 1.55;    // Termin-Titel
     const subLine = 0.52 * monthTextScale * 1.35;      // Ort / Beschreibung
-    const unit = (titleLine + monthExtraLines * subLine + 0.12) * font;
-    const dayNum = 1.08 * font;                        // Tageszahl oben
-    const usable = cell - dayNum - 0.3 * font;         // Zellen-Padding
+    const unit = (titleLine + monthExtraLines * subLine) * font + 1;
+    const dayNum = 1.02 * font;                        // Tageszahl oben
+    const usable = cell - dayNum - 0.2 * font;         // Zellen-Padding
     return Math.max(1, Math.floor(usable / unit));
   })();
   const monthPerDay = monthShowAll
@@ -172,6 +174,8 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const fg = customColor || (isLight ? "rgba(15,23,42,0.92)" : "#ffffff");
   const fgDim = customColor ? withAlpha(customColor, 0.55) : isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.5)";
   const cardRgb = isLight ? "255,255,255" : "0,0,0";
+  // Haarlinien des Monatsrasters — dezent, folgt hell/dunkel.
+  const gridLine = isLight ? "rgba(15,23,42,0.10)" : "rgba(255,255,255,0.07)";
   const borderCls = isLight ? "border-black/10" : "border-white/10";
 
   const [fetchedEvents, setEvents] = useState<CalendarEvent[]>([]);
@@ -553,7 +557,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           </div>
         )}
         {/* Wochentage */}
-        <div className="grid shrink-0 mb-[0.3em]" style={{ gridTemplateColumns: colsTemplate }}>
+        <div className="grid shrink-0 pb-[0.2em]" style={{ gridTemplateColumns: colsTemplate }}>
           {showWeekNumbers && (
             <div className="text-center uppercase tracking-wider font-medium text-[0.6em]" style={{ color: fgDim }}>
               {locale === "en" ? "Wk" : "KW"}
@@ -566,7 +570,11 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           ))}
         </div>
         {/* 6 Wochen */}
-        <div ref={monthGridRef} className="grid grid-rows-6 flex-1 gap-[0.15em] min-h-0" style={{ gridTemplateColumns: colsTemplate }}>
+        {/* Flaches Raster mit Haarlinien statt gerundeter Kacheln mit Abstand
+            (Apple-Kalender-Prinzip): das spart pro Zelle Padding + Lücke und
+            bringt bei gleicher Widget-Größe spürbar mehr Termine unter. */}
+        <div ref={monthGridRef} className="grid grid-rows-6 flex-1 min-h-0"
+             style={{ gridTemplateColumns: colsTemplate, borderTop: `1px solid ${gridLine}`, borderLeft: `1px solid ${gridLine}` }}>
           {gridDays.flatMap((d, i) => {
             const key = format(d, "yyyy-MM-dd");
             const inMonth = isSameMonth(d, monthAnchor);
@@ -577,7 +585,8 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
             const cells: ReactNode[] = [];
             if (showWeekNumbers && i % 7 === 0) {
               cells.push(
-                <div key={`kw-${key}`} className="flex items-start justify-center pt-[0.3em]">
+                <div key={`kw-${key}`} className="flex items-start justify-center pt-[0.3em]"
+                     style={{ borderRight: `1px solid ${gridLine}`, borderBottom: `1px solid ${gridLine}` }}>
                   <span className="text-[0.6em] font-medium tabular-nums leading-none" style={{ color: fgDim }}>
                     {getISOWeek(d)}
                   </span>
@@ -585,16 +594,22 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
               );
             }
             cells.push(
-              <div key={key} className="flex flex-col min-h-0 overflow-hidden rounded-[0.4em] px-[0.25em] py-[0.15em]"
-                   style={{ backgroundColor: inMonth ? `rgba(${isLight ? "0,0,0" : "255,255,255"},0.04)` : "transparent" }}>
-                <div className="flex justify-end shrink-0">
-                  <span className={`text-[0.72em] font-semibold leading-none rounded-full w-[1.5em] h-[1.5em] flex items-center justify-center ${today ? "bg-red-500 text-white" : ""}`}
-                        style={today ? undefined : { color: inMonth ? fg : (isLight ? "rgba(15,23,42,0.35)" : "rgba(255,255,255,0.3)") }}>
+              <div key={key} className="flex flex-col min-h-0 overflow-hidden px-[0.1em] pt-[0.12em]"
+                   style={{
+                     borderRight: `1px solid ${gridLine}`,
+                     borderBottom: `1px solid ${gridLine}`,
+                     // Fremdmonat leicht abgesetzt statt der Eigenmonat-Kachel —
+                     // so bleibt das Raster ruhig und die Zellen randlos.
+                     backgroundColor: inMonth ? "transparent" : `rgba(${isLight ? "0,0,0" : "255,255,255"},0.025)`,
+                   }}>
+                <div className="flex justify-end shrink-0 pr-[0.15em]">
+                  <span className={`text-[0.7em] font-semibold leading-none tabular-nums rounded-full min-w-[1.45em] h-[1.45em] flex items-center justify-center ${today ? "bg-red-500 text-white" : ""}`}
+                        style={today ? undefined : { color: inMonth ? fg : (isLight ? "rgba(15,23,42,0.35)" : "rgba(255,255,255,0.28)") }}>
                     {format(d, "d")}
                   </span>
                 </div>
                 <div className="flex flex-col mt-[0.1em] min-h-0 flex-1">
-                <div className={`flex flex-col gap-[0.12em] min-h-0 flex-1 ${monthShowAll ? "overflow-y-auto no-scrollbar" : "overflow-hidden"}`}
+                <div className={`flex flex-col gap-[1px] min-h-0 flex-1 ${monthShowAll ? "overflow-y-auto no-scrollbar" : "overflow-hidden"}`}
                      style={monthShowAll ? { scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties : undefined}>
                   {shown.map((ev) => {
                     const color = ev.feedColor || accentColor;
@@ -614,13 +629,20 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                         )}
                       </>
                     );
+                    // Schmaler Farbbalken statt Punkt — kostet weniger Breite
+                    // und ordnet den Termin trotzdem eindeutig einem Feed zu.
+                    const bar = (
+                      <span className="shrink-0 rounded-[1px] w-[2px] h-[0.85em]" style={{ backgroundColor: color }} />
+                    );
                     if (ev.isAllDay) {
                       return (
                         <div key={ev.id} className="min-w-0">
-                          <div className="rounded-[0.25em] px-[0.3em] leading-[1.5] truncate text-white" style={{ backgroundColor: color, fontSize: evFont(0.6) }}>
-                            {ev.title}
+                          <div className="flex items-center gap-[0.22em] rounded-[0.2em] px-[0.18em] leading-[1.55] mx-[1px]"
+                               style={{ backgroundColor: `${color}33`, fontSize: evFont(0.58) }}>
+                            {bar}
+                            <span className="flex-1 min-w-0 truncate" style={{ color: fg }}>{ev.title}</span>
                           </div>
-                          <div className="pl-[0.3em]">{subLines}</div>
+                          <div className="pl-[0.45em]">{subLines}</div>
                         </div>
                       );
                     }
@@ -628,14 +650,18 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     const time = monthShowTime && isValid(start) ? format(start, timePattern) : "";
                     return (
                       <div key={ev.id} className="min-w-0">
-                        <div className="flex items-center gap-[0.25em] leading-[1.5] truncate" style={{ fontSize: evFont(0.6) }}>
-                          <span className="shrink-0 rounded-full w-[0.4em] h-[0.4em]" style={{ backgroundColor: color }} />
-                          <span className="truncate" style={{ color: fg }}>
-                            {time && <span style={{ color: fgDim }}>{time} </span>}
-                            {ev.title}
-                          </span>
+                        {/* Uhrzeit RECHTS in eigener Spalte (Apple-Prinzip):
+                            der Titel bekommt einen zusammenhängenden Block
+                            statt hinter dem Zeit-Präfix abgeschnitten zu
+                            werden, und die Zeiten stehen scanbar untereinander. */}
+                        <div className="flex items-center gap-[0.22em] leading-[1.55] px-[0.12em]" style={{ fontSize: evFont(0.58) }}>
+                          {bar}
+                          <span className="flex-1 min-w-0 truncate" style={{ color: fg }}>{ev.title}</span>
+                          {time && (
+                            <span className="shrink-0 tabular-nums" style={{ color: fgDim, fontSize: "0.92em" }}>{time}</span>
+                          )}
                         </div>
-                        <div className="pl-[0.65em]">{subLines}</div>
+                        <div className="pl-[0.45em]">{subLines}</div>
                       </div>
                     );
                   })}
@@ -646,7 +672,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                   // allein sagt darüber nichts). Als Geschwister der Terminliste
                   // (nicht darin), damit die Reihe auch dann sichtbar bleibt,
                   // wenn die Termine die Zelle exakt ausfüllen.
-                  <div className="flex items-center gap-[0.16em] pl-[0.1em] mt-[0.05em] shrink-0" style={{ fontSize: evFont(0.6) }}>
+                  <div className="flex items-center gap-[0.16em] pl-[0.2em] shrink-0 leading-[1.5]" style={{ fontSize: evFont(0.56) }}>
                     {dayEvents.slice(perCell, perCell + 7).map((ev) => (
                       <span key={`d-${ev.id}`} className="shrink-0 rounded-full w-[0.34em] h-[0.34em]"
                             style={{ backgroundColor: ev.feedColor || accentColor }} />
