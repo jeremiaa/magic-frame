@@ -572,6 +572,8 @@ export const EN: Record<string, string> = {
   "Zeigt in klaren Vollmond-Nächten den Vollmond statt der Mondsichel.": "Shows the full moon instead of the crescent on clear full-moon nights.",
   "Icon-Größe (Vorschau & Stunden)": "Icon size (forecast & hourly)",
   "Icon-Größe (Aktuelles Wetter)": "Icon size (current weather)",
+  "Wird von Home Assistant übernommen.": "Handled by Home Assistant.",
+  "Magic Frame läuft als Home-Assistant-Add-on. Reverse-Proxy und HTTPS macht dort Home Assistant selbst — ein eigenes Caddy ist nicht dabei. Für Zugriff von außen nutze die Fernzugriff-Einstellungen von Home Assistant.": "Magic Frame is running as a Home Assistant add-on. Home Assistant handles the reverse proxy and HTTPS itself — no separate Caddy is bundled. For access from outside, use Home Assistant's own remote access settings.",
   "Meteocons-Stil": "Meteocons style",
   "Gefüllt": "Filled",
   "Umriss": "Outline",

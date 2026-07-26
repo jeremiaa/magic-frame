@@ -1129,11 +1129,16 @@ function CaddyCard() {
   const [extraInput, setExtraInput] = useState("");
   const [showFile, setShowFile] = useState(false);
   const [reveal, setReveal] = useState<Record<string, boolean>>({});
+  // Als Home-Assistant-Add-on läuft kein eigenes Caddy — der Supervisor macht
+  // Proxy und HTTPS. Die Route meldet das; dann zeigen wir statt der Felder
+  // eine Erklärung, damit niemand etwas einstellt, das nichts bewirkt.
+  const [addonMode, setAddonMode] = useState(false);
 
   async function load() {
     try {
       const r = await fetch("/api/admin/caddy", { cache: "no-store" });
       const d = await r.json();
+      if (d.addonMode) { setAddonMode(true); return; }
       if (d.providers) setProviders(d.providers);
       if (d.config) setCfg((c) => ({ ...c, ...d.config, providerConfig: d.config.providerConfig ?? {} }));
       if (d.status) setStatus(d.status);
@@ -1213,6 +1218,26 @@ function CaddyCard() {
 
   const activeProvider = providers.find((p) => p.name === cfg.dnsProvider);
   const activeBag = cfg.providerConfig[cfg.dnsProvider] ?? {};
+
+  // Add-on-Betrieb: Home Assistant macht Proxy und HTTPS selbst. Statt Felder
+  // anzubieten, die nichts bewirken, erklären wir das kurz.
+  if (addonMode) {
+    return (
+      <Card
+        icon={<Globe size={18} />}
+        iconTint="emerald"
+        title={t("HTTPS (Caddy Reverse-Proxy)")}
+        badge={{ label: "Add-on", tone: "emerald" }}
+        desc={t("Wird von Home Assistant übernommen.")}
+      >
+        <p className="text-sm text-[var(--mf-fg)]/60 leading-relaxed">
+          {t(
+            "Magic Frame läuft als Home-Assistant-Add-on. Reverse-Proxy und HTTPS macht dort Home Assistant selbst — ein eigenes Caddy ist nicht dabei. Für Zugriff von außen nutze die Fernzugriff-Einstellungen von Home Assistant.",
+          )}
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <Card

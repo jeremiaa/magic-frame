@@ -22,12 +22,19 @@ import {
   listCaddyProviderDescriptors,
   type CaddyDnsProviderName,
 } from "@/lib/caddy/providers";
+import { isAddonMode } from "@/lib/runtime/addon";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     await verifySession();
+    // Als HA-Add-on gibt es kein mitgeliefertes Caddy — der Supervisor macht
+    // Proxy und HTTPS. Wir melden das, damit die Oberfläche gar nicht erst
+    // Felder anbietet, die nichts bewirken würden.
+    if (isAddonMode()) {
+      return NextResponse.json({ addonMode: true });
+    }
     const cfg = await getCaddyConfig();
     const state = await getCaddyState();
     const status = await fetchCaddyStatus();
@@ -51,6 +58,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (isAddonMode()) {
+    return NextResponse.json(
+      { error: "Im Home-Assistant-Add-on übernimmt der Supervisor Proxy und HTTPS." },
+      { status: 400 },
+    );
+  }
   try {
     await verifySession();
     const body = await req.json().catch(() => ({}));

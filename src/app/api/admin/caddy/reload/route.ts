@@ -7,6 +7,7 @@ import {
 import { getCaddyConfig } from "@/lib/caddy/store";
 import { generateCaddyfile } from "@/lib/caddy/generate";
 import { writeAndReload } from "@/lib/caddy/admin";
+import { isAddonMode } from "@/lib/runtime/addon";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,12 @@ export const dynamic = "force-dynamic";
 export async function POST() {
   try {
     await verifySession();
+    if (isAddonMode()) {
+      return NextResponse.json(
+        { error: "Im Home-Assistant-Add-on übernimmt der Supervisor Proxy und HTTPS." },
+        { status: 400 },
+      );
+    }
     const cfg = await getCaddyConfig();
     const { caddyfile, warnings } = await generateCaddyfile(cfg);
     const r = await writeAndReload(caddyfile);
