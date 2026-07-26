@@ -91,10 +91,11 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   const gridStart = startOfWeek(monthAnchor, { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthAnchor), { weekStartsOn });
   // Monats-Extras: Titel default AN (View ist neu, bricht niemanden),
-  // Kalenderwochen opt-in, Termin-Schrift skalierbar (60–200 %).
+  // Kalenderwochen opt-in, Termin-Schrift als Feinregler (50–200 %) auf die
+  // gemessene Basis.
   const showMonthTitle = config?.showMonthTitle !== false;
   const showWeekNumbers = config?.showWeekNumbers === true;
-  const monthTextScale = Math.max(0.6, Math.min(2, Number(config?.monthTextScale) || 1));
+  const monthTextScale = Math.max(0.5, Math.min(2, Number(config?.monthTextScale) || 1));
   // Was pro Termin in der Zelle steht — alles einzeln schaltbar. Die Uhrzeit
   // kostet bei ~1/7 Spaltenbreite rund 40 % der Zeile, darum abschaltbar.
   const monthShowTime = config?.monthShowTime !== false;
@@ -111,34 +112,52 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   // wird der Gitter-Container (6 Wochenzeilen) + seine berechnete Schriftgröße;
   // daraus ergibt sich, wie viele Termin-Zeilen tatsächlich reinpassen.
   const monthGridRef = useRef<HTMLDivElement | null>(null);
-  const [monthMetrics, setMonthMetrics] = useState<{ cell: number; font: number }>({ cell: 0, font: 0 });
+  const [monthMetrics, setMonthMetrics] = useState<{ cell: number; colW: number; font: number }>({ cell: 0, colW: 0, font: 0 });
   useEffect(() => {
     const el = monthGridRef.current;
     if (!el || !isMonth) return;
     const measure = () => {
       const font = parseFloat(getComputedStyle(el).fontSize) || 0;
-      const gaps = 5 * 0.15 * font; // gap-[0.15em] zwischen den 6 Zeilen
-      const cell = Math.max(0, (el.clientHeight - gaps) / 6);
-      setMonthMetrics((p) => (Math.abs(p.cell - cell) < 0.5 && p.font === font ? p : { cell, font }));
+      const cell = Math.max(0, el.clientHeight / 6); // flaches Raster, kein gap
+      const colW = Math.max(0, el.clientWidth / (showWeekNumbers ? 7.5 : 7));
+      setMonthMetrics((p) =>
+        Math.abs(p.cell - cell) < 0.5 && Math.abs(p.colW - colW) < 0.5 && p.font === font
+          ? p
+          : { cell, colW, font },
+      );
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [isMonth]);
+  }, [isMonth, showWeekNumbers]);
+
+  // Termin-Schrift im Monat in PIXELN, abgeleitet aus der gemessenen Zelle —
+  // NICHT per em aus der Widget-Schriftgröße. Genau dieselbe Falle wie damals
+  // bei den Wetter-Stats: die em-Kette (Widget-fontSize × Raster × Termin)
+  // machte den Text bei großen fontSize-Werten riesig, sodass in einer Zeile
+  // kaum Text stand. Apple rendert diese Zeilen bei ~11 px — die Zellenhöhe
+  // bestimmt, wie viele Zeilen sinnvoll sind, die Spaltenbreite deckelt nach
+  // oben, damit der Titel nicht sofort abgeschnitten wird.
+  const monthFontPx = (() => {
+    const { cell, colW } = monthMetrics;
+    if (!cell || !colW) return 11 * monthTextScale;
+    const byHeight = cell * 0.135;
+    const byWidth = colW * 0.09;
+    return Math.max(7, Math.min(22, Math.min(byHeight, byWidth))) * monthTextScale;
+  })();
+  const monthSubPx = monthFontPx * 0.88;   // Ort / Beschreibung
+  const monthDayNumPx = Math.max(9, Math.min(26, monthFontPx * 1.25));
+  const monthHeadPx = Math.max(8, Math.min(20, monthFontPx * 1.05));
 
   // Höhe einer Termin-Einheit: Titelzeile + optional Ort + optional Beschreibung.
   const monthExtraLines = (monthShowLocation ? 1 : 0) + (monthShowDescription ? 1 : 0);
   const autoPerDay = (() => {
-    const { cell, font } = monthMetrics;
-    if (!cell || !font) return 3; // bis zur ersten Messung: bisheriger Wert
-    // Muss zu den Werten im Rendering passen: Titel 0.58em/1.55,
-    // Zusatzzeilen 0.52em/1.35, 1px Abstand zwischen den Terminen.
-    const titleLine = 0.58 * monthTextScale * 1.55;    // Termin-Titel
-    const subLine = 0.52 * monthTextScale * 1.35;      // Ort / Beschreibung
-    const unit = (titleLine + monthExtraLines * subLine) * font + 1;
-    const dayNum = 1.02 * font;                        // Tageszahl oben
-    const usable = cell - dayNum - 0.2 * font;         // Zellen-Padding
+    const { cell } = monthMetrics;
+    if (!cell) return 3; // bis zur ersten Messung: bisheriger Wert
+    // Muss zu den Werten im Rendering passen (Zeilenhöhen 1.55 / 1.35, 1 px Gap).
+    const unit = monthFontPx * 1.55 + monthExtraLines * monthSubPx * 1.35 + 1;
+    const usable = cell - monthDayNumPx * 1.45 - 4; // Tageszahl + Zellen-Padding
     return Math.max(1, Math.floor(usable / unit));
   })();
   const monthPerDay = monthShowAll
@@ -542,7 +561,6 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     const perCell = monthPerDay; // gemessen, fest eingestellt oder "alle"
     // Optionale KW-Spalte: schmale erste Spalte vor den 7 Wochentagen.
     const colsTemplate = showWeekNumbers ? "1.6em repeat(7, minmax(0,1fr))" : "repeat(7, minmax(0,1fr))";
-    const evFont = (base: number) => `${base * monthTextScale}em`;
     return (
       <div className="w-full h-full flex flex-col text-[0.9em]">
         {/* Monatsname + Jahr — gibt dem Gitter den Kalender-Kontext */}
@@ -559,12 +577,12 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
         {/* Wochentage */}
         <div className="grid shrink-0 pb-[0.2em]" style={{ gridTemplateColumns: colsTemplate }}>
           {showWeekNumbers && (
-            <div className="text-center uppercase tracking-wider font-medium text-[0.6em]" style={{ color: fgDim }}>
+            <div className="text-center uppercase tracking-wider font-medium" style={{ color: fgDim, fontSize: `${monthHeadPx * 0.85}px` }}>
               {locale === "en" ? "Wk" : "KW"}
             </div>
           )}
           {weekdayHead.map((d) => (
-            <div key={+d} className="text-center uppercase tracking-wider font-medium text-[0.7em]" style={{ color: fgDim }}>
+            <div key={+d} className="text-center uppercase tracking-wider font-medium" style={{ color: fgDim, fontSize: `${monthHeadPx}px` }}>
               {format(d, "eee", { locale: dfLocale })}
             </div>
           ))}
@@ -587,7 +605,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
               cells.push(
                 <div key={`kw-${key}`} className="flex items-start justify-center pt-[0.3em]"
                      style={{ borderRight: `1px solid ${gridLine}`, borderBottom: `1px solid ${gridLine}` }}>
-                  <span className="text-[0.6em] font-medium tabular-nums leading-none" style={{ color: fgDim }}>
+                  <span className="font-medium tabular-nums leading-none" style={{ color: fgDim, fontSize: `${monthHeadPx * 0.85}px` }}>
                     {getISOWeek(d)}
                   </span>
                 </div>,
@@ -603,8 +621,8 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                      backgroundColor: inMonth ? "transparent" : `rgba(${isLight ? "0,0,0" : "255,255,255"},0.025)`,
                    }}>
                 <div className="flex justify-end shrink-0 pr-[0.15em]">
-                  <span className={`text-[0.7em] font-semibold leading-none tabular-nums rounded-full min-w-[1.45em] h-[1.45em] flex items-center justify-center ${today ? "bg-red-500 text-white" : ""}`}
-                        style={today ? undefined : { color: inMonth ? fg : (isLight ? "rgba(15,23,42,0.35)" : "rgba(255,255,255,0.28)") }}>
+                  <span className={`font-semibold leading-none tabular-nums rounded-full min-w-[1.45em] h-[1.45em] flex items-center justify-center ${today ? "bg-red-500 text-white" : ""}`}
+                        style={{ fontSize: `${monthDayNumPx}px`, ...(today ? {} : { color: inMonth ? fg : (isLight ? "rgba(15,23,42,0.35)" : "rgba(255,255,255,0.28)") }) }}>
                     {format(d, "d")}
                   </span>
                 </div>
@@ -618,12 +636,12 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     const subLines = (
                       <>
                         {monthShowLocation && ev.location && (
-                          <div className="truncate leading-[1.35]" style={{ color: fgDim, fontSize: evFont(0.52) }}>
+                          <div className="truncate leading-[1.35]" style={{ color: fgDim, fontSize: `${monthSubPx}px` }}>
                             {ev.location}
                           </div>
                         )}
                         {monthShowDescription && ev.description && (
-                          <div className="truncate leading-[1.35]" style={{ color: fgDim, fontSize: evFont(0.52) }}>
+                          <div className="truncate leading-[1.35]" style={{ color: fgDim, fontSize: `${monthSubPx}px` }}>
                             {ev.description}
                           </div>
                         )}
@@ -638,7 +656,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                       return (
                         <div key={ev.id} className="min-w-0">
                           <div className="flex items-center gap-[0.22em] rounded-[0.2em] px-[0.18em] leading-[1.55] mx-[1px]"
-                               style={{ backgroundColor: `${color}33`, fontSize: evFont(0.58) }}>
+                               style={{ backgroundColor: `${color}33`, fontSize: `${monthFontPx}px` }}>
                             {bar}
                             <span className="flex-1 min-w-0 truncate" style={{ color: fg }}>{ev.title}</span>
                           </div>
@@ -654,7 +672,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                             der Titel bekommt einen zusammenhängenden Block
                             statt hinter dem Zeit-Präfix abgeschnitten zu
                             werden, und die Zeiten stehen scanbar untereinander. */}
-                        <div className="flex items-center gap-[0.22em] leading-[1.55] px-[0.12em]" style={{ fontSize: evFont(0.58) }}>
+                        <div className="flex items-center gap-[0.22em] leading-[1.55] px-[0.12em]" style={{ fontSize: `${monthFontPx}px` }}>
                           {bar}
                           <span className="flex-1 min-w-0 truncate" style={{ color: fg }}>{ev.title}</span>
                           {time && (
@@ -672,7 +690,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                   // allein sagt darüber nichts). Als Geschwister der Terminliste
                   // (nicht darin), damit die Reihe auch dann sichtbar bleibt,
                   // wenn die Termine die Zelle exakt ausfüllen.
-                  <div className="flex items-center gap-[0.16em] pl-[0.2em] shrink-0 leading-[1.5]" style={{ fontSize: evFont(0.56) }}>
+                  <div className="flex items-center gap-[0.16em] pl-[0.2em] shrink-0 leading-[1.5]" style={{ fontSize: `${monthFontPx * 0.95}px` }}>
                     {dayEvents.slice(perCell, perCell + 7).map((ev) => (
                       <span key={`d-${ev.id}`} className="shrink-0 rounded-full w-[0.34em] h-[0.34em]"
                             style={{ backgroundColor: ev.feedColor || accentColor }} />
