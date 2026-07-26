@@ -506,14 +506,21 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
                (w.type === 'HomeAssistantWidget.tsx') ||
                (w.type === 'HANotificationWidget.tsx') ||
                (w.type === 'CalendarWidget.tsx');
-             // Bild + Kamera füllen ihre Kachel selbst randlos — die Host-Box
-             // (bgOpacity + Innen-Padding) ist dort seit #39 als sinnlos aus
-             // dem Inspector verbannt; Alt-Configs mit Restwert bekamen sie
-             // trotzdem. Jetzt konsequent: nie eine Box um Bild/Kamera.
-             const fillsOwnTile = w.type === 'ImageWidget.tsx' || w.type === 'CameraWidget.tsx';
+             // Bild füllt seine Kachel randlos (object-cover) — dahinter ist
+             // nie etwas zu sehen, also keine Host-Box (#39).
+             // Die KAMERA dagegen passt ihr Bild ein (object-contain, sobald
+             // das Seitenverhältnis nicht exakt zur Kachel passt) und zeigt
+             // Lade-/Fehlerzustände auf leerer Fläche — da war der Hintergrund
+             // sehr wohl sichtbar. #39 hatte sie zu Unrecht mitgenommen.
+             const fillsOwnTile = w.type === 'ImageWidget.tsx';
+             // …aber ohne Innen-Padding: das Kamerabild soll die Karte
+             // ausfüllen, nicht in einem dicken Rahmen sitzen.
+             const noInnerPadding = w.type === 'CameraWidget.tsx';
              const hasOuterBox = !isCardBased && !fillsOwnTile && w.bgOpacity > 0;
              const outerBgOpacity = (isCardBased || fillsOwnTile) ? 0 : w.bgOpacity / 100;
-             const paddingClass = isCardBased ? 'p-0' : (hasOuterBox ? 'p-4 md:p-6' : 'p-0');
+             const paddingClass = isCardBased || noInnerPadding
+               ? 'p-0'
+               : (hasOuterBox ? 'p-4 md:p-6' : 'p-0');
              // Schwebende Karte im Randlos-Modus: Widget liegt ÜBER dem
              // Hintergrund-Raster (z. B. Wetter auf dem Foto) und behält den
              // normalen runden Karten-Look. "initial" macht die Innen-Radius-

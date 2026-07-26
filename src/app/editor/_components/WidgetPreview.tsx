@@ -84,10 +84,14 @@ export default function WidgetPreview({ type, config, bgOpacity, gridW = 12, gri
     type === "HANotificationWidget.tsx" ||
     (type === "CalendarWidget.tsx");
   // Bild + Kamera bekommen nie die Host-Box (Spiegel des Live-Views, #39).
-  const fillsOwnTile = type === "ImageWidget.tsx" || type === "CameraWidget.tsx";
+  // Muss 1:1 der Live-View entsprechen (src/app/view/[id]/page.tsx) — sonst
+  // zeigt die Vorschau etwas anderes als das Display. Nur das Bild-Widget
+  // füllt randlos; die Kamera passt ihr Bild ein und braucht die Fläche.
+  const fillsOwnTile = type === "ImageWidget.tsx";
+  const noInnerPadding = type === "CameraWidget.tsx";
   const outerBgOpacity = isCardBased || fillsOwnTile ? 0 : (bgOpacity ?? 0) / 100;
   const hasOuterBox = !isCardBased && !fillsOwnTile && (bgOpacity ?? 0) > 0;
-  const paddingClass = isCardBased ? "p-0" : hasOuterBox ? "p-4 md:p-6" : "p-0";
+  const paddingClass = isCardBased || noInnerPadding ? "p-0" : hasOuterBox ? "p-4 md:p-6" : "p-0";
   const justifyClass = isCardBased ? "justify-start" : "justify-center";
   const cfg = { ...previewConfig(type, config), ...(demoMode ? { __demo: true } : {}) };
 

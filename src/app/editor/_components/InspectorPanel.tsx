@@ -323,10 +323,12 @@ function LayoutTab({
       </div>
 
       <div>
-        {/* #39: Bild + Kamera füllen die ganze Kachel — der Kachel-Hintergrund
-            ist dort nie sichtbar und der Regler wirkungslos. Ausblenden statt
-            Nutzer verwirren. */}
-        {activeWidget.type !== "ImageWidget.tsx" && activeWidget.type !== "CameraWidget.tsx" && (
+        {/* #39: Das Bild-Widget füllt seine Kachel randlos (object-cover) —
+            dahinter ist nie etwas sichtbar, der Regler bliebe wirkungslos.
+            Die Kamera wurde damals zu Unrecht mit ausgeblendet: sie passt ihr
+            Bild ein und lässt je nach Seitenverhältnis Ränder frei (plus
+            Lade-/Fehlerzustände auf leerer Fläche) — dort wirkt er sehr wohl. */}
+        {activeWidget.type !== "ImageWidget.tsx" && (
           <>
             <SectionHeader title="Hintergrund" />
             <Field label="Deckkraft" value={`${activeWidget.bgOpacity}%`} accent="text-blue-300">
