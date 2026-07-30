@@ -21,6 +21,11 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+# tzdata: Alpine bringt keine Zoneinfo mit — ohne das Paket wird eine
+# TZ-Env-Variable (Host-Timezone-Passthrough aus compose, #73) still
+# ignoriert und der Container bleibt auf UTC.
+RUN apk add --no-cache tzdata
+
 ENV NODE_ENV production
 
 # Ensure files are copied from builder

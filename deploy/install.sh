@@ -193,6 +193,39 @@ else
   echo "  → SESSION_SECRET kept (existing sessions stay valid)"
 fi
 
+# Host timezone → .env (#73). The app container runs UTC unless told otherwise,
+# which shifts iCal/calendar times. Detection order: systemd (timedatectl),
+# Debian (/etc/timezone), symlinked /etc/localtime (macOS, Alpine, Arch).
+# An existing TZ value is never overwritten — set TZ="" in .env to re-detect.
+EXISTING_TZ=$(grep -E '^TZ=' .env | head -1 | cut -d= -f2- | sed 's/^"//;s/"$//' || true)
+if [ -n "$EXISTING_TZ" ]; then
+  echo "  → TZ kept ($EXISTING_TZ)"
+else
+  HOST_TZ=""
+  if command -v timedatectl >/dev/null 2>&1; then
+    HOST_TZ=$(timedatectl show -p Timezone --value 2>/dev/null || true)
+    [ "$HOST_TZ" != "n/a" ] || HOST_TZ=""
+  fi
+  [ -n "$HOST_TZ" ] || HOST_TZ=$(cat /etc/timezone 2>/dev/null || true)
+  [ -n "$HOST_TZ" ] || HOST_TZ=$(readlink /etc/localtime 2>/dev/null | sed -n 's|.*/zoneinfo/||p' || true)
+  if [ -n "$HOST_TZ" ]; then
+    if grep -qE '^TZ=' .env; then
+      # In-place edit — macOS-compatible sed (BSD), same pattern as above
+      if sed --version >/dev/null 2>&1; then
+        sed -i "s|^TZ=.*|TZ=\"$HOST_TZ\"|" .env
+      else
+        sed -i '' "s|^TZ=.*|TZ=\"$HOST_TZ\"|" .env
+      fi
+    else
+      # Pre-v1.4 .env without a TZ line — append one.
+      printf '\n# Host timezone (auto-detected by the installer, #73)\nTZ="%s"\n' "$HOST_TZ" >> .env
+    fi
+    echo "  → TZ set to $HOST_TZ (host timezone — containers ran UTC before)"
+  else
+    echo "  → could not detect a host timezone. Containers stay on UTC; set TZ= in .env to change"
+  fi
+fi
+
 chmod 600 .env
 
 # -----------------------------------------------------------------------------

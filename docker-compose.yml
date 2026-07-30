@@ -33,6 +33,9 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/magicdashboard?schema=public
       - NODE_ENV=production
+      # Host-Timezone-Passthrough (#73): der Installer schreibt TZ in die .env.
+      # Leer/ungesetzt = UTC — bestehende Installationen ändern sich nicht.
+      - TZ=${TZ:-}
       - SESSION_SECRET=${SESSION_SECRET}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
@@ -61,6 +64,9 @@ services:
       context: ./caddy
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      # Host-Timezone-Passthrough (#73), s. app.
+      - TZ=${TZ:-}
     # Host-Ports. Default 80/443, überschreibbar via .env (HTTP_PORT / HTTPS_PORT)
     # falls die Standard-Ports auf dem Host belegt sind. Nicht gesetzte Variablen
     # fallen auf 80/443 zurück — bestehende Installationen ändern sich also nicht.
@@ -86,6 +92,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: magicdashboard
+      # Host-Timezone-Passthrough (#73), s. app. Gespeicherte Timestamps bleiben
+      # UTC (Prisma normalisiert) — TZ betrifft nur Log-/Session-Defaults.
+      TZ: ${TZ:-}
     ports:
       - "5432:5432"
     volumes:
