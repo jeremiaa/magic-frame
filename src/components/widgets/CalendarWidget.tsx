@@ -9,6 +9,7 @@ import {
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useGlassStyle } from "@/lib/ui/glass";
+import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
 
 type CalendarEvent = {
   id: string;
@@ -84,6 +85,10 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
         ? "agenda"
         : "list";
   const isMonth = view === "month";
+  // Eigene Karten-Fläche nur bei EXPLIZIT gewählter Agenda-/Monatsansicht —
+  // die Legacy-Agenda rendert wie vor dem Karten-Umbau ohne Panel. Muss
+  // dieselbe Antwort geben wie Host (view/[id]) und Editor-Vorschau.
+  const ownSurface = calendarOwnSurface(config);
 
   // Monatsgitter: sichtbares Fenster = ganze Wochen um den aktuellen Monat.
   const weekStartsOn = locale === "en" ? 0 : 1; // So (EN) / Mo (DE)
@@ -175,7 +180,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   // bei "auto" immer weiß (+Schatten), sonst kippt sie tagsüber bei hellem
   // View-Theme ins Unsichtbare (dunkle Schrift auf dunklem Wallpaper).
   // Explizites cardTheme="light" bleibt eine bewusste Entscheidung und gewinnt.
-  const autoLightOk = view !== "list" && glass.cardOpacity > 0;
+  const autoLightOk = ownSurface && glass.cardOpacity > 0;
   const isLight = config?.cardTheme === "light" ? true : glass.isLight && autoLightOk;
   // Explizite Schriftfarbe aus dem "Text & Farbe"-Tab gewinnt IMMER — das
   // Theme (hell/dunkel) liefert nur den Default, wenn keine Farbe gesetzt ist.
@@ -717,21 +722,24 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
       {legacyAgenda && renderAgenda()}
       {view === "agenda" && !legacyAgenda && renderAgendaGrouped()}
       {view === "list" && events.length === 0 && !hideOnEmpty && (
-        <div className="opacity-50 text-[0.8em] mt-2" style={{ color: fgDim }}>{t("Keine anstehenden Termine")}</div>
+        // fgDim IST schon die 50%-Variante — keine zusätzliche opacity-Klasse,
+        // sonst wird der Leer-Text doppelt gedimmt (25 % statt 50 %).
+        <div className="text-[0.8em] mt-2" style={{ color: fgDim }}>{t("Keine anstehenden Termine")}</div>
       )}
       {view === "list" && events.map(renderEvent)}
     </div>
   );
 
-  // Fläche = EINE Glass-Karte (useGlassStyle) für Agenda/Monat; bei der Liste
-  // liefern die Termin-Kacheln selbst die Fläche, darum außen transparent.
-  const usePanel = view !== "list";
+  // Fläche = EINE Glass-Karte (useGlassStyle) für die explizite Agenda-/
+  // Monatsansicht; bei Liste UND Legacy-Agenda liefern die Termin-Kacheln
+  // selbst die Fläche, darum außen transparent (= Verhalten vor dem Umbau).
+  const usePanel = ownSurface;
   return (
     <div className="w-full h-full overflow-hidden relative rounded-3xl flex flex-col"
          // Radius folgt dem View: normal 1.5rem, im Randlos-Modus 0 (CSS-Var
          // vom Canvas — DAKboard-Mosaik ohne schwarze Eck-Lücken).
          style={{ ...(usePanel ? glass.cardStyle : {}), color: fg, borderRadius: "var(--mf-tile-radius, 1.5rem)" }}>
-      <div className={`relative flex flex-col w-full h-full overflow-hidden ${usePanel ? (isMonth ? "p-[0.6em]" : "p-[0.7em]") : (isMonth ? "" : "mt-[1em] justify-center")} ${view === "list" && !isLight ? "drop-shadow-md" : ""}`}>
+      <div className={`relative flex flex-col w-full h-full overflow-hidden ${usePanel ? (isMonth ? "p-[0.6em]" : "p-[0.7em]") : (isMonth ? "" : "mt-[1em] justify-center")} ${!usePanel && !isLight ? "drop-shadow-md" : ""}`}>
         {content}
       </div>
     </div>

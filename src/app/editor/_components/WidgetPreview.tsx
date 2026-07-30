@@ -10,6 +10,8 @@ import { useT } from "@/lib/i18n/LocaleProvider";
 // echten Daten (SSE läuft im Editor mit). Die Kachel-Hülle ist 1:1 aus dem
 // View übernommen (container-type: size → responsive Schrift rechnet nativ).
 
+import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
+
 type Display = { clientId: string; width: number; height: number; dpr: number };
 
 // Vorschau-Overrides: Widgets, die sich "verstecken, wenn nichts los ist",
@@ -82,7 +84,7 @@ export default function WidgetPreview({ type, config, bgOpacity, gridW = 12, gri
   const isCardBased =
     type === "HomeAssistantWidget.tsx" ||
     type === "HANotificationWidget.tsx" ||
-    (type === "CalendarWidget.tsx");
+    (type === "CalendarWidget.tsx" && (config?.design !== "minimal" || calendarOwnSurface(config)));
   // Bild + Kamera bekommen nie die Host-Box (Spiegel des Live-Views, #39).
   // Muss 1:1 der Live-View entsprechen (src/app/view/[id]/page.tsx) — sonst
   // zeigt die Vorschau etwas anderes als das Display. Nur das Bild-Widget

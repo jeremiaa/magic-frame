@@ -11,6 +11,7 @@ import WallpaperEngine from "@/components/WallpaperEngine";
 import { renderWidget } from "@/components/widgets/renderWidget";
 import { ViewThemeScope } from "@/lib/ui/view-theme";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
+import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -505,7 +506,10 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
              const isCardBased =
                (w.type === 'HomeAssistantWidget.tsx') ||
                (w.type === 'HANotificationWidget.tsx') ||
-               (w.type === 'CalendarWidget.tsx');
+               // Minimal-Kalender (nur Linien) zeichnet selbst keine Fläche —
+               // seine Fläche IST die Host-Box (Verhalten vor dem Karten-
+               // Umbau). Nur die expliziten Panel-Ansichten bringen eigene mit.
+               (w.type === 'CalendarWidget.tsx' && (w.config?.design !== 'minimal' || calendarOwnSurface(w.config)));
              // Bild füllt seine Kachel randlos (object-cover) — dahinter ist
              // nie etwas zu sehen, also keine Host-Box (#39).
              // Die KAMERA dagegen passt ihr Bild ein (object-contain, sobald
