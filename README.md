@@ -295,6 +295,27 @@ Something else on the host is on port 80. Check `ss -tlnp | grep :80` and `docke
 </details>
 
 <details>
+<summary><b>Home Assistant unreachable although the name resolves inside the container</b></summary>
+
+Split-horizon or self-hosted DNS (Technitium, Pi-hole, Unbound, …) can produce a confusing failure: `dig` and `curl` resolve the name inside the container just fine, but Magic Frame still reports `ENOTFOUND`.
+
+The cause is usually the `AAAA` answer. If your resolver replies `NXDOMAIN` for the IPv6 query instead of `NOERROR` with an empty answer, musl libc — which the Alpine-based image uses for `getaddrinfo()`, and therefore for `fetch`/WebSockets — treats the whole dual-stack lookup as failed, even though the `A` record resolved. `dig` and `curl` don't go through that code path, which is why they keep working.
+
+Check it with:
+
+```bash
+dig @<your-dns> ha.example.lan AAAA   # NXDOMAIN here is the problem — NOERROR is correct
+dig @<your-dns> ha.example.lan A      # this one resolves fine
+```
+
+- **Quick fix:** enter Home Assistant by IP address instead of hostname
+- **Proper fix:** make the resolver answer `NOERROR` (NODATA) for names that only have an `A` record
+
+Thanks to @proffalken for tracking this down in #64.
+
+</details>
+
+<details>
 <summary><b>Page still shows old behaviour after an update</b></summary>
 
 Next.js and your browser both cache aggressively. Hard-refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`) or use an incognito window after `docker compose up -d --build`.

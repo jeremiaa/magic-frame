@@ -342,6 +342,23 @@ Etwas anderes auf dem Host hört schon auf Port 80. Mit `ss -tlnp | grep :80` un
 - Anderer Container belegt den Port: `docker stop <name>`
 - Danach den Caddy-Container sauber neu erstellen: `docker compose down && docker compose up -d`
 
+### Home Assistant nicht erreichbar, obwohl der Name im Container auflöst
+Bei eigenem DNS (Technitium, Pi-hole, Unbound, …) gibt es einen verwirrenden Fall: `dig` und `curl` lösen den Namen im Container sauber auf, Magic Frame meldet trotzdem `ENOTFOUND`.
+
+Schuld ist meist die `AAAA`-Antwort. Antwortet der Resolver auf die IPv6-Anfrage mit `NXDOMAIN` statt `NOERROR` mit leerer Antwort, verwirft musl libc — das im Alpine-Image hinter `getaddrinfo()` und damit hinter `fetch`/WebSockets steckt — den kompletten Dual-Stack-Lookup, obwohl der `A`-Record aufgelöst hat. `dig` und `curl` gehen nicht durch diesen Codepfad und funktionieren deshalb weiter.
+
+Prüfen mit:
+
+```bash
+dig @<dein-dns> ha.example.lan AAAA   # NXDOMAIN ist hier das Problem — NOERROR wäre korrekt
+dig @<dein-dns> ha.example.lan A      # löst sauber auf
+```
+
+- **Schnell:** Home Assistant per IP-Adresse statt per Hostname eintragen
+- **Sauber:** den Resolver so konfigurieren, dass er für Namen mit nur `A`-Record `NOERROR` (NODATA) liefert
+
+Gefunden hat das @proffalken in #64.
+
 ### Seite zeigt nach `git pull` + Rebuild noch altes Verhalten
 Sowohl Next.js als auch der Browser cachen aggressiv. Hard-Refresh (`Cmd+Shift+R` / `Ctrl+Shift+R`) oder URL im Inkognito-Fenster öffnen nach `docker compose up -d --build`.
 

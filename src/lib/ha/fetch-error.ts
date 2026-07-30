@@ -14,7 +14,12 @@ export function describeHaFetchError(err: any): string {
   switch (code) {
     case "ENOTFOUND":
     case "EAI_AGAIN":
-      return `Hostname nicht auflösbar (${detail}). Läuft Magic Frame in Docker, kennt der Container weder .local-Namen noch deinen lokalen DNS-Eintrag — hier hilft die IP-Adresse.`;
+      // Zweiter Absatz aus #64: Wenn der eigene Resolver die AAAA-Anfrage mit
+      // NXDOMAIN statt NODATA beantwortet, wirft musl (Alpine) den kompletten
+      // Lookup weg — obwohl der A-Record sauber auflöst. dig und curl gehen
+      // nicht durch getaddrinfo und funktionieren deshalb weiter, was den
+      // Fehler wie ein Magic-Frame-Problem aussehen lässt.
+      return `Hostname nicht auflösbar (${detail}). Läuft Magic Frame in Docker, kennt der Container weder .local-Namen noch deinen lokalen DNS-Eintrag — hier hilft die IP-Adresse. Löst der Name im Container per dig/curl auf und trotzdem steht hier ENOTFOUND: prüf, ob dein DNS-Server auf die AAAA-Anfrage NXDOMAIN statt NODATA antwortet — dann scheitert der Lookup trotz gültigem A-Record.`;
     case "ECONNREFUSED":
       return `Verbindung abgewiesen (${detail}). Adresse und Port stimmen vermutlich nicht, oder etwas dazwischen blockt.`;
     case "EHOSTUNREACH":
