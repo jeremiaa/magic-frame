@@ -141,7 +141,8 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
   // NICHT per em aus der Widget-Schriftgröße. Genau dieselbe Falle wie damals
   // bei den Wetter-Stats: die em-Kette (Widget-fontSize × Raster × Termin)
   // machte den Text bei großen fontSize-Werten riesig, sodass in einer Zeile
-  // kaum Text stand. Apple rendert diese Zeilen bei ~11 px — die Zellenhöhe
+  // kaum Text stand. Gängige Kalender-Apps rendern solche Zeilen bei ~11 px —
+  // die Zellenhöhe
   // bestimmt, wie viele Zeilen sinnvoll sind, die Spaltenbreite deckelt nach
   // oben, damit der Titel nicht sofort abgeschnitten wird.
   const monthFontPx = (() => {
@@ -456,7 +457,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
           <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: accentColorForEvent }}></div>
           {/* Card-Box: Monat klein oben, große Zahl unten. Wochentag
               wandert in die Subtitle bei der Uhrzeit (rechts neben
-              der Box) — wie bei Apple Calendar / Fantastical. */}
+              der Box) — wie in den etablierten Kalender-Apps. */}
           <span className="relative z-10 text-[0.6em] uppercase tracking-wider opacity-80" style={{ color: accentColorForEvent }}>{monthLabel}</span>
           <span className="relative z-10 text-[1.4em] font-bold tracking-tight leading-none">{dateLabel}</span>
         </div>
@@ -594,7 +595,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
         </div>
         {/* 6 Wochen */}
         {/* Flaches Raster mit Haarlinien statt gerundeter Kacheln mit Abstand
-            (Apple-Kalender-Prinzip): das spart pro Zelle Padding + Lücke und
+            (klassisches Kalender-App-Prinzip): das spart pro Zelle Padding + Lücke und
             bringt bei gleicher Widget-Größe spürbar mehr Termine unter. */}
         <div ref={monthGridRef} className="grid grid-rows-6 flex-1 min-h-0"
              style={{ gridTemplateColumns: colsTemplate, borderTop: `1px solid ${gridLine}`, borderLeft: `1px solid ${gridLine}` }}>
@@ -673,7 +674,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
                     const time = monthShowTime && isValid(start) ? format(start, timePattern) : "";
                     return (
                       <div key={ev.id} className="min-w-0">
-                        {/* Uhrzeit RECHTS in eigener Spalte (Apple-Prinzip):
+                        {/* Uhrzeit RECHTS in eigener Spalte (Kalender-App-Prinzip):
                             der Titel bekommt einen zusammenhängenden Block
                             statt hinter dem Zeit-Präfix abgeschnitten zu
                             werden, und die Zeiten stehen scanbar untereinander. */}
