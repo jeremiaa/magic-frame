@@ -155,7 +155,7 @@ Real-world setups across different hardware. Same project, different layouts, di
 <div align="center">
   <img src="public/screenshots/modules.png" alt="Modules" width="900" />
 </div>
-<sub>13 core widgets installed. Custom modules via JS-bundle upload — hot-loading, no container restart needed.</sub>
+<sub>The core widgets ship with every install. Custom modules via JS-bundle upload — hot-loading, no container restart needed.</sub>
 
 </details>
 
@@ -163,13 +163,14 @@ Real-world setups across different hardware. Same project, different layouts, di
 
 ## Features
 
-### Widgets (13 core)
+### Widgets (18 core)
 
 | Widget | Description |
 |---|---|
 | **Clock** | Time + date, optional mini weather, 12/24h |
-| **Weather** | Open-Meteo, DWD, OpenWeatherMap, or HA weather entity |
-| **Calendar** | iCal + Google + Microsoft 365 · 3-day agenda mode · 12/24h toggle |
+| **Weather** | Open-Meteo, DWD, OpenWeatherMap, or HA weather entity · Meteocons + 3D icon sets |
+| **Environment** | Air quality, pollen, PM and UV — Open-Meteo or your own HA sensors |
+| **Calendar** | iCal + Google + Microsoft 365 + HA calendars · list, agenda and month views · 12/24h toggle |
 | **Home Assistant** | Any HA entity + rule engine (colour/icon per state) |
 | **HA Notifications** | Rule-based push tiles, tap-to-toggle, auto-hide when quiet |
 | **Camera** | HA camera entities — snapshot refresh, fullscreen view |

@@ -182,7 +182,7 @@ Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, a
 <div align="center">
   <img src="public/screenshots/modules.png" alt="Modules" width="900" />
 </div>
-<sub>10 Core-Widgets installiert. Eigene Custom-Module per JS-Bundle-Upload — Hot-Loading, kein Container-Restart nötig.</sub>
+<sub>Die Core-Widgets sind bei jeder Installation dabei. Eigene Custom-Module per JS-Bundle-Upload — Hot-Loading, kein Container-Restart nötig.</sub>
 
 ---
 
@@ -195,15 +195,19 @@ Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, a
 - **Auto-Snapshots** vor jedem Save (letzte 20), plus manueller Export/Import
 - **i18n** Deutsch + Englisch komplett übersetzt
 
-### Widgets (10 Core)
+### Widgets (18 Core)
 
 | Widget | Beschreibung |
 |---|---|
 | **Clock** | Zeit + Datum, optional Mini-Wetter, 12/24h |
-| **Weather** | Open-Meteo, DWD, OpenWeatherMap oder HA-Wetter-Entity |
-| **Calendar** | iCal-Feeds + Google + Microsoft 365 (OAuth) |
+| **Weather** | Open-Meteo, DWD, OpenWeatherMap oder HA-Wetter-Entity · Meteocons- + 3D-Icon-Sets |
+| **Environment** | Luftqualität, Pollen, Feinstaub und UV — Open-Meteo oder eigene HA-Sensoren |
+| **Calendar** | iCal-Feeds + Google + Microsoft 365 (OAuth) + HA-Kalender · Listen-, Agenda- und Monatsansicht |
 | **Home Assistant** | Beliebige HA-Entities + Rule-Engine (Farbe/Icon nach State) |
 | **HA Notifications** | Regelbasierte Push-Kacheln, Auto-Hide wenn ruhig |
+| **Camera** | HA-Kamera-Entities — Snapshot-Refresh, Vollbild-Ansicht |
+| **Sensor** | Multi-Sensor-Kacheln — Icon/Farbe pro Sensor, Verlaufs-Sparkline |
+| **Image** | Foto-Kachel — Immich-Album oder WebDAV-Slideshow |
 | **Buttons** | Tap-Tiles mit HA-Services / Webhooks |
 | **Timer** | Live-Countdown, per REST-API / iOS-Shortcut startbar |
 | **Messages** | Quick-Post (Text + Bild) per REST-API mit TTL |
