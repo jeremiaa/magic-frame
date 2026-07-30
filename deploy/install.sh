@@ -217,7 +217,7 @@ else
         sed -i '' "s|^TZ=.*|TZ=\"$HOST_TZ\"|" .env
       fi
     else
-      # Pre-v1.4 .env without a TZ line — append one.
+      # Older .env without a TZ line — append one.
       printf '\n# Host timezone (auto-detected by the installer, #73)\nTZ="%s"\n' "$HOST_TZ" >> .env
     fi
     echo "  → TZ set to $HOST_TZ (host timezone — containers ran UTC before)"
