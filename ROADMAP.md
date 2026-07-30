@@ -30,9 +30,12 @@ The biggest calendar update so far, plus a full weather refresh:
 
 Scoped issues that are likely to land in upcoming 1.3.x patches:
 
-- **🖼️ Blurred fill for images & photo albums** — the wallpaper `blur` fit,
-  brought to the Image widget ([#38](https://github.com/jeremiaa/magic-frame/issues/38))
-  and photo albums ([#72](https://github.com/jeremiaa/magic-frame/issues/72))
+- **🖼️ Picture-frame polish** — a round focused on the photo-frame side:
+  blurred fill for the Image widget and photo albums ([#38](https://github.com/jeremiaa/magic-frame/issues/38) /
+  [#72](https://github.com/jeremiaa/magic-frame/issues/72)), picking Immich
+  **people** instead of an album ([#75](https://github.com/jeremiaa/magic-frame/issues/75)),
+  and the wallpaper metadata bar with split view and a position option
+  ([#44](https://github.com/jeremiaa/magic-frame/issues/44))
 - **🔌 Companion API** — wallpaper source switching and view control over
   HTTP, so HA automations can drive a display ([#63](https://github.com/jeremiaa/magic-frame/issues/63))
 - **🎵 Fullscreen media browser + search** for Music Assistant, based on
@@ -47,7 +50,6 @@ Not scheduled, but on the radar. If one of these would matter to you,
 opening or upvoting an issue is the best way to move it up.
 
 - **Swipe between views on one display** ([#4](https://github.com/jeremiaa/magic-frame/issues/4)) + auto-cycle views
-- **Wallpaper metadata split view** ([#44](https://github.com/jeremiaa/magic-frame/issues/44))
 - **OIDC login** ([#55](https://github.com/jeremiaa/magic-frame/issues/55)) and no-reverse-proxy setups ([#10](https://github.com/jeremiaa/magic-frame/issues/10))
 - **HACS / Home Assistant add-on store** ([#25](https://github.com/jeremiaa/magic-frame/issues/25)) and a Helm chart for Kubernetes ([#24](https://github.com/jeremiaa/magic-frame/issues/24))
 - **More UI languages** ([#13](https://github.com/jeremiaa/magic-frame/issues/13)), more weather providers ([#67](https://github.com/jeremiaa/magic-frame/issues/67)), smarter widget auto-fit ([#8](https://github.com/jeremiaa/magic-frame/issues/8))
