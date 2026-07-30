@@ -106,6 +106,17 @@ export function wmoTo3dName(code: number, isDay: boolean, moonPhase?: number): s
   return "cloudy";
 }
 
+// IconScout-Legacy-Werte (celestial/forecast) → eigenes 3D-Set. Die Sets
+// wurden aus Lizenzgründen entfernt (No-Redistribution — die Rohdateien
+// dürfen nicht im öffentlichen Repo liegen); das 3D-Set ist dem alten Look
+// bewusst nachempfunden und damit der nächstliegende Ersatz. Wird auch von
+// den Inspector-Selects genutzt, damit Editor-Anzeige und Display-Rendering
+// dieselbe Wahrheit zeigen.
+export function normalizeIconSet(iconSet?: string): string | undefined {
+  if (iconSet === "celestial" || iconSet === "forecast") return "3d";
+  return iconSet;
+}
+
 export type IconOpts = { style?: "fill" | "line"; animated?: boolean; moonPhase?: number };
 
 export function wmoToIcon(
@@ -116,11 +127,7 @@ export function wmoToIcon(
 ) {
   const props = { strokeWidth: 1.5, className: "w-full h-full drop-shadow-md" };
 
-  // Die IconScout-Sets (celestial/forecast) wurden aus Lizenzgründen entfernt
-  // (No-Redistribution — Rohdateien dürfen nicht im öffentlichen Repo liegen).
-  // Bestehende Layouts mit diesen Werten fallen sauber auf Meteocons (MIT)
-  // zurück, statt auf ein kaputtes Bild.
-  if (iconSet === "celestial" || iconSet === "forecast") iconSet = "meteocons";
+  iconSet = normalizeIconSet(iconSet) ?? "lucide";
 
   if (iconSet === "meteocons") {
     const style = opts?.style === "line" ? "line" : "fill";

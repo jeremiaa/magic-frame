@@ -4,6 +4,7 @@ import React from 'react';
 import type { WidgetLayoutItem } from '../_types';
 import TimezonePicker from '../_components/TimezonePicker';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { normalizeIconSet } from "@/lib/weather/wmo";
 
 type ClockInspectorProps = {
   widget: WidgetLayoutItem;
@@ -175,28 +176,32 @@ export default function ClockInspector({
                  <div>
                     <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Icon Stil (Wetter)")}</label>
                     <select
-                       value={(activeWidget.config as any)?.iconSet || 'lucide'}
+                       value={normalizeIconSet((activeWidget.config as any)?.iconSet) || 'lucide'}
                        onChange={(e) => updateConfig(activeWidget.i, 'iconSet', e.target.value)}
                        className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 appearance-none cursor-pointer"
                     >
                        <option value="lucide">{t("Lucide (Klar, Umriss)")}</option>
                        <option value="solid">{t("Solid (Gefüllt, Flach)")}</option>
                        <option value="meteocons">{t("Meteocons (Farbig, Animierbar)")}</option>
+                       <option value="3d">{t("3D (Plastisch, Animierbar)")}</option>
                     </select>
-                    {((activeWidget.config as any)?.iconSet === 'meteocons') && (
+                    {['meteocons', '3d'].includes(normalizeIconSet((activeWidget.config as any)?.iconSet) ?? '') && (
                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-                          <div className="inline-flex rounded-lg border border-[var(--mf-bdr)]/10 overflow-hidden">
-                             {([['fill', t("Gefüllt")], ['line', t("Umriss")]] as const).map(([val, lbl]) => {
-                                const active = ((activeWidget.config as any)?.meteoconsStyle || 'fill') === val;
-                                return (
-                                   <button key={val} type="button"
-                                      onClick={() => updateConfig(activeWidget.i, 'meteoconsStyle', val)}
-                                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${active ? 'bg-cyan-500/15 text-cyan-300' : 'text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]/80'}`}>
-                                      {lbl}
-                                   </button>
-                                );
-                             })}
-                          </div>
+                          {/* fill/line gibt es nur bei Meteocons — das 3D-Set hat einen Stil */}
+                          {normalizeIconSet((activeWidget.config as any)?.iconSet) === 'meteocons' && (
+                             <div className="inline-flex rounded-lg border border-[var(--mf-bdr)]/10 overflow-hidden">
+                                {([['fill', t("Gefüllt")], ['line', t("Umriss")]] as const).map(([val, lbl]) => {
+                                   const active = ((activeWidget.config as any)?.meteoconsStyle || 'fill') === val;
+                                   return (
+                                      <button key={val} type="button"
+                                         onClick={() => updateConfig(activeWidget.i, 'meteoconsStyle', val)}
+                                         className={`px-3 py-1.5 text-xs font-medium transition-colors ${active ? 'bg-cyan-500/15 text-cyan-300' : 'text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]/80'}`}>
+                                         {lbl}
+                                      </button>
+                                   );
+                                })}
+                             </div>
+                          )}
                           <label className="flex items-center gap-2 cursor-pointer group">
                              <div className="relative">
                                 <input type="checkbox"

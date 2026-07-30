@@ -3,6 +3,7 @@
 import React from 'react';
 import type { WidgetLayoutItem } from '../_types';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { normalizeIconSet } from "@/lib/weather/wmo";
 
 type WeatherInspectorProps = {
   widget: WidgetLayoutItem;
@@ -232,7 +233,7 @@ export default function WeatherInspector({
              <div>
                 <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Icon Stil")}</label>
                 <select
-                   value={(activeWidget.config as any)?.iconSet || 'lucide'}
+                   value={normalizeIconSet((activeWidget.config as any)?.iconSet) || 'lucide'}
                    onChange={(e) => updateConfig(activeWidget.i, 'iconSet', e.target.value)}
                    className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
                 >
@@ -257,7 +258,7 @@ export default function WeatherInspector({
              />
           </div>
 
-          {((activeWidget.config as any)?.iconSet === 'meteocons') && (
+          {(normalizeIconSet((activeWidget.config as any)?.iconSet) === 'meteocons') && (
              <div className="mt-4 rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-surface)]/40 p-3 space-y-3">
                 <div>
                    <label className="text-xs font-medium text-[var(--mf-fg)]/60 block mb-1.5">{t("Meteocons-Stil")}</label>
@@ -334,7 +335,7 @@ export default function WeatherInspector({
              </div>
           )}
 
-          {((activeWidget.config as any)?.iconSet === '3d') && (
+          {(normalizeIconSet((activeWidget.config as any)?.iconSet) === '3d') && (
              <div className="mt-4 rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-surface)]/40 p-3 space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer group">
                    <div className="relative">
