@@ -253,7 +253,7 @@ export default function CalendarInspector({
   );
 }
 
-type FeedType = "ical" | "google" | "microsoft" | "homeassistant";
+type FeedType = "ical" | "google" | "microsoft" | "homeassistant" | "caldav";
 
 type Feed = {
   id?: string;
@@ -267,9 +267,10 @@ type Feed = {
 
 type Account = {
   id: string;
-  provider: "google" | "microsoft";
+  provider: "google" | "microsoft" | "caldav";
   accountEmail: string | null;
   accountName: string | null;
+  serverUrl?: string | null;
 };
 
 type ProviderCalendar = {
@@ -278,6 +279,14 @@ type ProviderCalendar = {
   primary?: boolean;
   backgroundColor?: string;
 };
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
 
 function FeedsEditor({
   widget,
@@ -389,6 +398,7 @@ function FeedsEditor({
               <option value="ical">{t("iCal / Webcal")}</option>
               <option value="google">{t("Google-Konto")}</option>
               <option value="microsoft">Microsoft 365</option>
+              <option value="caldav">{t("CalDAV (Nextcloud & Co.)")}</option>
               <option value="homeassistant">Home Assistant</option>
             </select>
             <FeedBody
@@ -464,6 +474,25 @@ function FeedsEditor({
               ...feeds,
               {
                 id: `feed-${Date.now()}`,
+                label: "CalDAV",
+                type: "caldav",
+                accountId: "",
+                // Leer = erster Kalender des Kontos (wie "primary" bei Google).
+                calendarId: "",
+                color: "#A855F7",
+              },
+            ])
+          }
+          className="h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-purple-500/40 rounded-md transition-colors"
+        >
+          + CalDAV
+        </button>
+        <button
+          onClick={() =>
+            write([
+              ...feeds,
+              {
+                id: `feed-${Date.now()}`,
                 label: "Home Assistant",
                 type: "homeassistant",
                 calendarId: "",
@@ -471,7 +500,7 @@ function FeedsEditor({
               },
             ])
           }
-          className="col-span-3 h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-emerald-500/40 rounded-md transition-colors"
+          className="col-span-2 h-9 text-xs font-medium text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] border border-dashed border-[var(--mf-bdr)]/15 hover:border-emerald-500/40 rounded-md transition-colors"
         >
           + Home Assistant
         </button>
@@ -576,7 +605,9 @@ function ProviderFeedBody({
         >
           {feed.type === "google"
             ? t("Noch kein Google-Konto verbunden → Integrationen öffnen")
-            : t("Noch kein Microsoft-Konto verbunden → Integrationen öffnen")}
+            : feed.type === "caldav"
+              ? t("Noch kein CalDAV-Konto verbunden → Integrationen öffnen")
+              : t("Noch kein Microsoft-Konto verbunden → Integrationen öffnen")}
         </a>
       ) : (
         <select
@@ -588,6 +619,9 @@ function ProviderFeedBody({
           {providerAccounts.map((acc) => (
             <option key={acc.id} value={acc.id}>
               {acc.accountName || acc.accountEmail || t("(unbenannt)")}
+              {/* Derselbe Benutzername kann auf mehreren Servern liegen —
+                  ohne den Host wären die Einträge nicht unterscheidbar. */}
+              {acc.provider === "caldav" && acc.serverUrl ? ` · ${hostOf(acc.serverUrl)}` : ""}
             </option>
           ))}
         </select>
@@ -607,7 +641,9 @@ function ProviderFeedBody({
                 ? `${t("Fehler:")} ${error}`
                 : feed.type === "microsoft"
                   ? t("— Standard-Kalender —")
-                  : t("— Primary —")}
+                  : feed.type === "caldav"
+                    ? t("— Erster Kalender —")
+                    : t("— Primary —")}
           </option>
           {(calendars ?? []).map((c) => (
             <option key={c.id} value={c.id}>

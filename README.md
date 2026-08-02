@@ -170,7 +170,7 @@ Real-world setups across different hardware. Same project, different layouts, di
 | **Clock** | Time + date, optional mini weather, 12/24h |
 | **Weather** | Open-Meteo, DWD, OpenWeatherMap, or HA weather entity · Meteocons + 3D icon sets |
 | **Environment** | Air quality, pollen, PM and UV — Open-Meteo or your own HA sensors |
-| **Calendar** | iCal + Google + Microsoft 365 + HA calendars · list, agenda and month views · 12/24h toggle |
+| **Calendar** | iCal + Google + Microsoft 365 + CalDAV + HA calendars · list, agenda and month views · 12/24h toggle |
 | **Home Assistant** | Any HA entity + rule engine (colour/icon per state) |
 | **HA Notifications** | Rule-based push tiles, tap-to-toggle, auto-hide when quiet |
 | **Camera** | HA camera entities — snapshot refresh, fullscreen view |
@@ -198,6 +198,7 @@ Real-world setups across different hardware. Same project, different layouts, di
 
 - **Home Assistant** — live entity updates over one WebSocket (pushed, not polled)
 - **Google Calendar** and **Microsoft 365** via OAuth (multiple accounts) — plus plain iCal feeds
+- **CalDAV** (Nextcloud, Baïkal, Radicale, Synology, mailbox.org, iCloud …) — server URL + app password, calendars are discovered for you
 - **Immich** + **WebDAV** as wallpaper sources · **Todoist** · **OpenWeatherMap** (optional)
 
 <details>

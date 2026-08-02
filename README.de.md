@@ -202,7 +202,7 @@ Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, a
 | **Clock** | Zeit + Datum, optional Mini-Wetter, 12/24h |
 | **Weather** | Open-Meteo, DWD, OpenWeatherMap oder HA-Wetter-Entity · Meteocons- + 3D-Icon-Sets |
 | **Environment** | Luftqualität, Pollen, Feinstaub und UV — Open-Meteo oder eigene HA-Sensoren |
-| **Calendar** | iCal-Feeds + Google + Microsoft 365 (OAuth) + HA-Kalender · Listen-, Agenda- und Monatsansicht |
+| **Calendar** | iCal-Feeds + Google + Microsoft 365 (OAuth) + CalDAV + HA-Kalender · Listen-, Agenda- und Monatsansicht |
 | **Home Assistant** | Beliebige HA-Entities + Rule-Engine (Farbe/Icon nach State) |
 | **HA Notifications** | Regelbasierte Push-Kacheln, Auto-Hide wenn ruhig |
 | **Camera** | HA-Kamera-Entities — Snapshot-Refresh, Vollbild-Ansicht |
@@ -221,6 +221,7 @@ Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, a
 ### Externe Integrationen
 - **Home Assistant** mit Live-WebSocket-Entity-Updates
 - **Google Calendar** und **Microsoft 365** via OAuth, mehrere Konten parallel
+- **CalDAV** (Nextcloud, Baïkal, Radicale, Synology, mailbox.org, iCloud …) mit Server + App-Passwort — die Kalender findet Magic Frame selbst
 - **Todoist** mit 1-Klick-API-Token-Setup
 - **Immich** + **WebDAV** als Wallpaper-Quellen
 - **OpenWeatherMap** als Wetter-Provider (optional)

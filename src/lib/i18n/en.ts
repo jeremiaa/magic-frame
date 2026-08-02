@@ -376,10 +376,43 @@ export const EN: Record<string, string> = {
   "Nicht konfiguriert — HA-Widgets bleiben leer.": "Not configured — HA widgets stay empty.",
   "iCal-Feeds werden weiterhin direkt pro Kalender-Widget im View-Editor konfiguriert. Generische MQTT- und REST-Integrationen kommen mit dem Modul-Market.":
     "iCal feeds are still configured per calendar widget in the view editor. Generic MQTT and REST integrations come with the module market.",
-  "Verbinde Google oder Microsoft 365, um echte Kalenderdaten im Kalender-Widget anzuzeigen. iCal-URLs bleiben als separate Feed-Art erhalten.":
-    "Connect Google or Microsoft 365 to show real calendar data in the calendar widget. iCal URLs remain as a separate feed type.",
+  "Verbinde Google, Microsoft 365 oder einen CalDAV-Server (Nextcloud, Baïkal, Radicale, Synology, iCloud …), um echte Kalenderdaten im Kalender-Widget anzuzeigen. iCal-URLs bleiben als separate Feed-Art erhalten.":
+    "Connect Google, Microsoft 365 or a CalDAV server (Nextcloud, Baïkal, Radicale, Synology, iCloud …) to show real calendar data in the calendar widget. iCal URLs remain as a separate feed type.",
   "OAuth-Zugangsdaten einrichten (Klick-Verbinden aktivieren)":
     "Set up OAuth credentials (enable click-to-connect)",
+
+  // ── CalDAV ──
+  "CalDAV-Server verbinden (Nextcloud, Baïkal, Radicale, Synology, iCloud …)":
+    "Connect a CalDAV server (Nextcloud, Baïkal, Radicale, Synology, iCloud …)",
+  "Die Adresse, die auch dein Handy nutzt — Server-Basis reicht, der Rest wird automatisch gefunden (z.B. https://cloud.example.com/remote.php/dav für Nextcloud). Nutze möglichst ein App-Passwort statt deines Konto-Passworts; bei aktiver Zwei-Faktor-Anmeldung ist es Pflicht.":
+    "The same address your phone uses — the server base is enough, the rest is discovered automatically (e.g. https://cloud.example.com/remote.php/dav for Nextcloud). Prefer an app password over your account password; with two-factor login enabled it is required.",
+  "Server-Adresse": "Server address",
+  "App-Passwort": "App password",
+  "Anzeigename (optional)": "Display name (optional)",
+  "z.B. Nextcloud privat": "e.g. Nextcloud personal",
+  "Verbinden": "Connect",
+  "Wird erst gespeichert, wenn der Server die Zugangsdaten akzeptiert.":
+    "Only stored once the server accepts the credentials.",
+  "CalDAV-Konto verbunden.": "CalDAV account connected.",
+  "Kalender gefunden.": "calendar(s) found.",
+  "Server, Benutzername und Passwort sind alle nötig.":
+    "Server, username and password are all required.",
+  "Die Server-Adresse ist keine gültige URL.": "The server address is not a valid URL.",
+  "Anmeldung abgelehnt — Benutzername oder Passwort stimmt nicht. Viele Server verlangen ein App-Passwort statt des Konto-Passworts.":
+    "Login rejected — wrong username or password. Many servers require an app password instead of the account password.",
+  "Der Server verweigert den Zugriff auf die Kalender dieses Kontos.":
+    "The server denies access to this account's calendars.",
+  "Zeitüberschreitung — ist der Server von hier aus erreichbar?":
+    "Timed out — is the server reachable from here?",
+  "Verbindung steht, aber der Server liefert keinen Kalender mit Terminen zurück.":
+    "Connected, but the server returns no calendar containing events.",
+  "Verbindung fehlgeschlagen.": "Connection failed.",
+  "Server nicht erreichbar — Adresse, Port und HTTPS prüfen.":
+    "Server unreachable — check address, port and HTTPS.",
+  "CalDAV (Nextcloud & Co.)": "CalDAV (Nextcloud & co.)",
+  "Noch kein CalDAV-Konto verbunden → Integrationen öffnen":
+    "No CalDAV account connected yet → open Integrations",
+  "— Erster Kalender —": "— First calendar —",
 
   // ── Views list ──
   "Konfiguriere deine Display-Layouts. Jeder View ist über seine URL erreichbar.":
