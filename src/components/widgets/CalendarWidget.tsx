@@ -27,7 +27,7 @@ type FeedConfig = {
   id?: string;
   label?: string;
   color?: string;
-  type?: "ical" | "google" | "microsoft" | "homeassistant";
+  type?: "ical" | "google" | "microsoft" | "homeassistant" | "caldav";
   url?: string;
   accountId?: string;
   calendarId?: string;
@@ -39,6 +39,8 @@ const isValidFeed = (f: any): boolean => {
   if (type === "ical") return typeof f.url === "string" && f.url.trim() !== "";
   // HA-Kalender identifiziert sich über die Entität (calendarId), nicht accountId.
   if (type === "homeassistant") return typeof f.calendarId === "string" && f.calendarId.trim() !== "";
+  // Google/Microsoft/CalDAV hängen am verbundenen Konto; bei CalDAV ist die
+  // calendarId die Collection-URL und darf leer bleiben (= erster Kalender).
   return typeof f.accountId === "string" && f.accountId.trim() !== "";
 };
 

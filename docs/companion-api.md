@@ -250,7 +250,7 @@ From the browser: `io().emit("REFRESH_DEVICE", null)`. For external clients (e.g
 These also already exist, included here for completeness:
 
 - `GET /api/weather?provider=…&lat=…&lon=…` — see the inspector dropdown
-- `GET /api/calendar?feeds=<json>&limit=…&days=…` — multi-feed iCal/Google/Microsoft
+- `GET /api/calendar?feeds=<json>&limit=…&days=…` — multi-feed iCal/Google/Microsoft/CalDAV/Home Assistant
 
 Both retrievable without auth (display-friendly).
 

@@ -8,7 +8,8 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-export type Provider = "google" | "microsoft";
+export type Provider = "google" | "microsoft" | "caldav";
+export type OAuthProvider = "google" | "microsoft";
 
 export async function listAccounts(userId: string) {
   const rows = await prisma.calendarAuth.findMany({
@@ -20,6 +21,9 @@ export async function listAccounts(userId: string) {
     provider: r.provider as Provider,
     accountEmail: r.accountEmail,
     accountName: r.accountName,
+    // Nur bei CalDAV gesetzt — die UI zeigt damit, auf welchem Server ein
+    // Konto liegt (derselbe Benutzername kann auf mehreren existieren).
+    serverUrl: r.serverUrl || null,
     expiresAt: r.expiresAt,
     hasRefresh: !!r.refreshToken,
   }));
@@ -27,7 +31,7 @@ export async function listAccounts(userId: string) {
 
 export async function upsertAccount(params: {
   userId: string;
-  provider: Provider;
+  provider: OAuthProvider;
   accountEmail: string | null;
   accountName: string | null;
   accessToken: string;
@@ -36,12 +40,12 @@ export async function upsertAccount(params: {
   scope: string | null;
 }) {
   const { userId, provider, accountEmail } = params;
-  // @@unique([userId, provider, accountEmail]) — Null-Emails können in PG
-  // mehrfach auftreten. Wir key auf "" als Surrogat, wenn keine Email
-  // geliefert wird.
+  // @@unique([userId, provider, accountEmail, serverUrl]) — Null-Emails können
+  // in PG mehrfach auftreten. Wir key auf "" als Surrogat, wenn keine Email
+  // geliefert wird. serverUrl ist bei OAuth-Konten immer "".
   const keyEmail = accountEmail ?? "";
   const existing = await prisma.calendarAuth.findFirst({
-    where: { userId, provider, accountEmail: keyEmail },
+    where: { userId, provider, accountEmail: keyEmail, serverUrl: "" },
   });
   if (existing) {
     return prisma.calendarAuth.update({
@@ -73,6 +77,77 @@ export async function deleteAccount(userId: string, id: string) {
   return prisma.calendarAuth.deleteMany({ where: { id, userId } });
 }
 
+// CalDAV-Konten: kein OAuth, sondern Server + Benutzer + (App-)Passwort. Das
+// Passwort landet in accessToken, damit kein zweites Token-Feld nötig ist;
+// expiresAt liegt weit in der Zukunft, weil es nicht abläuft.
+const CALDAV_NEVER_EXPIRES_YEARS = 100;
+
+export async function upsertCaldavAccount(params: {
+  userId: string;
+  serverUrl: string;
+  username: string;
+  password: string;
+  accountName: string | null;
+}) {
+  const expiresAt = new Date();
+  expiresAt.setFullYear(expiresAt.getFullYear() + CALDAV_NEVER_EXPIRES_YEARS);
+
+  const existing = await prisma.calendarAuth.findFirst({
+    where: {
+      userId: params.userId,
+      provider: "caldav",
+      accountEmail: params.username,
+      serverUrl: params.serverUrl,
+    },
+  });
+  if (existing) {
+    return prisma.calendarAuth.update({
+      where: { id: existing.id },
+      data: {
+        accountName: params.accountName,
+        accessToken: params.password,
+        expiresAt,
+      },
+    });
+  }
+  return prisma.calendarAuth.create({
+    data: {
+      userId: params.userId,
+      provider: "caldav",
+      accountEmail: params.username,
+      accountName: params.accountName,
+      serverUrl: params.serverUrl,
+      accessToken: params.password,
+      refreshToken: null,
+      expiresAt,
+      scope: null,
+    },
+  });
+}
+
+export type CaldavAccountCredentials = {
+  serverUrl: string;
+  username: string;
+  password: string;
+};
+
+export async function getCaldavCredentials(
+  accountId: string,
+  userId?: string | null,
+): Promise<CaldavAccountCredentials | null> {
+  // Wie bei getFreshAccessToken: die accountId identifiziert das Konto allein,
+  // damit öffentliche /view-Displays ohne Session funktionieren (#43).
+  const row = await prisma.calendarAuth.findFirst({
+    where: userId ? { id: accountId, userId } : { id: accountId },
+  });
+  if (!row || row.provider !== "caldav") return null;
+  return {
+    serverUrl: row.serverUrl,
+    username: row.accountEmail ?? "",
+    password: row.accessToken,
+  };
+}
+
 export async function getFreshAccessToken(accountId: string, userId?: string | null): Promise<string | null> {
   // #43: Öffentliche /view-Displays haben keine Browser-Session. Die accountId
   // ist der Primary Key der Token-Zeile und identifiziert das Konto allein —
@@ -81,6 +156,10 @@ export async function getFreshAccessToken(accountId: string, userId?: string | n
     where: userId ? { id: accountId, userId } : { id: accountId },
   });
   if (!row) return null;
+  // CalDAV hat kein Bearer-Token — dort steht das Passwort in accessToken.
+  // Nie als Token herausgeben, auch nicht versehentlich über einen falschen
+  // Feed-Typ (Feed sagt "google", accountId zeigt auf ein CalDAV-Konto).
+  if (row.provider !== "google" && row.provider !== "microsoft") return null;
 
   const now = Date.now();
   // 60s Puffer, damit wir nicht mitten im Request ablaufen.

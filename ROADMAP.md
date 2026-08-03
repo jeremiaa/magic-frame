@@ -17,6 +17,9 @@ The biggest calendar update so far, plus a full weather refresh:
   grid, light mode, and [Home Assistant calendars](https://github.com/jeremiaa/magic-frame/issues/65)
   as a feed source (based on [#68](https://github.com/jeremiaa/magic-frame/pull/68) by @proffalken).
   Plus timezone fixes for all-day events ([#70](https://github.com/jeremiaa/magic-frame/issues/70)).
+- **🗓️ CalDAV calendars** — connect Nextcloud, Baïkal, Radicale, Synology,
+  mailbox.org or iCloud with server URL and an app password; the calendars
+  themselves are discovered, no OAuth app to register.
 - **🌦️ Weather icons & Environment widget** — two new icon families
   (Meteocons by Bas Milius and a self-made 3D set with day/night variants
   and real moon phases), icon size and animation controls, and a new
