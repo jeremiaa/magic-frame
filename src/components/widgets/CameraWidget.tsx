@@ -21,9 +21,25 @@ type CameraConfig = {
   clickFullscreen?: boolean;
   /** Optional caption shown as small chip in the corner. */
   caption?: string;
+  /** #41: an HA trigger pops this camera to fullscreen on its own. */
+  fullscreenOnTrigger?: boolean;
 };
 
-export default function CameraWidget({ config }: { config?: CameraConfig }) {
+/**
+ * #41: the View owns the HA trigger (live SSE states, edge detection, hold
+ * timer) and tells the camera when to pop open / fall back — same split as the
+ * button auto-trigger, which dispatches WIDGET_ACTION from the View.
+ */
+export const CAMERA_FULLSCREEN_EVENT = "CAMERA_FULLSCREEN";
+
+export default function CameraWidget({
+  config,
+  widgetId,
+}: {
+  config?: CameraConfig;
+  /** Layout id of this tile — only set in the live view, where triggers run. */
+  widgetId?: string;
+}) {
   const { t } = useLocale();
   const source: "ha" | "url" = config?.source === "url" ? "url" : "ha";
   const entityId = config?.entityId?.trim() || "";
@@ -165,6 +181,21 @@ export default function CameraWidget({ config }: { config?: CameraConfig }) {
       fsVideoRef.current.srcObject = mediaStream;
     }
   }, [mediaStream, fullscreen]);
+
+  // #41: HA-triggered fullscreen. The overlay portals to <body>, so it covers
+  // wallpaper and gallery even while the tile itself is still hidden by the
+  // same trigger's visibility rule. Independent of clickFullscreen — a camera
+  // that must not react to taps can still be popped open by the trigger.
+  useEffect(() => {
+    if (!widgetId) return;
+    const onTrigger = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail || detail.id !== widgetId) return;
+      setFullscreen(!!detail.open);
+    };
+    window.addEventListener(CAMERA_FULLSCREEN_EVENT, onTrigger);
+    return () => window.removeEventListener(CAMERA_FULLSCREEN_EVENT, onTrigger);
+  }, [widgetId]);
 
   if (!configured) {
     return (

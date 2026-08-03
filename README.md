@@ -173,7 +173,7 @@ Real-world setups across different hardware. Same project, different layouts, di
 | **Calendar** | iCal + Google + Microsoft 365 + HA calendars · list, agenda and month views · 12/24h toggle |
 | **Home Assistant** | Any HA entity + rule engine (colour/icon per state) |
 | **HA Notifications** | Rule-based push tiles, tap-to-toggle, auto-hide when quiet |
-| **Camera** | HA camera entities — snapshot refresh, fullscreen view |
+| **Camera** | HA camera entities — snapshot refresh, fullscreen view, HA trigger pops it fullscreen |
 | **Sensor** | Multi-sensor value tiles — per-sensor icon/colour, history sparkline |
 | **Image** | Photo tile — Immich album or WebDAV slideshow |
 | **Buttons** | Tap tiles with HA service calls (incl. service data) / webhooks |

@@ -9,6 +9,7 @@ import "react-resizable/css/styles.css";
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import WallpaperEngine from "@/components/WallpaperEngine";
 import { renderWidget } from "@/components/widgets/renderWidget";
+import { CAMERA_FULLSCREEN_EVENT } from "@/components/widgets/CameraWidget";
 import { ViewThemeScope } from "@/lib/ui/view-theme";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
@@ -75,10 +76,33 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
       };
     });
 
+  // #41: cameras that should pop to FULLSCREEN when their HA trigger fires
+  // (doorbell, person/motion detection) instead of only appearing at card size.
+  // The trigger defaults to the widget's own visibility rule (showWhenEntity) —
+  // a dedicated fullscreenTriggerEntity overrides it, so a camera that is on
+  // screen permanently can still be popped open by a separate entity.
+  // hold > 0 = stay fullscreen N s, then fall back; 0 = while the entity matches.
+  const cameraFullscreenTriggers = (layout || [])
+    .filter((w: any) => w.type === "CameraWidget.tsx" && w.config?.fullscreenOnTrigger)
+    .map((w: any) => {
+      const own = (w.config.fullscreenTriggerEntity || "").trim();
+      return {
+        i: w.i,
+        ent: own || (w.config.showWhenEntity || "").trim(),
+        st: String((own ? w.config.fullscreenTriggerState : w.config.showWhenState) ?? "").trim(),
+        hold: Math.max(
+          0,
+          Number(w.config.fullscreenSeconds ?? w.config.autoHideSeconds) || 0,
+        ),
+      };
+    })
+    .filter((c: any) => c.ent);
+
   const triggerEntityIds = Array.from(
     new Set([
       ...triggerConfigs.map((tg: any) => tg.ent),
       ...buttonTriggers.map((b: any) => b.ent),
+      ...cameraFullscreenTriggers.map((c: any) => c.ent),
     ]),
   );
 
@@ -222,13 +246,58 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     }
   }, [liveTriggerStates, layout]);
 
+  // #41: camera fullscreen on trigger. Edge detection mirrors the visibility
+  // trigger above; the camera widget itself only listens for the resulting
+  // CAMERA_FULLSCREEN event, so all the HA state handling stays in one place.
+  const cameraFsMatchRef = useRef<Record<string, boolean>>({});
+  const cameraFsTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    if (cameraFullscreenTriggers.length === 0) return;
+    const popFullscreen = (id: string, open: boolean) =>
+      window.dispatchEvent(
+        new CustomEvent(CAMERA_FULLSCREEN_EVENT, { detail: { id, open } }),
+      );
+
+    for (const cam of cameraFullscreenTriggers) {
+      const cur = String(liveTriggerStates[cam.ent]?.state ?? "").toLowerCase();
+      const match = cam.st
+        ? cur === cam.st.toLowerCase()
+        : !!cur && !["off", "unavailable", "unknown", "none", ""].includes(cur);
+      const prevMatch = cameraFsMatchRef.current[cam.i] ?? false;
+      cameraFsMatchRef.current[cam.i] = match;
+
+      if (match && !prevMatch) {
+        popFullscreen(cam.i, true);
+        if (cameraFsTimersRef.current[cam.i]) {
+          // Rung twice: restart the hold window instead of stacking timers.
+          clearTimeout(cameraFsTimersRef.current[cam.i]);
+          delete cameraFsTimersRef.current[cam.i];
+        }
+        if (cam.hold > 0) {
+          // Pulse: a doorbell that is "on" for only a moment still keeps the
+          // camera fullscreen for the configured hold time.
+          cameraFsTimersRef.current[cam.i] = setTimeout(() => {
+            popFullscreen(cam.i, false);
+            delete cameraFsTimersRef.current[cam.i];
+          }, cam.hold * 1000);
+        }
+      } else if (!match && prevMatch && cam.hold === 0) {
+        // Hold 0 = fullscreen mirrors the entity; back to the calm view.
+        popFullscreen(cam.i, false);
+      }
+    }
+  }, [liveTriggerStates, layout]);
+
   // Clear pending auto-hide timers on unmount (the ref objects are stable).
   useEffect(() => {
     const widgetTimers = autoHideTimersRef.current;
     const btnTimers = buttonAutoHideTimersRef.current;
+    const camTimers = cameraFsTimersRef.current;
     return () => {
       for (const id of Object.keys(widgetTimers)) clearTimeout(widgetTimers[id]);
       for (const id of Object.keys(btnTimers)) clearTimeout(btnTimers[id]);
+      for (const id of Object.keys(camTimers)) clearTimeout(camTimers[id]);
     };
   }, []);
 
@@ -465,6 +534,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
   const renderWidgetContent = (type: string, config: any, id: string) =>
     renderWidget(type, config, {
       dashboardId,
+      widgetId: id,
       onVisibilityChange: (isVisible) =>
         setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : { ...prev, [id]: !isVisible }),
     });

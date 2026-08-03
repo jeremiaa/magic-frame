@@ -205,7 +205,7 @@ Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, a
 | **Calendar** | iCal-Feeds + Google + Microsoft 365 (OAuth) + HA-Kalender · Listen-, Agenda- und Monatsansicht |
 | **Home Assistant** | Beliebige HA-Entities + Rule-Engine (Farbe/Icon nach State) |
 | **HA Notifications** | Regelbasierte Push-Kacheln, Auto-Hide wenn ruhig |
-| **Camera** | HA-Kamera-Entities — Snapshot-Refresh, Vollbild-Ansicht |
+| **Camera** | HA-Kamera-Entities — Snapshot-Refresh, Vollbild-Ansicht, Vollbild per HA-Auslöser |
 | **Sensor** | Multi-Sensor-Kacheln — Icon/Farbe pro Sensor, Verlaufs-Sparkline |
 | **Image** | Foto-Kachel — Immich-Album oder WebDAV-Slideshow |
 | **Buttons** | Tap-Tiles mit HA-Services / Webhooks |

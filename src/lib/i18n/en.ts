@@ -1714,6 +1714,21 @@ export const EN: Record<string, string> = {
     "MJPEG quality depends directly on the camera's HA stream profile — a low-resolution stream source means low-resolution here too. WebRTC (go2rtc) comes in a later release.",
   // "Schließen" already exists earlier in this dict.
 
+  // #41 — camera: HA trigger opens the camera fullscreen on its own
+  "Bei HA-Auslöser automatisch Vollbild öffnen": "Open fullscreen automatically on an HA trigger",
+  "Türklingel, Bewegung oder Personenerkennung poppen die Kamera von selbst über Wallpaper und Galerie — ohne Antippen. Danach geht das Display wieder in die ruhige Ansicht zurück.":
+    "A doorbell, motion or person detection pops the camera over wallpaper and gallery all by itself — no tap needed. Afterwards the display returns to the calm view.",
+  "Auslöser-Entity (leer = Sichtbarkeits-Trigger)": "Trigger entity (empty = visibility trigger)",
+  "Nutzt gerade den Sichtbarkeits-Trigger aus dem Tab „Layout“:":
+    "Currently using the visibility trigger from the “Layout” tab:",
+  "Leer = die Kamera folgt dem Trigger aus dem Tab „Layout“ (Sichtbarkeit → Automatisch über Home Assistant). Eine eigene Entity hier ist für Kameras gedacht, die dauerhaft auf dem Display liegen und nur ins Vollbild springen sollen.":
+    "Empty = the camera follows the trigger from the “Layout” tab (Visibility → Automatically via Home Assistant). Set an entity here for cameras that stay on the display permanently and should only jump to fullscreen.",
+  "Vollbild-Dauer in Sek. (0 = solange aktiv)": "Fullscreen duration in sec. (0 = while active)",
+  "Türklingeln sind oft nur einen Moment „an“ — mit einer Dauer bleibt das Vollbild trotzdem so lange stehen. 0 = Vollbild bleibt, solange die Entity aktiv ist. Antippen schließt es jederzeit von Hand.":
+    "Doorbells are often “on” for a moment only — a duration keeps the fullscreen view up regardless. 0 = fullscreen stays as long as the entity is active. A tap closes it by hand at any time.",
+  "Noch kein Auslöser gesetzt: entweder hier eine Entity wählen oder im Tab „Layout“ unter Sichtbarkeit einen HA-Trigger hinterlegen.":
+    "No trigger set yet: either pick an entity here, or set an HA trigger under Visibility in the “Layout” tab.",
+
   // Clock widget: timezone picker + time/date format selects
   "Zeitzone": "Time zone",
   "Leer = Browser-Zeit. Tippen filtert die Liste (z.B. berlin → Europe/Berlin).":

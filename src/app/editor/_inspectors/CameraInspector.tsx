@@ -41,6 +41,12 @@ export default function CameraInspector({
   const aspect: "auto" | "16:9" | "4:3" | "1:1" = cfg.aspectRatio ?? "auto";
   const clickFullscreen: boolean = cfg.clickFullscreen !== false;
   const caption: string = cfg.caption ?? "";
+  // #41: HA-triggered fullscreen. Without an own trigger entity the widget's
+  // visibility rule (Sichtbarkeit tab → showWhenEntity) is what fires it.
+  const fullscreenOnTrigger: boolean = cfg.fullscreenOnTrigger === true;
+  const fsEntity: string = cfg.fullscreenTriggerEntity ?? "";
+  const visibilityEntity: string = (cfg.showWhenEntity ?? "").trim();
+  const hasOwnFsEntity = fsEntity.trim() !== "";
 
   return (
     <div className="space-y-4">
@@ -228,6 +234,87 @@ export default function CameraInspector({
           {t("Bei Klick auf Bild Vollbild öffnen")}
         </span>
       </label>
+
+      <div className="rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/[0.02] p-3.5 space-y-3">
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={fullscreenOnTrigger}
+              onChange={(e) => updateConfig(activeWidget.i, "fullscreenOnTrigger", e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500" />
+          </div>
+          <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
+            {t("Bei HA-Auslöser automatisch Vollbild öffnen")}
+          </span>
+        </label>
+        <p className="text-[11px] text-[var(--mf-fg)]/40 leading-relaxed">
+          {t("Türklingel, Bewegung oder Personenerkennung poppen die Kamera von selbst über Wallpaper und Galerie — ohne Antippen. Danach geht das Display wieder in die ruhige Ansicht zurück.")}
+        </p>
+
+        {fullscreenOnTrigger && (
+          <>
+            <div>
+              <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
+                {t("Auslöser-Entity (leer = Sichtbarkeits-Trigger)")}
+              </label>
+              <HAEntityInput
+                value={fsEntity}
+                onChange={(v) => updateConfig(activeWidget.i, "fullscreenTriggerEntity", v)}
+                placeholder="binary_sensor.doorbell"
+                clearable
+              />
+              <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1 leading-relaxed">
+                {visibilityEntity && !hasOwnFsEntity
+                  ? `${t("Nutzt gerade den Sichtbarkeits-Trigger aus dem Tab „Layout“:")} ${visibilityEntity}`
+                  : t("Leer = die Kamera folgt dem Trigger aus dem Tab „Layout“ (Sichtbarkeit → Automatisch über Home Assistant). Eine eigene Entity hier ist für Kameras gedacht, die dauerhaft auf dem Display liegen und nur ins Vollbild springen sollen.")}
+              </p>
+            </div>
+
+            {hasOwnFsEntity && (
+              <div>
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
+                  {t("Status (leer = sobald aktiv / an)")}
+                </label>
+                <input
+                  type="text"
+                  value={cfg.fullscreenTriggerState ?? ""}
+                  onChange={(e) => updateConfig(activeWidget.i, "fullscreenTriggerState", e.target.value)}
+                  placeholder="on"
+                  className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-2 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
+                {t("Vollbild-Dauer in Sek. (0 = solange aktiv)")}
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={cfg.fullscreenSeconds ?? cfg.autoHideSeconds ?? 0}
+                onChange={(e) =>
+                  updateConfig(activeWidget.i, "fullscreenSeconds", Math.max(0, parseInt(e.target.value) || 0))
+                }
+                placeholder="0"
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg p-2 focus:outline-none focus:border-blue-500"
+              />
+              <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1 leading-relaxed">
+                {t("Türklingeln sind oft nur einen Moment „an“ — mit einer Dauer bleibt das Vollbild trotzdem so lange stehen. 0 = Vollbild bleibt, solange die Entity aktiv ist. Antippen schließt es jederzeit von Hand.")}
+              </p>
+            </div>
+
+            {!hasOwnFsEntity && !visibilityEntity && (
+              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg text-[11px] text-amber-200/80 leading-relaxed">
+                {t("Noch kein Auslöser gesetzt: entweder hier eine Entity wählen oder im Tab „Layout“ unter Sichtbarkeit einen HA-Trigger hinterlegen.")}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       <div>
         <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">

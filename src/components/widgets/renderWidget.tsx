@@ -28,10 +28,12 @@ import { CustomWidget } from "@/lib/modules/runtime";
 export type RenderWidgetOpts = {
   dashboardId?: string;
   onVisibilityChange?: (isVisible: boolean) => void;
+  /** Layout id of the tile. Only the live view sets it (HA-triggered fullscreen). */
+  widgetId?: string;
 };
 
 export function renderWidget(type: string, config: any, opts: RenderWidgetOpts = {}): React.ReactNode {
-  const { dashboardId, onVisibilityChange } = opts;
+  const { dashboardId, onVisibilityChange, widgetId } = opts;
   if (type === "ClockWidget.tsx") return <ClockWidget config={config} />;
   if (type === "ButtonWidget.tsx") return <ButtonWidget config={config} />;
   if (type === "TimerWidget.tsx") return <TimerWidget config={config} dashboardId={dashboardId} />;
@@ -41,7 +43,7 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
   if (type === "ImageWidget.tsx") return <ImageWidget config={config} dashboardId={dashboardId} />;
   if (type === "SensorWidget.tsx") return <SensorWidget config={config} />;
   if (type === "EnvironmentWidget.tsx") return <EnvironmentWidget config={config} />;
-  if (type === "CameraWidget.tsx") return <CameraWidget config={config} />;
+  if (type === "CameraWidget.tsx") return <CameraWidget config={config} widgetId={widgetId} />;
   if (type === "RssWidget.tsx") return <RssWidget config={config} />;
   if (type === "QrWidget.tsx") return <QrWidget config={config} />;
   if (type === "StatusWidget.tsx") return <StatusWidget config={config} onVisibilityChange={onVisibilityChange} />;

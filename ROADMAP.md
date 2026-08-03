@@ -40,7 +40,6 @@ Scoped issues that are likely to land in upcoming 1.3.x patches:
   HTTP, so HA automations can drive a display ([#63](https://github.com/jeremiaa/magic-frame/issues/63))
 - **🎵 Fullscreen media browser + search** for Music Assistant, based on
   @schmierlappe's module ([#57](https://github.com/jeremiaa/magic-frame/issues/57))
-- **📷 HA-triggered camera in fullscreen** instead of card size ([#41](https://github.com/jeremiaa/magic-frame/issues/41))
 - **🔔 State-based colouring for notification tiles**, like the HA entity
   widget has ([#47](https://github.com/jeremiaa/magic-frame/issues/47))
 

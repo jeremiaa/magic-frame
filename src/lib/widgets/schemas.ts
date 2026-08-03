@@ -331,6 +331,18 @@ const cameraConfig = baseConfig
     streamMode: z.enum(["snapshot", "mjpeg", "webrtc"]).optional(),
     clickFullscreen: z.boolean().optional(),
     caption: z.string().optional(),
+    // #41: Bei einem HA-Auslöser (Person/Bewegung/Türklingel) soll die Kamera
+    // von selbst als Vollbild über Wallpaper/Galerie aufpoppen statt nur in
+    // Kachelgröße zu erscheinen. Auslöser ist standardmäßig der Sichtbarkeits-
+    // Trigger (showWhenEntity/showWhenState) aus der baseConfig; eine eigene
+    // Entity hier überschreibt ihn — so kann eine dauerhaft sichtbare Kamera
+    // trotzdem auf einen separaten Trigger hin ins Vollbild springen.
+    fullscreenOnTrigger: z.boolean().optional(),
+    fullscreenTriggerEntity: z.string().optional(),
+    fullscreenTriggerState: z.string().optional(),
+    // Sekunden im Vollbild (Puls). Leer/undefined = autoHideSeconds aus der
+    // baseConfig, 0 = Vollbild bleibt, solange der Auslöser aktiv ist.
+    fullscreenSeconds: z.number().optional(),
   })
   .passthrough();
 
