@@ -1,60 +1,64 @@
 # Magic Frame
 
-Ein Dashboard für Tablets, Monitore, Wandpanels und digitale Bilderrahmen —
-als Home-Assistant-Add-on, mit eigener Datenbank im Add-on. Es ist nichts
-weiter zu installieren.
+A dashboard for tablets, monitors, wall panels and digital picture frames —
+as a Home Assistant add-on, with its own database built in. Nothing else to
+install.
 
 ## Installation
 
-1. **Einstellungen → Add-ons → Add-on-Store**
-2. Oben rechts **⋮ → Repositories**, diese Adresse eintragen:
+1. **Settings → Add-ons → Add-on Store**
+2. Top right **⋮ → Repositories**, add this address:
    `https://github.com/jeremiaa/magic-frame`
-3. **Magic Frame** in der Liste öffnen und **Installieren** drücken.
-4. **Starten**, dann **Weboberfläche öffnen**.
+3. Open **Magic Frame** in the list and press **Install**.
+4. **Start**, then **Open Web UI**.
 
-Beim ersten Start wird die Datenbank angelegt; das dauert einen Moment.
+The database is created on first start, which takes a moment.
 
-## Einstellungen
+## Options
 
-| Feld | Bedeutung |
+| Field | Meaning |
 |---|---|
-| `admin_email` | Anmeldename des ersten Kontos. Leer lassen, um es beim ersten Aufruf im Browser anzulegen. |
-| `admin_password` | Passwort dazu. Nach dem ersten Start wieder leeren — es steht sonst dauerhaft in der Add-on-Konfiguration. |
-| `timezone` | Zeitzone, z. B. `Europe/Berlin`. Leer = die des Systems. |
+| `admin_email` | Login name for the first account. Leave empty to create it in the browser on first visit. |
+| `admin_password` | Password for it. Clear it again after the first start — otherwise it stays in the add-on configuration. |
+| `timezone` | Time zone, e.g. `Europe/Berlin`. Empty = the system's. |
 
-## Home Assistant verbinden
+## Connecting Home Assistant
 
-**Es ist kein Zugriffstoken nötig.** Läuft Magic Frame als Add-on, spricht es
-über den Supervisor mit Home Assistant und meldet sich selbst an. Die Felder
-für URL und Token in den Einstellungen bleiben leer und werden nicht gebraucht.
+**No access token needed.** Running as an add-on, Magic Frame talks to Home
+Assistant through the Supervisor and authenticates itself. The URL and token
+fields in the settings stay empty and are not used.
 
 ## Displays
 
-Die Ansichten sind unter `http://<ip-deiner-home-assistant>:8098/view/<id>`
-erreichbar und brauchen keine Anmeldung — dafür sind sie da. Ein Wandtablet
-öffnet einfach diese Adresse.
+Views are reachable at `http://<your-home-assistant-ip>:8098/view/<id>` and
+need no login — that is what they are for. A wall tablet simply opens that
+address.
 
-Deshalb läuft das Add-on über einen festen Port und nicht über die
-Seitenleiste: Der Ingress-Pfad von Home Assistant wechselt pro Sitzung und
-verlangt eine Anmeldung, ein Wandtablet hat beides nicht.
+That is also why the add-on uses a fixed port rather than the sidebar: the
+Home Assistant ingress path changes and requires a signed-in session, and a
+wall tablet has neither.
 
-## Sicherungen
+**Want it in the sidebar anyway?** Add a dashboard of type *Webpage* pointing
+at `http://<your-home-assistant-ip>:8098` — Settings → Dashboards → Add
+dashboard → Webpage. That gives you a sidebar entry today.
 
-Der Supervisor hält das Add-on vor einer Sicherung an (`backup: cold`), damit
-die Datenbank in einem sauberen Zustand mitgesichert wird. Eine Sicherung
-enthält Ansichten, Konten und Einstellungen.
+## Backups
 
-## Wenn etwas nicht läuft
+The Supervisor stops the add-on before a backup (`backup: cold`) so the
+database is captured in a consistent state. A backup contains your views,
+accounts and settings.
 
-- **Nach dem Neustart ausgeloggt** — sollte nicht passieren, der
-  Sitzungsschlüssel liegt in `/data`. Wenn doch: Add-on-Protokoll ansehen.
-- **Kalender oder Wetter leer** — die kommen aus dem Netz, nicht aus Home
-  Assistant. Ein Blick ins Protokoll zeigt den Grund.
-- **Seite lädt nicht** — beim ersten Start braucht das Anlegen der Datenbank
-  etwas. Erst ins Protokoll schauen, bevor du neu startest.
+## If something does not work
 
-## Was das Add-on nicht mitbringt
+- **Logged out after a restart** — should not happen, the session key lives in
+  `/data`. If it does, check the add-on log.
+- **Calendar or weather empty** — those come from the internet, not from Home
+  Assistant. The log says why.
+- **Page does not load** — on the very first start, creating the database
+  takes a while. Check the log before restarting.
 
-Der Reverse-Proxy (Caddy) aus der Docker-Compose-Version fehlt hier bewusst —
-Home Assistant bringt seinen eigenen mit. Die Kachel dafür blendet sich im
-Add-on-Betrieb selbst aus.
+## What this add-on does not include
+
+The reverse proxy (Caddy) from the Docker Compose version is deliberately
+absent — Home Assistant brings its own. Its settings card hides itself when
+running as an add-on.
