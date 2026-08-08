@@ -122,9 +122,15 @@ export function ImageInspector({ widget, updateConfig }: Props) {
         >
           <option value="cover">{t("Füllen (Ausschnitt, Standard)")}</option>
           <option value="contain">{t("Einpassen (ganzes Bild)")}</option>
+          <option value="blur">{t("Einpassen + Blur-Rand")}</option>
           <option value="fill">{t("Strecken (verzerrt)")}</option>
           <option value="none">{t("Zentriert (Originalgröße)")}</option>
         </select>
+        {fit === "blur" && (
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2">
+            {t("Zeigt das ganze Bild und füllt die Ränder mit einer unscharfen Kopie statt mit Schwarz — gut für Hochformat in einer breiten Kachel.")}
+          </p>
+        )}
       </div>
 
       <div>

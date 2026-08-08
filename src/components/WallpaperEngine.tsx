@@ -95,13 +95,20 @@ export default function WallpaperEngine({
       setIsReady(true);
     } else if (source === 'webdav') {
       fetch(`/api/wallpaper/webdav/playlist?dashboardId=${dashboardId}&lang=${locale}&t=${Date.now()}`)
-        .then(res => res.json())
+        .then(async res => {
+           const data = await res.json();
+           // Die Route antwortet im Fehlerfall mit {error}. Vorher lief das in
+           // den catch und landete als "Failed to load…" in der Konsole — der
+           // eigentliche Grund ging dabei verloren (#80).
+           if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+           return data;
+        })
         .then(data => {
            if (Array.isArray(data) && data.length > 0) setImages(data);
            setIsReady(true);
         })
         .catch(err => {
-           console.error("Failed to load generic WebDAV playlist", err);
+           console.error("WebDAV-Wallpaper:", err?.message || err);
            setIsReady(true);
         });
     } else if (source === 'immich') {
@@ -134,13 +141,32 @@ export default function WallpaperEngine({
   const intervalMs = (config?.intervalSec || 60) * 1000;
   const transition = resolveTransition(config);
   // "blur" = Einpassen (contain) + weiche, gezoomte Kopie füllt die Balken.
-  // Nur im Einzelbild-Modus: im Split-Raster wäre ein globaler Backdrop hinter
-  // den Kacheln falsch (letterboxte Tiles) → dort verhält sich blur wie cover.
-  const isBlurFill = config?.fit === "blur" && (((config?.splitMode as string) || "off") === "off");
-  const fitClass = isBlurFill
+  // Im Split-Raster bekommt jede Kachel ihre eigene Kopie (siehe <Tile>) —
+  // ein gemeinsamer Hintergrund hinter dem ganzen Raster zeigte unter jeder
+  // Kachel das falsche Bild, deshalb galt blur dort früher als cover (#72).
+  const blurFill = config?.fit === "blur";
+  const isBlurFill = blurFill && (((config?.splitMode as string) || "off") === "off");
+  const fitClass = blurFill
     ? "object-contain"
     : WALLPAPER_FIT[config?.fit as string] ?? "object-cover";
   const posClass = WALLPAPER_POS[config?.imagePosition as string] ?? "object-center";
+  // Bildinfo einmal auflösen — Leiste und Kachel-Beschriftung teilen sich
+  // dieselben Einstellungen, damit beides gleich aussieht (#44).
+  const metaOptions: MetaOptions = {
+    show: config?.showMetadata !== false,
+    showDate: config?.metaShowDate !== false,
+    showLocation: config?.metaShowLocation !== false,
+    showCamera: config?.metaShowCamera !== false,
+    align: config?.metaPosition === "left" ? "left" : "right",
+    cameraLabel: t("Aufgenommen mit"),
+    style: {
+      fontFamily: `${config?.metaFontFamily || "Inter"}, sans-serif`,
+      fontSize: config?.metaFontSize ? `${config.metaFontSize}px` : "12px",
+      fontWeight: config?.metaFontWeight || 500,
+      textShadow: config?.metaTextShadow || "none",
+      color: config?.metaColor || "rgba(255,255,255,0.8)",
+    },
+  };
   // Übergangs-Dauer: konfigurierbar, Defaults = bisherige hartkodierte Werte
   // (crossfade/kenburns 1500 ms, slide 1200 ms) → kein Tizen-Regress.
   const transitionMs =
@@ -278,6 +304,8 @@ export default function WallpaperEngine({
           images={images}
           mode={splitMode as "auto" | "grid2" | "grid4"}
           fitClass={`${fitClass} ${posClass}`}
+          blurFill={blurFill}
+          meta={metaOptions}
           durationMs={transitionMs}
           intervalMs={intervalMs}
         />
@@ -343,43 +371,31 @@ export default function WallpaperEngine({
          // tatsächlich gerendert würde. Sind beide leer, fällt sie weg.
          // Die jeweils leere Seite bleibt als Platzhalter-Div drin, damit
          // justify-between (links/rechts) stabil bleibt.
-         // Im Split-Modus zeigt ein Frame mehrere Bilder — die Einzelbild-
-         // Metadaten-Bar ergibt dann keinen Sinn, also weg.
+         // Im Split-Modus hängt die Bildinfo an jeder Kachel (siehe <Tile>),
+         // weil eine gemeinsame Leiste nicht sagen könnte, zu welchem der
+         // Bilder Datum und Ort gehören (#44).
          if (splitMode !== "off") return null;
          const showRing =
             images.length > 1 && intervalMs > 0 && config?.showTimer !== false;
-         const showMeta =
-            config?.showMetadata !== false &&
-            !!currentImage.metadata &&
-            Object.keys(currentImage.metadata).length > 0;
+         const showMeta = metaOptions.show && hasMetadata(currentImage);
          if (!showRing && !showMeta) return null;
+         // Seite der Bildinfo (#44). Der Ring sitzt jeweils gegenüber, damit
+         // sich beide nicht in die Quere kommen.
+         const metaLeft = metaOptions.align === "left";
          return (
             <div
                className={`absolute bottom-0 inset-x-0 z-10 flex flex-row items-center justify-between px-6 py-3 ${(config?.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-white/5" : ""}`}
                style={{ backgroundColor: `rgba(0,0,0,${(config?.metaBgOpacity ?? 40) / 100})` }}
             >
-              <div className="flex items-center">
-                 {showRing ? (
-                    <ProgressRing key={currentImage.id} durationMs={intervalMs} />
-                 ) : <div />}
+              <div className="flex items-center order-1">
+                 {metaLeft
+                    ? (showMeta ? <MetaLines image={currentImage} opts={metaOptions} /> : <div />)
+                    : (showRing ? <ProgressRing key={currentImage.id} durationMs={intervalMs} /> : <div />)}
               </div>
-              <div className="flex flex-col items-end text-right">
-                 {showMeta && currentImage.metadata && (
-                   <div
-                      className="flex flex-col items-end uppercase tracking-[0.15em]"
-                      style={{
-                         fontFamily: `${config?.metaFontFamily || 'Inter'}, sans-serif`,
-                         fontSize: config?.metaFontSize ? `${config.metaFontSize}px` : '12px',
-                         fontWeight: config?.metaFontWeight || 500,
-                         textShadow: config?.metaTextShadow || 'none',
-                         color: config?.metaColor || 'rgba(255,255,255,0.8)'
-                      }}
-                   >
-                      {config?.metaShowDate !== false && currentImage.metadata.dateTaken && <span>{currentImage.metadata.dateTaken}</span>}
-                      {config?.metaShowLocation !== false && currentImage.metadata.locationName && <span>{currentImage.metadata.locationName}</span>}
-                      {config?.metaShowCamera !== false && currentImage.metadata.cameraModel && <span>{`${t("Aufgenommen mit")} ${currentImage.metadata.cameraModel}`}</span>}
-                   </div>
-                 )}
+              <div className="flex items-center order-2">
+                 {metaLeft
+                    ? (showRing ? <ProgressRing key={currentImage.id} durationMs={intervalMs} /> : <div />)
+                    : (showMeta ? <MetaLines image={currentImage} opts={metaOptions} /> : <div />)}
               </div>
            </div>
          );
@@ -600,18 +616,120 @@ function buildFrames(images: WallpaperData[], mode: SplitMode): Frame[] {
   return frames;
 }
 
-function FrameView({ frame, fitClass }: { frame: Frame; fitClass: string }) {
+// ── Bildinfo (Datum / Ort / Kamera) ──────────────────────────────────────────
+// Einmal beschrieben, zweimal benutzt: in der Leiste unter dem Einzelbild und
+// als kleine Beschriftung an jeder Kachel im geteilten Modus (#44).
+type MetaOptions = {
+  show: boolean;
+  showDate: boolean;
+  showLocation: boolean;
+  showCamera: boolean;
+  align: "left" | "right";
+  cameraLabel: string;
+  style: React.CSSProperties;
+};
+
+function hasMetadata(image: WallpaperData | undefined): boolean {
+  return !!image?.metadata && Object.keys(image.metadata).length > 0;
+}
+
+function MetaLines({
+  image,
+  opts,
+  compact = false,
+}: {
+  image: WallpaperData;
+  opts: MetaOptions;
+  compact?: boolean;
+}) {
+  const m = image.metadata;
+  if (!m) return null;
+  const lines: string[] = [];
+  if (opts.showDate && m.dateTaken) lines.push(m.dateTaken);
+  if (opts.showLocation && m.locationName) lines.push(m.locationName);
+  if (opts.showCamera && m.cameraModel) lines.push(`${opts.cameraLabel} ${m.cameraModel}`);
+  if (lines.length === 0) return null;
+
+  const alignClass = opts.align === "left" ? "items-start text-left" : "items-end text-right";
+  // An der Kachel wird eine Zeile daraus: mehrzeilig frisst zu viel Bild, und
+  // die Beschriftung soll das Foto begleiten, nicht überdecken.
+  if (compact) {
+    return (
+      <div
+        className={`absolute bottom-0 inset-x-0 px-2.5 py-1.5 flex ${opts.align === "left" ? "justify-start" : "justify-end"} pointer-events-none`}
+        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), transparent)" }}
+      >
+        <span className="uppercase tracking-[0.12em] truncate" style={opts.style}>
+          {lines.join(" · ")}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className={`flex flex-col uppercase tracking-[0.15em] ${alignClass}`} style={opts.style}>
+      {lines.map((line) => (
+        <span key={line}>{line}</span>
+      ))}
+    </div>
+  );
+}
+
+// Eine Rasterzelle. Bei blurFill bekommt JEDE Zelle ihre eigene weiche Kopie —
+// ein gemeinsamer Hintergrund hinter dem ganzen Raster wäre falsch, weil dann
+// unter jeder Kachel das Bild einer anderen läge (#72).
+function Tile({
+  im,
+  fitClass,
+  blurFill,
+  className,
+  meta,
+}: {
+  im: WallpaperData;
+  fitClass: string;
+  blurFill: boolean;
+  className: string;
+  meta?: MetaOptions;
+}) {
+  const caption = meta?.show && hasMetadata(im) ? <MetaLines image={im} opts={meta} compact /> : null;
+
+  // Ohne weichen Hintergrund UND ohne Beschriftung bleibt es das nackte <img>
+  // wie bisher — kein zusätzliches Element im Split-Raster.
+  if (!blurFill && !caption) {
+    return <img src={im.url} alt="" className={`${className} ${fitClass}`} decoding="async" />;
+  }
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      {blurFill && (
+        <img
+          src={im.url}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110"
+          decoding="async"
+        />
+      )}
+      <img src={im.url} alt="" className={`absolute inset-0 w-full h-full ${fitClass}`} decoding="async" />
+      {caption}
+    </div>
+  );
+}
+
+function FrameView({
+  frame,
+  fitClass,
+  blurFill,
+  meta,
+}: {
+  frame: Frame;
+  fitClass: string;
+  blurFill: boolean;
+  meta?: MetaOptions;
+}) {
   const imgs = frame.images;
   if (imgs.length <= 1) {
     // Einzelbild → respektiert den globalen fit-/Position-Modus.
-    return (
-      <img
-        src={imgs[0]?.url}
-        alt=""
-        className={`absolute inset-0 w-full h-full ${fitClass}`}
-        decoding="async"
-      />
-    );
+    if (!imgs[0]) return null;
+    return <Tile im={imgs[0]} fitClass={fitClass} blurFill={blurFill} meta={meta} className="absolute inset-0 w-full h-full" />;
   }
   // 2 → nebeneinander; 3–4 → 2×2-Raster. Die Zellen respektieren den globalen
   // fit (Füllen=cover füllt die Zelle, Einpassen=contain zeigt das ganze Bild —
@@ -622,7 +740,7 @@ function FrameView({ frame, fitClass }: { frame: Frame; fitClass: string }) {
     return (
       <div className="absolute inset-0 flex gap-[3px]">
         {imgs.map((im) => (
-          <img key={im.id} src={im.url} alt="" className={`w-1/2 h-full ${fitClass}`} decoding="async" />
+          <Tile key={im.id} im={im} fitClass={fitClass} blurFill={blurFill} meta={meta} className="w-1/2 h-full" />
         ))}
       </div>
     );
@@ -630,7 +748,7 @@ function FrameView({ frame, fitClass }: { frame: Frame; fitClass: string }) {
   return (
     <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-[3px]">
       {imgs.map((im) => (
-        <img key={im.id} src={im.url} alt="" className={`w-full h-full ${fitClass}`} decoding="async" />
+        <Tile key={im.id} im={im} fitClass={fitClass} blurFill={blurFill} meta={meta} className="w-full h-full" />
       ))}
     </div>
   );
@@ -640,12 +758,16 @@ function SplitSlideshow({
   images,
   mode,
   fitClass,
+  blurFill = false,
+  meta,
   durationMs,
   intervalMs,
 }: {
   images: WallpaperData[];
   mode: SplitMode;
   fitClass: string;
+  blurFill?: boolean;
+  meta?: MetaOptions;
   durationMs: number;
   intervalMs: number;
 }) {
@@ -727,10 +849,10 @@ function SplitSlideshow({
   return (
     <>
       <div className="absolute inset-0" style={slotStyle("A")}>
-        {slotA && <FrameView frame={slotA} fitClass={fitClass} />}
+        {slotA && <FrameView frame={slotA} fitClass={fitClass} blurFill={blurFill} meta={meta} />}
       </div>
       <div className="absolute inset-0" style={slotStyle("B")}>
-        {slotB && <FrameView frame={slotB} fitClass={fitClass} />}
+        {slotB && <FrameView frame={slotB} fitClass={fitClass} blurFill={blurFill} meta={meta} />}
       </div>
     </>
   );

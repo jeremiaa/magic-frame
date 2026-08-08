@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n/LocaleProvider";
 import HAEntityInput from './HAEntityInput';
 
 export type ImmichAlbum = { id: string; albumName: string; assetCount: number };
+export type ImmichPerson = { id: string; name: string; thumbnailUrl: string };
 
 type WallpaperSettingsModalProps = {
   onClose?: () => void;
@@ -16,12 +17,19 @@ type WallpaperSettingsModalProps = {
   fetchWebdavFolders: (path?: string) => void;
   isFetchingFolders: boolean;
   webdavError: string;
+  // Bilder im gerade geöffneten WebDAV-Ordner (#80) — sichtbar machen, dass
+  // ein Ordner nichts Brauchbares enthält, bevor der Bildschirm schwarz bleibt.
+  webdavImages?: { usable: number; unsupported: number } | null;
   variant?: "modal" | "inline";
   // Immich-Alben (optional — wenn nicht übergeben, bleibt der manuelle ID-Fallback)
   immichAlbums?: ImmichAlbum[];
   fetchImmichAlbums?: () => void;
   isFetchingAlbums?: boolean;
   immichError?: string;
+  // Immich-Personen (#75) — optional, damit ältere Aufrufstellen unverändert bleiben
+  immichPeople?: ImmichPerson[];
+  fetchImmichPeople?: () => void;
+  isFetchingPeople?: boolean;
 };
 
 type WpTab = "source" | "display" | "overlays";
@@ -34,11 +42,15 @@ export default function WallpaperSettingsModal({
   fetchWebdavFolders,
   isFetchingFolders,
   webdavError,
+  webdavImages = null,
   variant = "modal",
   immichAlbums,
   fetchImmichAlbums,
   isFetchingAlbums = false,
   immichError = "",
+  immichPeople,
+  fetchImmichPeople,
+  isFetchingPeople = false,
 }: WallpaperSettingsModalProps) {
   const t = useT();
   const [tab, setTab] = useState<WpTab>("source");
@@ -150,6 +162,9 @@ export default function WallpaperSettingsModal({
                          placeholder="•••••••••••••••••••••"
                          className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
                       />
+                      <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2">
+                         {t("Beides leer lassen, um die globale Immich-Verbindung aus Einstellungen → Integrationen zu benutzen.")}
+                      </p>
                    </div>
 
                    <div>
@@ -162,6 +177,7 @@ export default function WallpaperSettingsModal({
                          <option value="album">{t("Album")}</option>
                          <option value="favorites">{t("Favoriten")}</option>
                          <option value="memories">{t("Rückblicke (Memories)")}</option>
+                         <option value="people">{t("Personen")}</option>
                       </select>
                    </div>
 
@@ -176,12 +192,115 @@ export default function WallpaperSettingsModal({
                       </div>
                    )}
 
+                   {immichMode === "people" && (fetchImmichPeople ? (
+                     <div className="space-y-3">
+                        <button
+                           type="button"
+                           onClick={() => fetchImmichPeople()}
+                           disabled={isFetchingPeople}
+                           className="w-full flex items-center justify-center gap-2 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                           {isFetchingPeople
+                             ? <><RefreshCw size={16} className="animate-spin" /> {t("Lade Personen…")}</>
+                             : <><FolderSync size={16} /> {t("Mit Immich verbinden / Personen laden")}</>}
+                        </button>
+
+                        {immichError && (
+                           <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20">
+                              {t(immichError)}
+                           </div>
+                        )}
+
+                        {immichPeople && immichPeople.length > 0 && (() => {
+                           // Alte Views mit einem einzelnen immichPersonId werden
+                           // hier weiter angehakt und beim ersten Klick sauber in
+                           // die Liste überführt (#75).
+                           const selected: string[] =
+                              Array.isArray(wallpaper.immichPersonIds) && wallpaper.immichPersonIds.length > 0
+                                 ? wallpaper.immichPersonIds
+                                 : (wallpaper.immichPersonId ? [wallpaper.immichPersonId] : []);
+                           const toggle = (id: string) => {
+                              const next = selected.includes(id)
+                                 ? selected.filter((x) => x !== id)
+                                 : [...selected, id];
+                              setWallpaper({
+                                 ...wallpaper,
+                                 immichPersonIds: next,
+                                 // Einzelfeld mitführen: ältere Clients/Backups lesen es noch.
+                                 immichPersonId: next[0] || "",
+                              });
+                           };
+                           return (
+                              <div>
+                                 <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
+                                    {t("Personen auswählen ({n} gefunden)").replace("{n}", String(immichPeople.length))}
+                                 </label>
+                                 <div className="max-h-64 overflow-y-auto rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-surface)] p-3 grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                    {immichPeople.map((p) => {
+                                       const checked = selected.includes(p.id);
+                                       return (
+                                          <button
+                                             key={p.id}
+                                             type="button"
+                                             onClick={() => toggle(p.id)}
+                                             aria-pressed={checked}
+                                             className="flex flex-col items-center gap-1.5 group"
+                                          >
+                                             <img
+                                                src={p.thumbnailUrl}
+                                                alt=""
+                                                className={`w-14 h-14 rounded-full object-cover transition-all ${
+                                                   checked
+                                                      ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[var(--mf-surface)]"
+                                                      : "opacity-60 group-hover:opacity-100"
+                                                }`}
+                                                loading="lazy"
+                                                decoding="async"
+                                             />
+                                             <span
+                                                className={`text-[11px] text-center leading-tight truncate w-full ${
+                                                   checked ? "text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50"
+                                                }`}
+                                             >
+                                                {p.name}
+                                             </span>
+                                          </button>
+                                       );
+                                    })}
+                                 </div>
+                                 <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2 px-1">
+                                    {selected.length === 0
+                                       ? t("Noch niemand gewählt — ohne Auswahl bleibt der Rahmen leer.")
+                                       : t("Zeigt jedes Foto, auf dem mindestens eine der gewählten Personen zu sehen ist.")}
+                                 </p>
+                              </div>
+                           );
+                        })()}
+
+                        {immichPeople && immichPeople.length === 0 && !isFetchingPeople && !immichError && (
+                           <p className="text-xs text-[var(--mf-fg)]/40 px-1">
+                              {t("Noch keine Personen geladen. Es erscheinen nur Personen, denen in Immich ein Name gegeben wurde.")}
+                           </p>
+                        )}
+                     </div>
+                   ) : (
+                     <div>
+                        <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Personen-ID (manuell)")}</label>
+                        <input
+                           type="text" value={wallpaper.immichPersonId || ''}
+                           onChange={(e) => setWallpaper({ ...wallpaper, immichPersonId: e.target.value })}
+                           placeholder={t("z.B. a2f...")}
+                           className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                        />
+                     </div>
+                   ))}
+
                    {immichMode === "album" && (fetchImmichAlbums ? (
                      <div className="space-y-3">
                         <button
                            type="button"
                            onClick={() => fetchImmichAlbums()}
-                           disabled={isFetchingAlbums || !wallpaper.immichUrl || !wallpaper.immichApiKey}
+                           disabled={isFetchingAlbums}
                            className="w-full flex items-center justify-center gap-2 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                            {isFetchingAlbums
@@ -242,7 +361,7 @@ export default function WallpaperSettingsModal({
 
                         {immichAlbums && immichAlbums.length === 0 && !isFetchingAlbums && !immichError && (
                            <p className="text-xs text-[var(--mf-fg)]/40 px-1">
-                              {t("Noch keine Alben geladen. URL + API-Key eintragen und „Alben laden“ drücken.")}
+                              {t("Noch keine Alben geladen. „Alben laden“ drücken — ohne eigene Zugangsdaten wird die globale Verbindung benutzt.")}
                            </p>
                         )}
 
@@ -340,6 +459,21 @@ export default function WallpaperSettingsModal({
                                </button>
                             )}
                          </div>
+                         {webdavImages && (
+                            <div
+                               className={`px-4 py-2 text-xs border-b border-[var(--mf-bdr)]/10 ${
+                                  webdavImages.usable > 0
+                                     ? "text-[var(--mf-fg)]/60"
+                                     : "text-amber-400 bg-amber-400/10"
+                               }`}
+                            >
+                               {webdavImages.usable > 0
+                                  ? `${webdavImages.usable} ${t("Bilder in diesem Ordner")}`
+                                  : webdavImages.unsupported > 0
+                                     ? `${webdavImages.unsupported} ${t("Bilder hier kann kein Browser anzeigen (HEIC/RAW) — bitte JPG, PNG oder WebP")}`
+                                     : t("Keine Bilder in diesem Ordner — bitte einen Unterordner wählen")}
+                            </div>
+                         )}
                          <div className="max-h-[200px] overflow-y-auto">
                             {webdavFolders.length === 0 && !isFetchingFolders ? (
                                <div className="p-4 text-center text-[var(--mf-fg)]/50 text-sm">{t("Keine Unterordner")}</div>
@@ -659,6 +793,37 @@ export default function WallpaperSettingsModal({
                                />
                                <span className="text-xs text-[var(--mf-fg)]/60 w-8">{wallpaper.metaBgOpacity ?? 40}%</span>
                             </div>
+                         </div>
+
+                         <div className="col-span-2 border-t border-[var(--mf-bdr)]/10 my-1 pt-3" />
+
+                         {/* #44: Seite der Bildinfo. Im geteilten Modus hängt die
+                             Info an jeder Kachel und richtet sich nach derselben
+                             Einstellung aus. */}
+                         <div className="col-span-1 sm:col-span-2">
+                            <label className="text-[10px] font-medium text-[var(--mf-fg)]/40 block mb-2 uppercase tracking-wider">{t("Position")}</label>
+                            <div className="grid grid-cols-2 gap-2">
+                               {(["left", "right"] as const).map((side) => {
+                                  const activeSide = wallpaper.metaPosition === "left" ? "left" : "right";
+                                  return (
+                                     <button
+                                        key={side}
+                                        type="button"
+                                        onClick={() => setWallpaper({ ...wallpaper, metaPosition: side })}
+                                        className={`py-2.5 rounded-lg text-xs font-medium transition-colors border ${
+                                           activeSide === side
+                                              ? "bg-blue-500/15 border-blue-500/40 text-[var(--mf-fg)]"
+                                              : "bg-[var(--mf-surface)] border-[var(--mf-bdr)]/10 text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]/80"
+                                        }`}
+                                     >
+                                        {side === "left" ? t("Links") : t("Rechts")}
+                                     </button>
+                                  );
+                               })}
+                            </div>
+                            <p className="text-[11px] text-[var(--mf-fg)]/40 mt-2">
+                               {t("Im geteilten Modus steht die Info an jedem Bild einzeln, damit klar bleibt, wozu sie gehört.")}
+                            </p>
                          </div>
 
                          <div className="col-span-2 border-t border-[var(--mf-bdr)]/10 my-1 pt-3" />

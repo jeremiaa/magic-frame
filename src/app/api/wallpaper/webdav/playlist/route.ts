@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createClient } from "webdav";
 import { extractEXIFFromBuffer } from "@/lib/wallpaper-engine/exif";
-import { normalizeWebdavUrl } from "@/lib/wallpaper-engine/webdav";
+import { normalizeWebdavUrl, isSupportedWebdavImage, countWebdavImages } from "@/lib/wallpaper-engine/webdav";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -20,25 +20,32 @@ export async function GET(req: NextRequest) {
      // "May 27, 2026" for English, "27. Mai 2026" for German.
      const dateLocale = req.nextUrl.searchParams.get('lang') === 'en' ? 'en-US' : 'de-DE';
      const dashboard = await prisma.dashboard.findUnique({ where: { id: dashboardId } });
-     if (!dashboard || !dashboard.wallpaper) return new NextResponse("Not Found", { status: 404 });
+     if (!dashboard || !dashboard.wallpaper) return NextResponse.json({ error: "Not Found" }, { status: 404 });
      const wp = dashboard.wallpaper as any;
 
-     if (wp.source !== 'webdav') return new NextResponse("Not WebDAV", { status: 400 });
-     if (!wp.webdavUrl || !wp.webdavUser || !wp.webdavPass) return new NextResponse("Missing NAS credentials", { status: 400 });
+     if (wp.source !== 'webdav') return NextResponse.json({ error: "Not WebDAV" }, { status: 400 });
+     if (!wp.webdavUrl || !wp.webdavUser || !wp.webdavPass) {
+        return NextResponse.json({ error: "Missing NAS credentials" }, { status: 400 });
+     }
 
      const cleanUrl = normalizeWebdavUrl(wp.webdavUrl);
      const client = createClient(cleanUrl, { username: wp.webdavUser, password: wp.webdavPass });
      const targetPath = wp.webdavPath || "/";
      const directoryItems = await client.getDirectoryContents(targetPath);
-     const images = (directoryItems as any[]).filter(i => 
-        i.type === 'file' && (
-           i.filename.toLowerCase().endsWith('.jpg') || 
-           i.filename.toLowerCase().endsWith('.jpeg') || 
-           i.filename.toLowerCase().endsWith('.webp') // WebP doesn't have standard EXIF in exifr easily but we allow it
-        )
+     const images = (directoryItems as any[]).filter(
+        i => i.type === 'file' && isSupportedWebdavImage(i.filename)
      );
 
-     if (images.length === 0) return new NextResponse("No images found in WebDAV root", { status: 404 });
+     if (images.length === 0) {
+        // Sagen, WARUM nichts übrig blieb (#80). "Keine Bilder gefunden" schickt
+        // den Nutzer sonst auf die Suche nach einem Verbindungsfehler, obwohl der
+        // Ordner schlicht nur HEIC oder gar keine Bilder enthält.
+        const { unsupported } = countWebdavImages(directoryItems as any[]);
+        const error = unsupported > 0
+           ? `Der Ordner enthält ${unsupported} Bilder in einem Format, das Browser nicht anzeigen können (z. B. HEIC oder RAW). Bitte JPG, PNG oder WebP verwenden.`
+           : "In diesem Ordner liegen keine Bilder.";
+        return NextResponse.json({ error, path: targetPath }, { status: 404 });
+     }
 
      // Pick up to 100 random images to drastically increase variety
      const shuffled = images.sort(() => 0.5 - Math.random());
@@ -108,8 +115,14 @@ export async function GET(req: NextRequest) {
      }
 
      return NextResponse.json(playlist);
-  } catch (error) {
+  } catch (error: any) {
      console.error("WebDAV Playlist Error:", error);
-     return new NextResponse("Internal NAS Error", { status: 500 });
+     const status = error?.response?.status;
+     const message = status === 401
+        ? "Falscher Benutzername oder Passwort."
+        : status === 404
+           ? "Der eingestellte Ordner existiert auf dem Server nicht."
+           : "NAS nicht erreichbar.";
+     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
