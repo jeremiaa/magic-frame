@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveUserId } from "@/lib/auth/shortcut";
 import { dismissMessage } from "@/lib/companion/messages";
+
+// Wegwischen ist die Sache des Bildschirms, auf dem es steht. Diese Route hat
+// einen Nutzer verlangt, ihn dann aber nie verwendet — dismiss* bekommt nur
+// die id, es wurde also nichts auf eine Person eingegrenzt, sondern nur die
+// Tür zugehalten. Auf einem Wandtablett ohne Anmeldung hiess das: das X tat
+// nichts, und die Karte war beim nächsten Abruf wieder da.
 
 export const dynamic = "force-dynamic";
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = await resolveUserId(req);
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
   await dismissMessage(id);
 

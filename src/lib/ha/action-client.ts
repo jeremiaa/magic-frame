@@ -80,7 +80,12 @@ export async function writeAndReport(
     if (!res.ok) {
       let msg = "";
       if (res.status === 401) {
-        msg = "This display is not signed in, so it cannot change the list.";
+        // Die Familien-Listen darf ein Display seit v1.4.0 selbst ändern, hier
+        // landet also nur noch, was wirklich ein Konto braucht — einen Timer
+        // anlegen oder eine Nachricht senden zum Beispiel. Der alte Text
+        // ("dieses Display ist nicht angemeldet") las sich, als hätten wir
+        // Displays eine Anmeldung abverlangt. Haben wir nie.
+        msg = "That needs an account — this display can change what is on it, but not create this.";
       } else {
         try {
           const text = await res.clone().text();
