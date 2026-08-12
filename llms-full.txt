@@ -6543,8 +6543,9 @@ What to do about it:
 
 `src/middleware.ts` is what redirects an unauthenticated visitor from `/editor`
 to `/login`. If `SESSION_SECRET` is missing or shorter than 32 characters, it
-now answers **HTTP 503 with a plain-text explanation** for `/login`, `/editor`
-and the admin routes, and serves nothing behind them.
+now answers **HTTP 503 with a plain-text explanation** for `/login` and
+`/editor`, and serves nothing behind them. The `/api/admin/…` routes are not
+covered by that check and answer 500 instead — same cause, uglier message.
 
 That is a deliberate change. It used to let the request through instead — no
 redirect, no check, `/editor` open to anybody who asked. A missing secret is the
@@ -6554,8 +6555,8 @@ answer; a login page that cannot verify anything is worse than a closed door.
 **Your displays keep working.** `/view/…` never needed a session and is not
 affected, so a wall panel carries on while you fix the secret.
 
-**If you see that 503**, or if `Settings → Security` says the session secret is
-*weak*:
+**If you see that 503** — you cannot check `Settings → Security` for this,
+because that page is behind the same closed door:
 
 1. Open `.env` on the machine running Magic Frame.
 2. Set a long random value, at least 32 characters:

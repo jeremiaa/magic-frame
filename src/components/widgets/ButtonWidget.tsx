@@ -254,9 +254,19 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
           haServiceData: config[`haServiceData${suffix}`],
           webhook: config[`webhook${suffix}`],
           longPressAction: config[`longPressAction${suffix}`] || 'none',
-          longPressEntity: config[`longPressEntity${suffix}`],
-          longPressService: config[`longPressService${suffix}`],
-          longPressServiceData: config[`longPressServiceData${suffix}`],
+          // Der Inspektor legt die Langdruck-Felder unter longPressHaEntity /
+          // longPressHaService ab (ButtonInspector baut den Schlüssel aus dem
+          // Präfix plus der grossgeschriebenen Basis). Hier standen die Namen
+          // ohne "Ha" — gelesen wurde also immer ein Schlüssel, den nichts
+          // schreibt, und ein Langdruck mit HA-Service-Aufruf tat schlicht
+          // nichts. Die alten Namen bleiben als Rückfall stehen, falls doch
+          // irgendwo etwas darunter liegt.
+          longPressEntity:
+            config[`longPressHaEntity${suffix}`] ?? config[`longPressEntity${suffix}`],
+          longPressService:
+            config[`longPressHaService${suffix}`] ?? config[`longPressService${suffix}`],
+          longPressServiceData:
+            config[`longPressHaServiceData${suffix}`] ?? config[`longPressServiceData${suffix}`],
           longPressWebhook: config[`longPressWebhook${suffix}`],
           customColor: config[`color${suffix}`] || config.color
       };

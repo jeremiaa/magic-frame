@@ -35,9 +35,10 @@ export default async function proxy(req: NextRequest) {
 
   // Without a usable secret there is no session to check — and letting the
   // request through means /editor renders to anyone who asks. It used to do
-  // exactly that, silently. It is not a theoretical state either: a `sed`
-  // bug in the installer once produced an empty SESSION_SECRET on every Mac
-  // install, and nothing said so.
+  // exactly that, silently. It is not a theoretical state either: a
+  // hand-written .env, a Kubernetes manifest whose placeholder was never
+  // replaced, or any install that did not go through deploy/install.sh can
+  // land here.
   //
   // Refuse instead, and say why. The pages behind this are useless without a
   // secret anyway — getSessionSecret() throws in every guarded API route — so

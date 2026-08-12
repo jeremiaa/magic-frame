@@ -61,13 +61,29 @@ step "Checking prerequisites"
 # fails halfway; without curl everything builds fine and then the readiness
 # check at the end silently reports 000, so the script says the app is not
 # responding while it is running perfectly.
-for cmd in curl git; do
-  command -v "$cmd" >/dev/null || die "$cmd not installed. Install it first:
-     Debian, Ubuntu, Raspberry Pi OS   sudo apt update && sudo apt install -y $cmd
-     Fedora, Rocky, AlmaLinux          sudo dnf install -y $cmd
-     Arch                              sudo pacman -S --noconfirm $cmd
-     Alpine                            sudo apk add $cmd"
-done
+pkg_hint() {
+  echo "     Debian, Ubuntu, Raspberry Pi OS   sudo apt update && sudo apt install -y $1
+     Fedora, Rocky, AlmaLinux          sudo dnf install -y $1
+     Arch                              sudo pacman -S --noconfirm $1
+     Alpine                            sudo apk add $1"
+}
+
+# git is genuinely required — the clone below is how the repo gets here.
+command -v git >/dev/null || die "git not installed. Install it first:
+$(pkg_hint git)"
+
+# curl is only used for the readiness check at the end. Somebody who arrived by
+# `git clone` may not have it, and refusing the whole install would be absurd:
+# the README and the wiki send exactly that person to this script. Warn, skip
+# the check, and say so — rather than reporting later that the app is not
+# responding when it is running perfectly.
+HAVE_CURL=1
+if ! command -v curl >/dev/null; then
+  HAVE_CURL=0
+  warn "curl not installed — the install will run, but the final check that the app
+     is answering has to be skipped. To get it:
+$(pkg_hint curl)"
+fi
 
 command -v docker >/dev/null || die "docker not installed. See https://docs.docker.com/engine/install/"
 docker compose version >/dev/null 2>&1 || die "docker compose plugin missing (not docker-compose). Update Docker to >= 20.10."
@@ -248,11 +264,19 @@ fi
 if [ -z "$EXISTING_SESSION_SECRET" ]; then
   NEW_SECRET=$(gen_secret)
   echo "  → SESSION_SECRET generated (64 chars hex)"
-  # In-place edit — macOS-compatible sed (BSD)
-  if sed --version >/dev/null 2>&1; then
-    sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+  # sed ersetzt nur, was da ist. In einer von Hand geschriebenen .env fehlt die
+  # Zeile oft ganz — dann ersetzte sed nichts, das Skript meldete trotzdem
+  # Erfolg, und die App antwortete danach mit 503, dessen eigener Text auf
+  # dieses Skript verweist. Deshalb derselbe Anhäng-Fall wie beim TZ-Block.
+  if grep -qE '^SESSION_SECRET=' .env; then
+    # In-place edit — macOS-compatible sed (BSD)
+    if sed --version >/dev/null 2>&1; then
+      sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+    else
+      sed -i '' "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+    fi
   else
-    sed -i '' "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+    printf '\nSESSION_SECRET="%s"\n' "$NEW_SECRET" >> .env
   fi
 else
   echo "  → SESSION_SECRET kept (existing sessions stay valid)"
@@ -332,6 +356,11 @@ URL="http://${HOST_BIND}:${HTTP_PORT_VAL}"
 if [ "$HOST_BIND" = "0.0.0.0" ]; then URL="http://localhost${PORT_SUFFIX}"; fi
 
 BODY=""
+if [ "$HAVE_CURL" = "0" ]; then
+  code="skipped"
+  echo "  → skipping the readiness check (no curl). Open the address below in a"
+  echo "    browser; if it does not answer, run: docker compose logs -f app"
+else
 for i in $(seq 1 60); do
   BODY=$(curl -sS --max-time 3 -w $'\n%{http_code}' "$URL/login" 2>/dev/null || printf '\n000')
   code=$(printf '%s' "$BODY" | tail -1)
@@ -352,7 +381,9 @@ for i in $(seq 1 60); do
   sleep 2
 done
 
-if [ "$code" != "200" ] && [ "$code" != "503" ]; then
+fi
+
+if [ "$code" != "200" ] && [ "$code" != "503" ] && [ "$code" != "skipped" ]; then
   warn "App not responding yet — check logs: docker compose logs -f app"
 fi
 

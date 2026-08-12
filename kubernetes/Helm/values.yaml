@@ -44,7 +44,11 @@ appConfig:
   msClientSecret: ""
   openWeatherMapApiKey: ""
 
-  sessionSecret: "CHANGE_ME_run__openssl_rand_hex_32__and_paste_here"
+  # Absichtlich zu kurz: die App verweigert /login und /editor unter 32
+  # Zeichen. Ein Platzhalter, der die Prüfung besteht, wäre schlimmer als
+  # keiner — dann läuft ein Cluster mit einem Geheimnis, das auf GitHub steht.
+  # Erzeugen mit: openssl rand -hex 32
+  sessionSecret: "CHANGE_ME"
   # Ein Display darf nur Entitäten schalten, die auf einer Ansicht liegen.
   # "1" hebt das auf — siehe wiki/home-assistant.md.
   haActionUnrestricted: "" # ########################### CHANGE THIS!

@@ -41,7 +41,7 @@ const prisma = new PrismaClient({ adapter });
 const ENTITY_ID = /^[a-z][a-z0-9_]*\.[a-z0-9_]+$/;
 
 /** Config keys whose value is a `domain.service` string, not an entity id. */
-const SERVICE_KEY = /^(haService|longPressService)\d*$/;
+const SERVICE_KEY = /^(haService|longPressHaService|longPressService)\d*$/;
 
 /**
  * Entity ids are compared after trimming and lower-casing on BOTH sides.
@@ -74,12 +74,14 @@ const SAFE_SERVICES = new Set([
   "open_cover",
   "close_cover",
   "stop_cover",
-  "toggle_cover",
   "set_cover_position",
   "set_cover_tilt_position",
   "lock",
   "unlock",
-  "open",
+  // "open" stand hier und war ein Loch: die Domain wird vor dem Nachschlagen
+  // verworfen, also hätte `lock.open` — das physische Aufziehen der Falle, nicht
+  // bloss Entriegeln — für jedes Schloss auf jeder Ansicht gegolten, ohne jede
+  // Konfiguration, auf einer Route ohne Anmeldung. Kein Widget sendet es.
   "press",
   "media_play",
   "media_pause",
@@ -123,6 +125,19 @@ function collectEntityIds(value: unknown, into: Set<string>, depth = 0): void {
   if (typeof value === "string") {
     const v = normaliseEntityId(value);
     if (ENTITY_ID.test(v)) into.add(v);
+    // Manche Felder halten JSON als Text: die Dienst-Daten eines Buttons sind
+    // ein Freitextfeld, in das man aus Home Assistants Entwicklerwerkzeugen
+    // etwas wie {"entity_id": "light.decke"} hineinkopiert. Ohne dieses
+    // Hineinsehen wäre die Entität nie auf der Liste — und die Ablehnung
+    // nennt dann eine Entität, die im selben Button sichtbar konfiguriert ist.
+    const t = value.trim();
+    if ((t.startsWith("{") || t.startsWith("[")) && t.length < 20_000) {
+      try {
+        collectEntityIds(JSON.parse(t), into, depth + 1);
+      } catch {
+        // Kein gültiges JSON — dann ist es einfach Text.
+      }
+    }
     return;
   }
   if (Array.isArray(value)) {
