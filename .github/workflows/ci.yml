@@ -39,6 +39,12 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
+      # Deliberately here and NOT in `npm run build`: somebody installing from
+      # source must never have their install fail because our documentation
+      # went stale. That is our problem to fix, not theirs to hit.
+      - name: Check the wiki against the code
+        run: npm run check:wiki
+
       - name: Production build
         run: npm run build
         env:

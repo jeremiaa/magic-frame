@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:wiki": "node scripts/check-wiki.mjs",
+    "build:llms": "node scripts/build-llms.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

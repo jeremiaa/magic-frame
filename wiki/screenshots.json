@@ -1,0 +1,1302 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "note": "Every shot records the source files it shows. check-wiki.mjs fails when one of them changed after takenAt — retake with: node scripts/shoot-wiki.mjs <id>. Shots are taken against a seeded throwaway instance with invented content (scripts/seed-demo.mjs plus the two stubs), never against a real household.",
+  "shots": [
+    {
+      "id": "concepts-anatomy",
+      "page": "concepts.md",
+      "caption": "A finished view on a wall tablet: a photo behind everything, the clock top left, the weather and the family calendar down the right, and three home controls on the left.",
+      "shows": [
+        "src/app/view/[id]/page.tsx",
+        "src/components/WallpaperEngine.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/home"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "takenAt": {
+        "src/app/view/[id]/page.tsx": "2fd269874ac2",
+        "src/components/WallpaperEngine.tsx": "a491a40ed524"
+      }
+    },
+    {
+      "id": "clock-with-weather",
+      "page": "widgets-time-weather.md",
+      "caption": "The Clock widget with the mini weather line switched on: the time, the date below it, and a small row with the temperature, humidity and wind.",
+      "shows": [
+        "src/components/widgets/ClockWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-clock"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/ClockWidget.tsx": "9125c83ce561"
+      }
+    },
+    {
+      "id": "weather-full",
+      "page": "widgets-time-weather.md",
+      "caption": "The Weather widget: the current temperature with a large icon, humidity, wind and UV underneath, and the forecast row along the bottom.",
+      "shows": [
+        "src/components/widgets/WeatherWidget.tsx",
+        "src/lib/weather/wmo.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-weather"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4000
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/WeatherWidget.tsx": "29adc95b3d26",
+        "src/lib/weather/wmo.tsx": "16eddd888f60"
+      }
+    },
+    {
+      "id": "environment-tiles",
+      "page": "widgets-time-weather.md",
+      "caption": "The Environment widget: one tile per value — air quality, particulates, pollen, UV and wind — each with its own icon.",
+      "shows": [
+        "src/components/widgets/EnvironmentWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-environment"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4000
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/EnvironmentWidget.tsx": "cde3797dcd82"
+      }
+    },
+    {
+      "id": "calendar-month-view",
+      "page": "widgets-calendar.md",
+      "caption": "The Calendar widget in month view: a six-week grid, today marked, and each day's events under its number.",
+      "shows": [
+        "src/components/widgets/CalendarWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-calendar-month"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/CalendarWidget.tsx": "4f0cfb5cda90"
+      }
+    },
+    {
+      "id": "timer-countdown",
+      "page": "widgets-family.md",
+      "caption": "The Timer widget: two timers, one counting down with a green ring, and one finished — ringed orange and reading DONE.",
+      "shows": [
+        "src/components/widgets/TimerWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-timer"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/TimerWidget.tsx": "d866a9062e13"
+      }
+    },
+    {
+      "id": "messages-notes",
+      "page": "widgets-family.md",
+      "caption": "The Messages widget: notes on dark cards, each with how long ago it was posted and a cross to clear it.",
+      "shows": [
+        "src/components/widgets/MessagesWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-messages"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/MessagesWidget.tsx": "3dd780f09c26"
+      }
+    },
+    {
+      "id": "shopping-list",
+      "page": "widgets-family.md",
+      "caption": "The Shopping list widget: unticked items first, with the ticked ones counted in the header.",
+      "shows": [
+        "src/components/widgets/ShoppingListWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-shopping"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/ShoppingListWidget.tsx": "dcb33ad3c78f"
+      }
+    },
+    {
+      "id": "todos-list",
+      "page": "widgets-family.md",
+      "caption": "The To-dos widget: open tasks with the person they belong to and when they are due; the overdue one is ringed in red.",
+      "shows": [
+        "src/components/widgets/TodosWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-todos"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/TodosWidget.tsx": "e67fcc0e7417"
+      }
+    },
+    {
+      "id": "ha-entity-pills",
+      "page": "widgets-home-assistant.md",
+      "caption": "The HA entity widget: one row per entity with its current state, and a control on the right for the ones you can switch.",
+      "shows": [
+        "src/components/widgets/HomeAssistantWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-ha-entity"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/HomeAssistantWidget.tsx": "40132c701781"
+      }
+    },
+    {
+      "id": "ha-notification-tiles",
+      "page": "widgets-home-assistant.md",
+      "caption": "The Notifications widget: one tile per rule that is currently triggered, each with its own icon, colour and how long ago it started.",
+      "shows": [
+        "src/components/widgets/HANotificationWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-ha-notification"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/HANotificationWidget.tsx": "ef815b693ba2"
+      }
+    },
+    {
+      "id": "ha-camera-tile",
+      "page": "widgets-home-assistant.md",
+      "caption": "The Camera widget showing a Home Assistant camera, with its caption in the corner.",
+      "shows": [
+        "src/components/widgets/CameraWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-camera"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/CameraWidget.tsx": "f104cd0d3d37"
+      }
+    },
+    {
+      "id": "ha-sensor-tiles",
+      "page": "widgets-home-assistant.md",
+      "caption": "The Sensor widget in grid design: one tile per sensor with its value, its unit and the recent trend drawn behind it.",
+      "shows": [
+        "src/components/widgets/SensorWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-sensor"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/SensorWidget.tsx": "549c85907dbb"
+      }
+    },
+    {
+      "id": "ha-buttons-row",
+      "page": "widgets-home-assistant.md",
+      "caption": "The Buttons widget: round glass buttons with an icon and a small label under each.",
+      "shows": [
+        "src/components/widgets/ButtonWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-button"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/ButtonWidget.tsx": "93b0fa060923"
+      }
+    },
+    {
+      "id": "image-blur-fill",
+      "page": "widgets-media.md",
+      "caption": "The Image widget with fit set to blur: the whole portrait photo stays visible in the middle, and a blurred copy of it fills the sides instead of black bars.",
+      "shows": [
+        "src/components/widgets/ImageWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-image-blur"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/ImageWidget.tsx": "45ae1ffa52cc"
+      }
+    },
+    {
+      "id": "media-player-row",
+      "page": "widgets-media.md",
+      "caption": "The Media Player widget in row layout: the artwork on the left, the title and artist beside it, and the transport controls underneath.",
+      "shows": [
+        "src/components/widgets/MediaPlayerWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-media"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/MediaPlayerWidget.tsx": "a34599efc76c"
+      }
+    },
+    {
+      "id": "rss-single-mode",
+      "page": "widgets-media.md",
+      "caption": "The RSS widget in rotate mode: one headline at a time with its source and age, a short summary, and dots showing how many are in the rotation.",
+      "shows": [
+        "src/components/widgets/RssWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-rss"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/RssWidget.tsx": "877dd0774c16"
+      }
+    },
+    {
+      "id": "qr-wifi-code",
+      "page": "widgets-media.md",
+      "caption": "The QR widget with a Wi-Fi code: the network name under the code, so a guest can scan it and join without typing a password.",
+      "shows": [
+        "src/components/widgets/QrWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-qr"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/QrWidget.tsx": "7b2ef41e9822"
+      }
+    },
+    {
+      "id": "status-card",
+      "page": "widgets-media.md",
+      "caption": "The Status widget: the device's name and state, its details in a row underneath, and a progress bar along the bottom.",
+      "shows": [
+        "src/components/widgets/StatusWidget.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/w-status"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "element": ".react-grid-item",
+      "takenAt": {
+        "src/components/widgets/StatusWidget.tsx": "dac37f9c5c0f"
+      }
+    },
+    {
+      "id": "wallpapers-split-view",
+      "page": "wallpapers.md",
+      "caption": "Split view: two portrait photos side by side with a thin gap between them, each fitted with its own blurred fill.",
+      "shows": [
+        "src/components/WallpaperEngine.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/split"
+        },
+        {
+          "waitFor": "body"
+        },
+        {
+          "wait": 5000
+        }
+      ],
+      "takenAt": {
+        "src/components/WallpaperEngine.tsx": "a491a40ed524"
+      }
+    },
+    {
+      "id": "getting-started-result",
+      "page": "getting-started.md",
+      "caption": "The finished result: a wall tablet showing a rotating photo with a clock in the corner — what you will have at the end of this page.",
+      "shows": [
+        "src/app/view/[id]/page.tsx",
+        "src/components/WallpaperEngine.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/home"
+        },
+        {
+          "waitFor": "body"
+        },
+        {
+          "wait": 4000
+        }
+      ],
+      "takenAt": {
+        "src/app/view/[id]/page.tsx": "2fd269874ac2",
+        "src/components/WallpaperEngine.tsx": "a491a40ed524"
+      }
+    },
+    {
+      "id": "views-and-displays-on-the-wall",
+      "page": "views-and-displays.md",
+      "caption": "A view running full screen on a wall tablet: photo background, clock, calendar and three home controls, with no browser bars visible.",
+      "shows": [
+        "src/app/view/[id]/page.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/home"
+        },
+        {
+          "waitFor": "body"
+        },
+        {
+          "wait": 4000
+        }
+      ],
+      "takenAt": {
+        "src/app/view/[id]/page.tsx": "2fd269874ac2"
+      }
+    },
+    {
+      "id": "the-editor-control-centre",
+      "page": "the-editor.md",
+      "caption": "The control centre after signing in: three counters across the top, the status strip below them, and the view cards with their mini layouts.",
+      "shows": [
+        "src/app/editor/(app)/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/page.tsx": "7a6b806c1075"
+      }
+    },
+    {
+      "id": "installation-fresh-dashboard",
+      "page": "installation.md",
+      "caption": "The editor's Dashboard after a fresh install: the system-status strip showing the database reachable and no integrations connected yet.",
+      "shows": [
+        "src/app/editor/(app)/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/page.tsx": "7a6b806c1075"
+      }
+    },
+    {
+      "id": "the-editor-canvas",
+      "page": "the-editor.md",
+      "caption": "The editing canvas with a widget selected: the grid behind it, the widget's coloured header bar, and the blue ring marking the selection.",
+      "shows": [
+        "src/app/editor/(app)/views/[id]/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/views/home"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "wait": 5000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+      }
+    },
+    {
+      "id": "widgets-add-palette",
+      "page": "widgets.md",
+      "caption": "The 'Add widget' palette down the left of the editor, each of the 18 widgets a row with its icon and a plus.",
+      "shows": [
+        "src/app/editor/_components/AddWidgetModal.tsx",
+        "src/app/editor/(app)/views/[id]/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/views/home"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "wait": 5000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/_components/AddWidgetModal.tsx": "976ccb0cfce8",
+        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+      }
+    },
+    {
+      "id": "home-assistant-integration-card",
+      "page": "home-assistant.md",
+      "caption": "The Integrations page with the Home Assistant card filled in: an address in the URL field, a masked token, and the line 'Verbindung konfiguriert.' beside the Save button.",
+      "shows": [
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"Home Assistant\"))"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"Home Assistant\"))"
+    },
+    {
+      "id": "immich-global-card",
+      "page": "immich.md",
+      "caption": "The Immich (global) card on the Integrations page, filled in: an address, a masked key, and the line 'Globale Verbindung konfiguriert.'",
+      "shows": [
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"Immich (global)\"))"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"Immich (global)\"))"
+    },
+    {
+      "id": "home-assistant-lists",
+      "page": "home-assistant.md",
+      "caption": "The Home Assistant lists card after refreshing: three lists with their entity ids and item counts.",
+      "shows": [
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"Home Assistant lists\"))"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"Home Assistant lists\"))"
+    },
+    {
+      "id": "calendars-connected-accounts",
+      "page": "calendars.md",
+      "caption": "The calendar accounts list with three accounts connected — two Google and one Microsoft 365 — each with its own Disconnect button.",
+      "shows": [
+        "src/lib/calendar-auth/store.ts",
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"Calendar accounts\"))"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/lib/calendar-auth/store.ts": "b188bc8b7cc3",
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"Calendar accounts\"))"
+    },
+    {
+      "id": "calendars-oauth-credentials",
+      "page": "calendars.md",
+      "caption": "The OAuth credentials section expanded: the two redirect URIs with a copy button each, and the fields for the client id and secret.",
+      "shows": [
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"Calendar accounts\"))"
+        },
+        {
+          "click": "text=Set up OAuth credentials"
+        },
+        {
+          "wait": 1200
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"Calendar accounts\"))"
+    },
+    {
+      "id": "weather-providers-owm-card",
+      "page": "weather-providers.md",
+      "caption": "The OpenWeatherMap card: the two steps for getting a key, and the field to paste it into. The default provider needs no key at all.",
+      "shows": [
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"OpenWeatherMap\"))"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"OpenWeatherMap\"))"
+    },
+    {
+      "id": "other-sources-todoist-card",
+      "page": "other-sources.md",
+      "caption": "The Todoist card: the three steps for fetching a token from your Todoist account, and the field to paste it into.",
+      "shows": [
+        "src/app/editor/(app)/integrations/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/integrations"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "scrollTo": "section:has(h2:text-is(\"Todoist\"))"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+      },
+      "element": "section:has(h2:text-is(\"Todoist\"))"
+    },
+    {
+      "id": "settings-sidebar-sections",
+      "page": "settings.md",
+      "caption": "The settings page with the second sidebar open: seven entries from General to System, with Security selected and its two cards on the right.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "Security"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      }
+    },
+    {
+      "id": "settings-account-2fa",
+      "page": "settings.md",
+      "caption": "The two-factor card mid-setup: QR code on the left, the secret in text under it, and the six-digit confirmation box filled in.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "Account"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      }
+    },
+    {
+      "id": "settings-system-server",
+      "page": "settings.md",
+      "caption": "The System section: twelve status tiles with app version, database connected, uptimes and memory.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "System"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      }
+    },
+    {
+      "id": "installation-system-card",
+      "page": "installation.md",
+      "caption": "The System section of Settings: the running version, platform and a database-reachable indicator.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "System"
+        },
+        {
+          "wait": 3000
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      }
+    },
+    {
+      "id": "users-and-security-lockouts",
+      "page": "users-and-security.md",
+      "caption": "The active-lock panel with one locked entry showing the reason, the minutes left, and a Release button.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "Security"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      }
+    },
+    {
+      "id": "companion-api-token",
+      "page": "companion-api.md",
+      "caption": "The Companion API Token card in Settings: the token still hidden behind dots, with show, Copy and Rotate beside it and a ready-made example URL underneath.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "Devices & apps"
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      }
+    },
+    {
+      "id": "hosting-and-domain-ddns-card",
+      "page": "hosting-and-domain.md",
+      "caption": "The Hosting & network section: dynamic DNS at the top for keeping a DNS record pointed at your changing address, and automatic HTTPS below it.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "Hosting & network"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "scrollTo": "text=\"Dynamic DNS (DDNS)\""
+        },
+        {
+          "wait": 800
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "2c3c3d23c4ed"
+      },
+      "element": "div.rounded-2xl:has(h2:text-is(\"Dynamic DNS (DDNS)\"))"
+    },
+    {
+      "id": "updating-and-backups-page",
+      "page": "updating-and-backups.md",
+      "caption": "The Backups page: the Export, Import and Auto snapshots cards, with the Versions list underneath.",
+      "shows": [
+        "src/app/editor/(app)/backups/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/backups"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "wait": 2500
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/backups/page.tsx": "08aff590d850"
+      }
+    },
+    {
+      "id": "custom-modules-upload",
+      "page": "custom-modules.md",
+      "caption": "The Modules page: the two file pickers with module.json and bundle.js chosen, and the purple Upload button below them.",
+      "shows": [
+        "src/app/editor/(app)/modules/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/modules"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "scrollTo": "text=\"Custom modules\""
+        },
+        {
+          "wait": 800
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/modules/page.tsx": "7926cc13c688"
+      },
+      "element": "div.rounded-2xl:has(h2:text-is(\"Custom modules\")), div.rounded-2xl:has(h2:text-is(\"Custom-Module\"))"
+    },
+    {
+      "id": "wallpapers-blur-fit",
+      "page": "wallpapers.md",
+      "caption": "A portrait photo on a landscape screen with fit set to blur: the whole photo stays visible, and a blurred copy of it fills the sides.",
+      "shows": [
+        "src/components/WallpaperEngine.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/blurfit"
+        },
+        {
+          "wait": 6000
+        }
+      ],
+      "takenAt": {
+        "src/components/WallpaperEngine.tsx": "a491a40ed524"
+      }
+    },
+    {
+      "id": "wallpapers-info-bar",
+      "page": "wallpapers.md",
+      "caption": "The photo info bar along the bottom: the date, the place and the camera, with the timer ring on the opposite side.",
+      "shows": [
+        "src/components/WallpaperEngine.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/infobar"
+        },
+        {
+          "wait": 6000
+        }
+      ],
+      "takenAt": {
+        "src/components/WallpaperEngine.tsx": "a491a40ed524"
+      }
+    },
+    {
+      "id": "troubleshooting-black-wallpaper",
+      "page": "troubleshooting.md",
+      "caption": "A view whose photo source cannot be reached: the background falls back to plain black while the widgets carry on as normal.",
+      "shows": [
+        "src/components/WallpaperEngine.tsx",
+        "src/app/view/[id]/page.tsx"
+      ],
+      "needsLogin": false,
+      "steps": [
+        {
+          "goto": "/view/blackbg"
+        },
+        {
+          "wait": 6000
+        }
+      ],
+      "takenAt": {
+        "src/components/WallpaperEngine.tsx": "a491a40ed524",
+        "src/app/view/[id]/page.tsx": "2fd269874ac2"
+      }
+    },
+    {
+      "id": "companion-api-toolbar",
+      "page": "companion-api.md",
+      "caption": "The right end of the editor toolbar: the TV sync button, the cross that stops it, Refresh, and Save.",
+      "shows": [
+        "src/app/editor/(app)/views/[id]/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/views/home"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "click": ".react-grid-item"
+        },
+        {
+          "wait": 900
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+      }
+    },
+    {
+      "id": "getting-started-first-view",
+      "page": "getting-started.md",
+      "caption": "A freshly created view in the editor: Clock, Calendar and Weather already on the grid, the Add widget list on the left.",
+      "shows": [
+        "src/app/editor/(app)/views/[id]/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/views/home"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "click": ".react-grid-item"
+        },
+        {
+          "wait": 900
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+      }
+    },
+    {
+      "id": "status-card-vacuum",
+      "page": "widgets-media.md",
+      "caption": "The same widget as a robot vacuum, in stack layout: the picture above the name, the room and area cleaned as details, and the battery as a ring instead of a bar.",
+      "shows": [
+        "src/components/widgets/StatusWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-status-vacuum"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/StatusWidget.tsx": "dac37f9c5c0f"
+      }
+    },
+    {
+      "id": "status-card-washer",
+      "page": "widgets-media.md",
+      "caption": "A washing machine that has finished: 'Finished' is listed as an alert state, so the card tints, pulses and draws a ring around itself rather than sitting quietly.",
+      "shows": [
+        "src/components/widgets/StatusWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-status-washer"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/StatusWidget.tsx": "dac37f9c5c0f"
+      }
+    },
+    {
+      "id": "weather-background",
+      "page": "widgets-time-weather.md",
+      "caption": "The Weather widget with the atmospheric background switched on: the card carries a soft wash behind the numbers that follows the current conditions, instead of sitting on plain glass.",
+      "shows": [
+        "src/components/widgets/WeatherWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-weather-bg"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 5000
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/WeatherWidget.tsx": "29adc95b3d26"
+      }
+    },
+    {
+      "id": "media-player-stack",
+      "page": "widgets-media.md",
+      "caption": "Stack layout: the cover sits above the title, artist and progress instead of beside them — what a narrow, tall tile wants.",
+      "shows": [
+        "src/components/widgets/MediaPlayerWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-media-stack"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/MediaPlayerWidget.tsx": "a34599efc76c"
+      }
+    },
+    {
+      "id": "media-player-cover",
+      "page": "widgets-media.md",
+      "caption": "Cover layout: the artwork fills the whole tile and the text sits over a dark gradient at the bottom. `scrim` sets how strong that gradient is.",
+      "shows": [
+        "src/components/widgets/MediaPlayerWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-media-cover"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/MediaPlayerWidget.tsx": "a34599efc76c"
+      }
+    },
+    {
+      "id": "media-player-vinyl",
+      "page": "widgets-media.md",
+      "caption": "A round cover that turns while something is playing, with the same artwork blurred behind it as the tile background — `coverCorners: circle` plus `vinylSpin`.",
+      "shows": [
+        "src/components/widgets/MediaPlayerWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-media-vinyl"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 4500
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/MediaPlayerWidget.tsx": "a34599efc76c"
+      }
+    }
+  ]
+}
