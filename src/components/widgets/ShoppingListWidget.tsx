@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import { ShoppingCart, Plus, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { renderInlineMarkdown } from "@/lib/inline-markdown";
+import { writeAndReport } from "@/lib/ha/action-client";
 
 type Item = {
   id: string;
@@ -81,7 +82,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
     const nextChecked = !cur?.checked;
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, checked: nextChecked } : i)));
     if (useHa && cur) {
-      await fetch(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
+      await writeAndReport(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -90,7 +91,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
         }),
       });
     } else if (useTodoist) {
-      await fetch(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
+      await writeAndReport(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -99,7 +100,10 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
         }),
       });
     } else {
-      await fetch(`/api/shopping/${id}`, { method: "PATCH" });
+      // reload als Rückfall: schlägt der Schreibzugriff fehl (auf einem
+      // Display ohne Anmeldung 401), stünde der Haken sonst dauerhaft
+      // falsch — es gibt dann kein SHOPPING_UPDATED, das ihn korrigiert.
+      await writeAndReport(`/api/shopping/${id}`, { method: "PATCH" }, reload);
     }
   }
 
@@ -108,21 +112,21 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
     if (!text) return;
     setNewText("");
     if (useHa) {
-      await fetch(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
+      await writeAndReport(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item: text }),
       });
       reload();
     } else if (useTodoist) {
-      await fetch(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
+      await writeAndReport(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: text }),
       });
       reload();
     } else {
-      await fetch("/api/shopping", {
+      await writeAndReport("/api/shopping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -133,7 +137,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
   async function clearDone() {
     if (!confirm(t("Alle abgehakten löschen?"))) return;
     if (useHa) {
-      await fetch(
+      await writeAndReport(
         `/api/ha-lists/${encodeURIComponent(haEntity)}/items?completed=1`,
         { method: "DELETE" },
       );
@@ -144,7 +148,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
       const doneIds = items.filter((i) => i.checked).map((i) => i.id);
       await Promise.all(
         doneIds.map((id) =>
-          fetch(
+          writeAndReport(
             `/api/todoist/tasks/${encodeURIComponent(todoistProject)}?taskId=${encodeURIComponent(id)}`,
             { method: "DELETE" },
           ),
@@ -152,7 +156,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
       );
       reload();
     } else {
-      await fetch("/api/shopping", { method: "DELETE" });
+      await writeAndReport("/api/shopping", { method: "DELETE" });
     }
   }
 

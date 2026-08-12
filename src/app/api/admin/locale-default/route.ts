@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -14,17 +16,18 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await verifySession();
+    await verifyAdmin();
     return NextResponse.json({ locale: (await getDefaultLocale()) ?? null });
   } catch (e) {
     if (e instanceof UnauthorizedError) return unauthorizedResponse();
+    if (e instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "Failed to read locale" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const body = await req.json().catch(() => ({}));
     const raw = body?.locale;
     const next = raw === "de" || raw === "en" ? raw : null;
@@ -32,6 +35,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, locale: next });
   } catch (e) {
     if (e instanceof UnauthorizedError) return unauthorizedResponse();
+    if (e instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "Failed to save locale" }, { status: 500 });
   }
 }

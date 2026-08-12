@@ -3,8 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { verifySession, UnauthorizedError, unauthorizedResponse } from "@/lib/auth/dal";
+import { resolveUserId } from "@/lib/auth/shortcut";
 import { DEFAULT_WALLPAPER } from "@/lib/wallpaper-engine/bundled";
 import { remapButtonTargets } from "@/lib/widgets/remap-targets";
+import { forgetAllowedEntities } from "@/lib/ha/action-policy";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -13,8 +15,19 @@ const prisma = new PrismaClient({ adapter });
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // POST and DELETE below have always checked the session; GET did not, so
+    // the list of every view — ids, names, orientation, widget geometry — was
+    // public. A display never calls this; it loads its own view by id.
+    //
+    // `resolveUserId` and not `verifySession`, because this is also the
+    // discovery call the companion recipes use ("GET /api/dashboards lists
+    // every view with its id" sits right above the navigate/refresh Shortcut
+    // in wiki/companion-api.md). Those authenticate with ?key=<token>, which a
+    // session-only check would refuse with no working alternative.
+    if (!(await resolveUserId(req))) return unauthorizedResponse();
+
     const dashboards = await prisma.dashboard.findMany({
       select: {
         id: true,
@@ -35,6 +48,10 @@ export async function GET() {
     });
     return NextResponse.json(shaped, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch(error) {
+    // Not signed in must answer 401, not 500 — the editor pages redirect on
+    // 401 and would otherwise show "Failed to fetch dashboards" to somebody
+    // whose session simply expired.
+    if (error instanceof UnauthorizedError) return unauthorizedResponse();
     console.error(error);
     return NextResponse.json({ error: "Failed to fetch dashboards" }, { status: 500 });
   }
@@ -156,6 +173,9 @@ export async function POST(req: NextRequest) {
        });
     }
 
+    // Anlegen, Duplizieren und Umbenennen ändern alle die Widget-Configs —
+    // und damit die Erlaubnisliste von /api/ha/action.
+    forgetAllowedEntities();
     return NextResponse.json({ success: true, id: safeId });
   } catch(error: any) {
     if (error instanceof UnauthorizedError) return unauthorizedResponse();
@@ -174,6 +194,7 @@ export async function DELETE(req: NextRequest) {
      if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
      await prisma.dashboard.delete({ where: { id } });
+     forgetAllowedEntities();
      return NextResponse.json({ success: true });
   } catch(error) {
      if (error instanceof UnauthorizedError) return unauthorizedResponse();

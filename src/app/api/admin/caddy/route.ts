@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -28,7 +30,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await verifySession();
+    await verifyAdmin();
     // Als HA-Add-on gibt es kein mitgeliefertes Caddy — der Supervisor macht
     // Proxy und HTTPS. Wir melden das, damit die Oberfläche gar nicht erst
     // Felder anbietet, die nichts bewirken würden.
@@ -53,6 +55,7 @@ export async function GET() {
     });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest) {
     );
   }
   try {
-    await verifySession();
+    await verifyAdmin();
     const body = await req.json().catch(() => ({}));
 
     // providerConfig pro bekannten Provider sanitisieren — alle anderen Felder
@@ -117,6 +120,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
   }
 }

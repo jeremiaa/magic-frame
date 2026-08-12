@@ -32,7 +32,16 @@ RUN mkdir -p /usr/share/caddy && \
       '}' \
       '' \
       ':80 {' \
-      '    reverse_proxy app:3000' \
+      '    # header_up: sonst sieht die App keine Client-Adresse und verbucht' \
+      '    # jeden Anmeldeversuch auf denselben Platzhalter — dann sperrt die' \
+      '    # Sperre gegen Passwort-Raten den ganzen Haushalt statt des Angreifers.' \
+      '    # {remote_host} ist die Gegenstelle, die Caddy tatsächlich angenommen' \
+      '    # hat, also nicht durch einen mitgeschickten Header fälschbar.' \
+      '    reverse_proxy app:3000 {' \
+      '        header_up X-Real-IP {remote_host}' \
+      '        header_up X-Forwarded-For {remote_host}' \
+      '        header_up X-Forwarded-Proto {scheme}' \
+      '    }' \
       '}' \
       > /usr/share/caddy/Caddyfile.default
 

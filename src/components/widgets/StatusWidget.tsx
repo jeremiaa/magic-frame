@@ -6,6 +6,7 @@ import { Activity } from "lucide-react";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { useGlassStyle } from "@/lib/ui/glass";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { haAction } from "@/lib/ha/action-client";
 
 // Status-Karte: "Gerät X macht gerade was" — Auto lädt, Drucker druckt,
 // Toniebox spielt. Bild aus jeder Entität mit entity_picture (über den
@@ -102,13 +103,7 @@ export default function StatusWidget({ config, onVisibilityChange }: {
   const tapEntity: string = (config?.tapEntity || "").trim();
   const handleTap = async () => {
     if (!tapEntity) return;
-    try {
-      await fetch("/api/ha/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ entityId: tapEntity, service: "toggle" }),
-      });
-    } catch { /* Aktion fehlgeschlagen — Karte bleibt einfach stehen */ }
+    await haAction({ entityId: tapEntity, service: "toggle" });
   };
   const layout: "bar" | "stack" | "center" = config?.statusLayout === "stack" || config?.statusLayout === "center" ? config.statusLayout : "bar";
   const imageMode: "entity" | "url" | "icon" = config?.imageMode === "url" || config?.imageMode === "icon" ? config.imageMode : "entity";

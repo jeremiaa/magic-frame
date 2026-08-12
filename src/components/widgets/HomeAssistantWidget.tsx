@@ -8,6 +8,7 @@ import Sparkline from "./ha/Sparkline";
 import { useGlassStyle } from "@/lib/ui/glass";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { haAction } from "@/lib/ha/action-client";
 
 const ACTIVE_STATES = [
   "on",
@@ -185,11 +186,7 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
       if (!targetEntity) return;
 
       try {
-         await fetch('/api/ha/action', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ entityId: targetEntity, service: 'toggle' })
-         });
+         await haAction({ entityId: targetEntity, service: 'toggle' });
          // Refresh nach kurzer Pause, damit HA den State angewandt hat.
          setTimeout(() => {
             fetch(`/api/ha/state?ids=${idsParam}`)
@@ -302,11 +299,7 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
 
           const applySliderAction = (val: number) => {
               const fetchAction = (domainStr: string, service: string, data: any) => {
-                  fetch('/api/ha/action', {
-                      method: 'POST',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({ entityId: slot.id, domain: domainStr, service, data })
-                  });
+                  void haAction({ entityId: slot.id, domain: domainStr, service, data });
               };
               if (isLightDomain) {
                   fetchAction('light', val === 0 ? 'turn_off' : 'turn_on', val > 0 ? { brightness: val } : {});

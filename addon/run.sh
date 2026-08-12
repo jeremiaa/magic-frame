@@ -72,9 +72,13 @@ if [ -f /data/options.json ]; then
   ADMIN_EMAIL="$(sed -n 's/.*"admin_email"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' /data/options.json)"
   ADMIN_PASSWORD="$(sed -n 's/.*"admin_password"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' /data/options.json)"
   TZ_OPT="$(sed -n 's/.*"timezone"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' /data/options.json)"
+  # Boolean, also ohne Anführungszeichen im JSON. Kein sed mit Alternation:
+  # `\|` ist eine GNU-Erweiterung und fehlt in busybox/BSD sed.
+  HA_UNRESTRICTED="$(grep -o '"ha_action_unrestricted"[^,}]*' /data/options.json | grep -c true || true)"
   [ -n "${ADMIN_EMAIL}" ] && export ADMIN_EMAIL
   [ -n "${ADMIN_PASSWORD}" ] && export ADMIN_PASSWORD
   [ -n "${TZ_OPT}" ] && export TZ="${TZ_OPT}"
+  [ "${HA_UNRESTRICTED}" = "1" ] && export MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1
 fi
 
 export DATABASE_URL="postgresql://${PGUSER}@localhost/${DB_NAME}?host=/tmp&schema=public"

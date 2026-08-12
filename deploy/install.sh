@@ -117,6 +117,47 @@ update_repo() {
     echo "  → already up to date"
     return 0
   fi
+  # Hand-edited tracked files abort `git pull --ff-only` with "your local
+  # changes would be overwritten" — and the update stops there, silently
+  # leaving the stack on the old version. The common case is somebody who
+  # changed docker-compose.yml to move a port, which is exactly what
+  # docker-compose.override.yml is for. Say so by name instead of failing.
+  # Compared against HEAD, not the index: `git diff --name-only` alone reports
+  # nothing for a file that was edited AND staged, so the warning would stay
+  # silent and the pull would abort anyway — the exact failure this exists to
+  # prevent.
+  local DIRTY
+  DIRTY=$(git diff --name-only HEAD 2>/dev/null)
+  if [ -n "$DIRTY" ]; then
+    # The edits are only in the worktree, so `git checkout` erases them with no
+    # reflog and no stash to recover from — and the advice below is useless to
+    # somebody who no longer has the content. Keep a copy first.
+    local BACKUP_DIR
+    BACKUP_DIR=".magic-frame-local-changes/$(date +%Y-%m-%d_%H%M%S)"
+    mkdir -p "$BACKUP_DIR"
+    echo "$DIRTY" | while IFS= read -r f; do
+      [ -f "$f" ] || continue
+      mkdir -p "$BACKUP_DIR/$(dirname "$f")"
+      cp "$f" "$BACKUP_DIR/$f"
+    done
+
+    echo "  ⚠  These files were edited by hand and will be replaced with the"
+    echo "     published version:"
+    echo "$DIRTY" | sed 's/^/       /'
+    echo
+    echo "     A copy of each was saved to:"
+    echo "       $(pwd)/$BACKUP_DIR"
+    echo
+    echo "     Your .env, the database and uploaded modules are untouched —"
+    echo "     they live outside the repo. To keep compose changes across"
+    echo "     updates, put them in docker-compose.override.yml instead;"
+    echo "     Compose merges that file automatically and updates never touch it."
+    echo
+    # `-f HEAD --` and not `-- .`: the latter restores from the INDEX, so a
+    # staged hand-edit would survive and the pull would still abort.
+    git checkout -f HEAD -- . 2>/dev/null || git reset --hard HEAD
+  fi
+
   BASE=$(git merge-base HEAD "$REMOTE" 2>/dev/null || echo "")
   if [ "$LOCAL" = "$BASE" ]; then
     # clean fast-forward
@@ -179,7 +220,17 @@ else
   cp .env.example .env
 fi
 
-# Generate SESSION_SECRET if empty
+# Generate SESSION_SECRET if empty — or if it is too short to be usable.
+# The app refuses to serve /login and /editor below 32 characters (it used to
+# let every request through instead, which was the actual bug). An installer
+# that keeps a 9-character secret would hand the operator a 503 and no clue.
+if [ -n "$EXISTING_SESSION_SECRET" ] && [ "${#EXISTING_SESSION_SECRET}" -lt 32 ]; then
+  warn "SESSION_SECRET in .env is only ${#EXISTING_SESSION_SECRET} characters — the app needs at least 32"
+  echo "     and will otherwise answer 503 on /login. Generating a new one."
+  echo "     Everyone currently signed in will have to log in again."
+  EXISTING_SESSION_SECRET=""
+fi
+
 if [ -z "$EXISTING_SESSION_SECRET" ]; then
   NEW_SECRET=$(gen_secret)
   echo "  → SESSION_SECRET generated (64 chars hex)"
@@ -266,17 +317,28 @@ if [ "$HTTP_PORT_VAL" != "80" ]; then PORT_SUFFIX=":$HTTP_PORT_VAL"; fi
 URL="http://${HOST_BIND}:${HTTP_PORT_VAL}"
 if [ "$HOST_BIND" = "0.0.0.0" ]; then URL="http://localhost${PORT_SUFFIX}"; fi
 
+BODY=""
 for i in $(seq 1 60); do
-  code=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 3 "$URL/login" 2>/dev/null || echo "000")
+  BODY=$(curl -sS --max-time 3 -w $'\n%{http_code}' "$URL/login" 2>/dev/null || printf '\n000')
+  code=$(printf '%s' "$BODY" | tail -1)
   if [ "$code" = "200" ]; then
     echo "  → ready (HTTP $code) after $i attempt(s)"
+    break
+  fi
+  # 503 is a deliberate refusal with a readable explanation in the body, not a
+  # slow start — waiting two minutes and then pointing at empty logs helps
+  # nobody. Print what the app said and stop.
+  if [ "$code" = "503" ]; then
+    echo
+    warn "The app is running but refusing requests:"
+    printf '%s' "$BODY" | sed '$d' | sed 's/^/     /'
     break
   fi
   printf "."
   sleep 2
 done
 
-if [ "$code" != "200" ]; then
+if [ "$code" != "200" ] && [ "$code" != "503" ]; then
   warn "App not responding yet — check logs: docker compose logs -f app"
 fi
 

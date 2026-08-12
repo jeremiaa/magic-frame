@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -16,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await verifySession();
+    await verifyAdmin();
     const [config, lockouts, attempts] = await Promise.all([
       getSecurityConfig(),
       listLockouts(),
@@ -25,6 +27,7 @@ export async function GET() {
     return NextResponse.json({ config, lockouts, attempts });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }
@@ -32,12 +35,13 @@ export async function GET() {
 /** PATCH — Security-Config updaten. */
 export async function PATCH(req: NextRequest) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const body = await req.json().catch(() => ({}));
     const next = await setSecurityConfig(body);
     return NextResponse.json({ ok: true, config: next });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }
@@ -45,7 +49,7 @@ export async function PATCH(req: NextRequest) {
 /** DELETE ?scope=ip:1.2.3.4 — einzelnen Lockout freigeben. */
 export async function DELETE(req: NextRequest) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const scope = req.nextUrl.searchParams.get("scope");
     if (!scope) {
       return NextResponse.json({ error: "scope param required" }, { status: 400 });
@@ -54,6 +58,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }

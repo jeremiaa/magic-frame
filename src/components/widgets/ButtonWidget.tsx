@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Icon } from './WidgetIcon';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { haAction } from "@/lib/ha/action-client";
 
 interface ButtonWidgetProps {
   config?: any;
@@ -40,30 +41,14 @@ async function runButtonAction(slot: any, longPress: boolean) {
                 console.error("HA-Service: ungültiges JSON in Service-Daten", rawData);
             }
         }
-        try {
-            await fetch("/api/ha/action", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entityId: entity, domain: parts[0], service: parts[1], data }),
-            });
-        } catch (e) {
-            console.error("HA-Service failed", e);
-        }
+        await haAction({ entityId: entity, domain: parts[0], service: parts[1], data });
         return;
     }
 
     if (action === "ha_toggle") {
         const entity = longPress ? slot.longPressEntity : slot.haEntity;
         if (!entity) return;
-        try {
-            await fetch("/api/ha/action", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entityId: entity, service: "toggle" }),
-            });
-        } catch (e) {
-            console.error("HA-Toggle failed", e);
-        }
+        await haAction({ entityId: entity, service: "toggle" });
         return;
     }
 

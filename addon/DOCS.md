@@ -21,12 +21,19 @@ The database is created on first start, which takes a moment.
 | `admin_email` | Login name for the first account. Leave empty to create it in the browser on first visit. |
 | `admin_password` | Password for it. Clear it again after the first start — otherwise it stays in the add-on configuration. |
 | `timezone` | Time zone, e.g. `Europe/Berlin`. Empty = the system's. |
+| `ha_action_unrestricted` | Off by default. A display may only operate entities that are placed on one of your views. Turn this on only if something addresses an entity that sits on no view — a custom module with a hard-coded entity, or a script of your own. |
 
 ## Connecting Home Assistant
 
 **No access token needed.** Running as an add-on, Magic Frame talks to Home
 Assistant through the Supervisor and authenticates itself. The URL and token
-fields in the settings stay empty and are not used.
+fields under `Integrations → Home Assistant` stay empty, and anything you type
+there is ignored for as long as the add-on is running — the Supervisor
+connection always wins.
+
+That also means an add-on install can only talk to the Home Assistant it is
+installed in. If you need to point Magic Frame at a *different* instance, run
+it with Docker Compose instead and enter the URL and a long-lived token there.
 
 ## Displays
 

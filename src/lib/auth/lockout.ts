@@ -82,9 +82,18 @@ export async function getActiveLockout(scope: string) {
 }
 
 /** Beide Scopes (IP + User) prüfen. Wirft LockedError wenn aktiv. */
-export async function assertNotLocked(ip: string, email: string | null) {
-  const ipLock = await getActiveLockout(scopeIp(ip));
-  if (ipLock) throw new LockedError("ip", ipLock.until);
+/**
+ * `ip` may be null: on some setups the client address cannot be established
+ * (see src/lib/auth/ip.ts). Then the per-address lock is SKIPPED rather than
+ * filed under a placeholder — a shared bucket turns this protection into a
+ * denial of service anyone can trigger. The per-account lock below still
+ * applies, and that is the one that actually stops guessing at a known email.
+ */
+export async function assertNotLocked(ip: string | null, email: string | null) {
+  if (ip) {
+    const ipLock = await getActiveLockout(scopeIp(ip));
+    if (ipLock) throw new LockedError("ip", ipLock.until);
+  }
   if (email) {
     const userLock = await getActiveLockout(scopeUser(email));
     if (userLock) throw new LockedError("user", userLock.until);
@@ -113,7 +122,7 @@ export function scopeUser(email: string) {
  * (das fühlt sich richtig an: korrekte Credentials sind ein starkes Signal).
  */
 export async function recordAttempt(opts: {
-  ip: string;
+  ip: string | null;
   email: string | null;
   success: boolean;
   reason?: string;
@@ -121,7 +130,9 @@ export async function recordAttempt(opts: {
   const cfg = await getSecurityConfig();
   await prisma.loginAttempt.create({
     data: {
-      ip: opts.ip,
+      // The column is NOT NULL; "unknown" is an honest label and, unlike the
+      // old "0.0.0.0", it is never used as a lockout scope.
+      ip: opts.ip ?? "unknown",
       email: opts.email,
       success: opts.success,
       reason: opts.reason ?? null,
@@ -132,24 +143,31 @@ export async function recordAttempt(opts: {
     await prisma.loginLockout
       .deleteMany({
         where: {
-          scope: { in: [scopeIp(opts.ip), ...(opts.email ? [scopeUser(opts.email)] : [])] },
+          scope: {
+            in: [
+              ...(opts.ip ? [scopeIp(opts.ip)] : []),
+              ...(opts.email ? [scopeUser(opts.email)] : []),
+            ],
+          },
         },
       })
       .catch(() => {});
     return;
   }
 
-  // IP-Window
-  const ipSince = new Date(Date.now() - cfg.ipWindowMin * 60_000);
-  const ipFails = await prisma.loginAttempt.count({
-    where: { ip: opts.ip, success: false, at: { gte: ipSince } },
-  });
-  if (ipFails >= cfg.ipMaxFails) {
-    await upsertLockout(
-      scopeIp(opts.ip),
-      cfg.ipLockoutMin,
-      `Zu viele Fehlversuche von dieser IP (${ipFails}/${cfg.ipMaxFails} in ${cfg.ipWindowMin} Min)`,
-    );
+  // IP-Window — nur wenn wir überhaupt wissen, wer geklopft hat.
+  if (opts.ip) {
+    const ipSince = new Date(Date.now() - cfg.ipWindowMin * 60_000);
+    const ipFails = await prisma.loginAttempt.count({
+      where: { ip: opts.ip, success: false, at: { gte: ipSince } },
+    });
+    if (ipFails >= cfg.ipMaxFails) {
+      await upsertLockout(
+        scopeIp(opts.ip),
+        cfg.ipLockoutMin,
+        `Zu viele Fehlversuche von dieser IP (${ipFails}/${cfg.ipMaxFails} in ${cfg.ipWindowMin} Min)`,
+      );
+    }
   }
 
   // User-Window

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -11,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await verifySession();
+    await verifyAdmin();
     const cfg = await getTodoistConfig();
     let projects: Array<{ id: string; name: string; isInbox?: boolean }> = [];
     let connected = false;
@@ -34,6 +36,7 @@ export async function GET() {
     });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }
@@ -41,7 +44,7 @@ export async function GET() {
 /** POST { apiToken } — speichert + testet sofort */
 export async function POST(req: NextRequest) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const body = await req.json().catch(() => ({}));
     const token = typeof body.apiToken === "string" ? body.apiToken.trim() : "";
     if (!token) {
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     if (err instanceof TodoistError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }

@@ -30,10 +30,15 @@ options:
   admin_email: ""
   admin_password: ""
   timezone: ""
+  ha_action_unrestricted: false
 schema:
   admin_email: str?
   admin_password: password?
   timezone: str?
+  # Ein Display darf nur die Entitäten schalten, die auf einer Ansicht liegen.
+  # Diese Option hebt das auf. Nur einschalten, wenn etwas anderes (ein eigenes
+  # Modul, ein Skript) Entitäten anspricht, die nirgends platziert sind.
+  ha_action_unrestricted: bool?
 # Kein `image:` — der Supervisor baut aus dem Dockerfile. Ein leeres oder
 # null-Feld liest er als "Image erwartet" und bricht mit einer irreführenden
 # Meldung ab.

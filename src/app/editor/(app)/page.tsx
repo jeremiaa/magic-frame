@@ -123,6 +123,12 @@ type Status = {
   customModules: number;
   snapshots: number | null;
   activeLockouts: number;
+  // true, sobald eine der Verwaltungs-Abfragen mit 403 geantwortet hat. Ohne
+  // das Feld zeigte diese Seite einem Konto mit Nur-Ansehen-Rolle die leeren
+  // Rückfallwerte als Tatsache an: "TLS aus, kein DDNS, 0 Module" — obwohl
+  // alles eingerichtet ist. Nicht sehen dürfen und nicht eingerichtet sein
+  // sind zwei verschiedene Dinge, und die Kacheln sollen das auch sagen.
+  restricted: boolean;
 };
 
 const EMPTY_STATUS: Status = {
@@ -136,6 +142,7 @@ const EMPTY_STATUS: Status = {
   customModules: 0,
   snapshots: null,
   activeLockouts: 0,
+  restricted: false,
 };
 
 export default function EditorHome() {
@@ -154,49 +161,54 @@ export default function EditorHome() {
     // bekommen wir hier nur Daten weil wir eingeloggt sind.
     async function loadStatus() {
       const out: Status = { ...EMPTY_STATUS };
+      // Eine abgelehnte Anfrage parst sauber als {error: …} — ohne diese
+      // Prüfung landet sie als "alles aus" in den Kacheln.
+      const readJson = (url: string) =>
+        fetch(url, { cache: "no-store" }).then(async (r) => {
+          if (r.status === 403) {
+            out.restricted = true;
+            return null;
+          }
+          if (!r.ok) return null;
+          return r.json().catch(() => null);
+        });
+
       const calls: Array<Promise<void>> = [
-        fetch("/api/admin/caddy", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/admin/caddy")
           .then((d) => {
             out.caddyTls = !!d?.status?.tlsMode;
             out.caddyDomain = d?.config?.domain || null;
           })
           .catch(() => {}),
-        fetch("/api/admin/ddns", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/admin/ddns")
           .then((d) => {
             out.ddnsIp = d?.status?.currentIp || null;
             out.ddnsLastUpdate = d?.status?.lastUpdate || d?.status?.lastCheck || null;
           })
           .catch(() => {}),
-        fetch("/api/settings", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/settings")
           .then((d) => {
             out.haConnected = !!(d?.haUrl && d?.haToken);
           })
           .catch(() => {}),
-        fetch("/api/admin/todoist", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/admin/todoist")
           .then((d) => {
             out.todoistConnected = !!d?.connected;
             out.todoistProjects = (d?.projects ?? []).length;
           })
           .catch(() => {}),
-        fetch("/api/admin/modules", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/admin/modules")
           .then((d) => {
             out.customModules = (d?.modules ?? []).filter((m: any) => m.enabled).length;
           })
           .catch(() => {}),
-        fetch("/api/admin/backups/snapshots", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/admin/backups/snapshots")
           .then((d) => {
             const arr = Array.isArray(d?.snapshots) ? d.snapshots : Array.isArray(d) ? d : null;
             out.snapshots = arr ? arr.length : null;
           })
           .catch(() => {}),
-        fetch("/api/admin/security", { cache: "no-store" })
-          .then((r) => r.json())
+        readJson("/api/admin/security")
           .then((d) => {
             out.activeLockouts = (d?.lockouts ?? []).length;
           })
@@ -534,11 +546,24 @@ function StatusStrip({ status }: { status: Status }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 mb-6">
-      {items.map((it) => (
-        <StatusPill key={it.label} {...it} />
-      ))}
-    </div>
+    <>
+      {/* Ohne diesen Hinweis liest ein Konto mit Nur-Ansehen-Rolle die
+          Rückfallwerte als Tatsache: "TLS aus, Todoist aus, 0 Module".
+          Nichts sehen dürfen ist nicht dasselbe wie nichts eingerichtet
+          haben, und die Kacheln allein können das nicht unterscheiden. */}
+      {status.restricted && (
+        <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-300">
+          {t(
+            "Einige dieser Werte kann dieses Konto nicht abrufen — sie brauchen eine Administrator-Rolle. Was hier steht, ist deshalb unvollständig.",
+          )}
+        </div>
+      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 mb-6">
+        {items.map((it) => (
+          <StatusPill key={it.label} {...it} />
+        ))}
+      </div>
+    </>
   );
 }
 

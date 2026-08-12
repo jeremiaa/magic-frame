@@ -113,13 +113,24 @@ export default function WallpaperEngine({
         });
     } else if (source === 'immich') {
       fetch(`/api/wallpaper/immich/playlist?dashboardId=${dashboardId}&lang=${locale}&t=${Date.now()}`)
-        .then(res => res.json())
+        .then(async res => {
+           // Ein Fehler der Route kommt als 4xx/5xx mit {error: …} zurück und
+           // ist kein Array — ohne diese Prüfung lief er stumm in den Zweig
+           // "keine Bilder" und der Rahmen wurde einfach schwarz, ohne dass
+           // irgendwo stand warum.
+           if (!res.ok) {
+              const body = await res.text().catch(() => "");
+              throw new Error(`Immich playlist ${res.status}: ${body.slice(0, 300)}`);
+           }
+           return res.json();
+        })
         .then(data => {
            if (Array.isArray(data) && data.length > 0) setImages(data);
+           else console.warn("Immich returned no images for this view");
            setIsReady(true);
         })
         .catch(err => {
-           console.error("Failed to load Immich playlist", err);
+           console.error("Failed to load Immich playlist:", err?.message || err);
            setIsReady(true);
         });
     } else {
@@ -163,7 +174,13 @@ export default function WallpaperEngine({
       fontFamily: `${config?.metaFontFamily || "Inter"}, sans-serif`,
       fontSize: config?.metaFontSize ? `${config.metaFontSize}px` : "12px",
       fontWeight: config?.metaFontWeight || 500,
-      textShadow: config?.metaTextShadow || "none",
+      // Der Regler im Bildinfo-Dialog schreibt metaTextShadowBlur (0–20), nicht
+      // metaTextShadow. Hier stand nur der zweite Schlüssel, den nichts setzt —
+      // die Vorschau im Editor zeigte den Schatten, die Ansicht nie.
+      textShadow:
+        typeof config?.metaTextShadowBlur === "number" && config.metaTextShadowBlur > 0
+          ? `0 0 ${config.metaTextShadowBlur}px rgba(0,0,0,0.8)`
+          : config?.metaTextShadow || "none",
       color: config?.metaColor || "rgba(255,255,255,0.8)",
     },
   };

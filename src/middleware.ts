@@ -33,8 +33,34 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
-    return NextResponse.next();
+  // Without a usable secret there is no session to check — and letting the
+  // request through means /editor renders to anyone who asks. It used to do
+  // exactly that, silently. It is not a theoretical state either: a `sed`
+  // bug in the installer once produced an empty SESSION_SECRET on every Mac
+  // install, and nothing said so.
+  //
+  // Refuse instead, and say why. The pages behind this are useless without a
+  // secret anyway — getSessionSecret() throws in every guarded API route — so
+  // the choice is between an editor that half-works in silence and one that
+  // states its problem. Public /view displays are untouched: they never reach
+  // this branch (see `needsAuth` above), so a broken .env costs you the editor,
+  // not the screen on the kitchen wall.
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 32) {
+    return new NextResponse(
+      "Magic Frame is not configured: SESSION_SECRET is missing or shorter than 32 characters.\n\n" +
+        "Nobody can sign in until it is set, so the editor is closed rather than left open.\n\n" +
+        "Generate one:\n\n" +
+        "  openssl rand -hex 32\n\n" +
+        "Then put it where your install keeps it, and restart:\n\n" +
+        "  Docker Compose   SESSION_SECRET in the .env next to docker-compose.yml\n" +
+        "                   (re-running deploy/install.sh also does this for you)\n" +
+        "  Kubernetes       the SESSION_SECRET key in the Secret — not the ConfigMap\n" +
+        "                   (Helm: appConfig.sessionSecret)\n" +
+        "  Home Assistant   generated for you; you should never see this page\n\n" +
+        "Your views keep running — this only affects /editor and /login.\n",
+      { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } },
+    );
   }
 
   const session = await getIronSession<SessionData>(
