@@ -49,6 +49,10 @@ Install it once on any box in your home network — that machine becomes "the se
 Two commands on a fresh Linux box. Skip step 1 if you already have Docker:
 
 ```bash
+# 0. Only if `curl --version` says it is missing — a minimal Debian,
+#    a Proxmox template or a stripped VM image has no curl.
+sudo apt update && sudo apt install -y curl git
+
 # 1. Install Docker (with Compose plugin) — official one-liner
 curl -fsSL https://get.docker.com | sh
 

@@ -49,6 +49,10 @@ Einmal auf einem Rechner im Heimnetz installieren — der wird „der Server", d
 Zwei Befehle auf einer frischen Linux-Kiste. Schritt 1 weglassen, falls Docker schon da ist:
 
 ```bash
+# 0. Nur falls `curl --version` fehlt — ein minimales Debian, eine
+#    Proxmox-Vorlage oder ein abgespecktes VM-Abbild bringt kein curl mit.
+sudo apt update && sudo apt install -y curl git
+
 # 1. Docker installieren (mit Compose-Plugin) — offizieller One-Liner
 curl -fsSL https://get.docker.com | sh
 

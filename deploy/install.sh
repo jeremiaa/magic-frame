@@ -55,6 +55,20 @@ die()  { echo "$(c_red "ERROR:") $*" >&2; exit 1; }
 # -----------------------------------------------------------------------------
 step "Checking prerequisites"
 
+# curl and git are checked BEFORE docker, because their absence used to show up
+# far later and as the wrong problem. A minimal Debian, a Proxmox container
+# template or a stripped VM image ships neither. Without git the clone below
+# fails halfway; without curl everything builds fine and then the readiness
+# check at the end silently reports 000, so the script says the app is not
+# responding while it is running perfectly.
+for cmd in curl git; do
+  command -v "$cmd" >/dev/null || die "$cmd not installed. Install it first:
+     Debian, Ubuntu, Raspberry Pi OS   sudo apt update && sudo apt install -y $cmd
+     Fedora, Rocky, AlmaLinux          sudo dnf install -y $cmd
+     Arch                              sudo pacman -S --noconfirm $cmd
+     Alpine                            sudo apk add $cmd"
+done
+
 command -v docker >/dev/null || die "docker not installed. See https://docs.docker.com/engine/install/"
 docker compose version >/dev/null 2>&1 || die "docker compose plugin missing (not docker-compose). Update Docker to >= 20.10."
 

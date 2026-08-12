@@ -28,13 +28,31 @@ you never install a database by hand.
 
 1. Open a terminal **on the machine that will be the server** — on a Pi or a
    Linux box that means an SSH session or a keyboard attached to it.
-2. Run this. It downloads and installs Docker:
+2. Make sure `curl` is there. Every command below starts with it, and a
+   minimal Debian or Proxmox install does not ship it:
+
+   ```bash
+   curl --version
+   ```
+
+   If that says *command not found*, install it — the first line for Debian,
+   Ubuntu and Raspberry Pi OS, the others for the distributions that use a
+   different package manager:
+
+   ```bash
+   sudo apt update && sudo apt install -y curl
+   sudo dnf install -y curl          # Fedora, Rocky, AlmaLinux
+   sudo pacman -S --noconfirm curl   # Arch
+   sudo apk add curl                 # Alpine
+   ```
+
+3. Run this. It downloads and installs Docker:
 
    ```bash
    curl -fsSL https://get.docker.com | sh
    ```
 
-3. Wait until the prompt comes back. It prints a version at the end.
+4. Wait until the prompt comes back. It prints a version at the end.
 
 On a Mac or a Windows PC, install
 [Docker Desktop](https://www.docker.com/products/docker-desktop/) instead and

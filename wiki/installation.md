@@ -48,13 +48,24 @@ from source needs about 5 GB.
 `amd64` and `arm64`, so a Raspberry Pi does not spend twenty minutes compiling.
 
 1. Open a terminal **on the machine that will run Magic Frame**.
-2. Install Docker if it is not there yet:
+2. Install `curl` if `curl --version` says it is missing. A minimal Debian, a
+   Proxmox container template or a stripped-down VM image usually has no curl,
+   and both commands below need it:
+
+   ```bash
+   sudo apt update && sudo apt install -y curl   # Debian, Ubuntu, Raspberry Pi OS
+   sudo dnf install -y curl                      # Fedora, Rocky, AlmaLinux
+   sudo pacman -S --noconfirm curl               # Arch
+   sudo apk add curl                             # Alpine
+   ```
+
+3. Install Docker if it is not there yet:
 
    ```bash
    curl -fsSL https://get.docker.com | sh
    ```
 
-3. Run the installer:
+4. Run the installer:
 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/jeremiaa/magic-frame/main/deploy/install.sh | bash
