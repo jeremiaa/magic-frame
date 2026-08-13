@@ -8,5 +8,5 @@
 # Beim Anheben auf eine neue Version muss auch `version` in config.yaml mit,
 # sonst bietet Home Assistant kein Update an.
 build_from:
-  amd64: ghcr.io/jeremiaa/magic-frame-app:1.3.4
-  aarch64: ghcr.io/jeremiaa/magic-frame-app:1.3.4
+  amd64: ghcr.io/jeremiaa/magic-frame-app:1.4.0
+  aarch64: ghcr.io/jeremiaa/magic-frame-app:1.4.0
