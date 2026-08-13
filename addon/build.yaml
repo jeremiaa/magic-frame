@@ -1,0 +1,12 @@
+# Der Supervisor reicht diesen Wert als BUILD_FROM ins Dockerfile.
+#
+# Bewusst das FERTIGE App-Image statt eines Neubaus aus dem Quelltext: Der
+# Supervisor baut auf der Home-Assistant-Kiste selbst, und ein Next.js-Build
+# dauert dort je nach Gerät zwanzig Minuten und mehr. So wird nur noch
+# Postgres obendrauf gelegt — das sind Sekunden.
+#
+# Beim Anheben auf eine neue Version muss auch `version` in config.yaml mit,
+# sonst bietet Home Assistant kein Update an.
+build_from:
+  amd64: ghcr.io/jeremiaa/magic-frame-app:1.3.4
+  aarch64: ghcr.io/jeremiaa/magic-frame-app:1.3.4

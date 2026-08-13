@@ -16,6 +16,7 @@ import {
     type DockedTimer,
 } from "./_shared/useDockedTimers";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { haAction } from "@/lib/ha/action-client";
 
 export interface NotificationRule {
     entityId?: string;
@@ -68,9 +69,57 @@ export default function HANotificationWidget({
     const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
     // 1Hz Tick — damit Alters-Anzeigen ohne neuen Fetch atmen
     const [nowMs, setNowMs] = useState(() => Date.now());
+    // Wann diese Karte aufgebaut wurde — Bezugspunkt dafür, ob ein
+    // last_changed "gerade eben" oder "schon vorher" bedeutet.
+    const mountedAtRef = useRef<number>(Date.now());
 
-    // Memory mapping of active alerts by their unique config index
-    const [persistedAlerts, setPersistedAlerts] = useState<Map<number, PersistedAlert>>(new Map());
+    // Memory mapping of active alerts by their unique config index.
+    //
+    // Über einen Neuaufbau der Seite hinweg gesichert. Vorher lag die Karte nur
+    // im Arbeitsspeicher, und beim Neuladen wurde triggerTime aus last_changed
+    // neu gebildet. Für den typischen Fall — eine Automation legt morgens einen
+    // Schalter um, und der bleibt an — heisst das: der Schalter ändert sich nie
+    // wieder, last_changed bleibt beim ersten Mal stehen, und die Karte gilt
+    // sofort als überfällig. Sie verschwand also genau dann, wenn sie am
+    // nötigsten war: am dritten Tag, an dem noch niemand quittiert hat.
+    //
+    // Gesichert wird der Zeitpunkt, an dem DIESES Display die Bedingung zum
+    // ersten Mal gesehen hat — plus der Quittier-Zustand, damit ein Neuladen
+    // eine weggeklickte Karte nicht zurückholt.
+    // Aus config abgeleitet und nicht aus `rules`: das steht weiter unten und
+    // wäre hier noch nicht deklariert. Zwei Benachrichtigungs-Karten auf
+    // derselben Ansicht bekommen so trotzdem verschiedene Schlüssel,
+    // solange sie verschiedene Entitäten beobachten.
+    const storageKey = `mf-notif-${dashboardId || "view"}-${((config?.rules as NotificationRule[]) || [])
+        .map((r) => r?.entityId || "")
+        .join("|")}`;
+    const [persistedAlerts, setPersistedAlerts] = useState<Map<number, PersistedAlert>>(() => {
+        if (typeof window === "undefined") return new Map();
+        try {
+            const raw = window.localStorage.getItem(storageKey);
+            if (!raw) return new Map();
+            const arr = JSON.parse(raw) as Array<[number, PersistedAlert]>;
+            if (!Array.isArray(arr)) return new Map();
+            return new Map(arr);
+        } catch {
+            return new Map();
+        }
+    });
+
+    // Gebündelt schreiben: die Karte wird bei jedem Zustandsabgleich neu
+    // bewertet (alle 5 s), und localStorage ist synchron — ein Schreibvorgang
+    // pro Durchlauf würde auf einem Tablet spürbar ruckeln.
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const t = setTimeout(() => {
+            try {
+                window.localStorage.setItem(storageKey, JSON.stringify(Array.from(persistedAlerts.entries())));
+            } catch {
+                /* Speicher voll oder gesperrt — dann eben ohne Sicherung. */
+            }
+        }, 1000);
+        return () => clearTimeout(t);
+    }, [persistedAlerts, storageKey]);
     // Now-Playing-Karten: JEDER konfigurierte Player bekommt seine eigene
     // Karte — spielen zwei gleichzeitig, stapeln sich zwei Karten. Sichtbar-
     // keit meldet jedes eingebettete MediaPlayerWidget einzeln (hideWhenIdle).
@@ -173,20 +222,28 @@ export default function HANotificationWidget({
     }, [source, config?.persistentPollSec]);
 
     async function dismissHaPersistent(entityId: string) {
+        // Optimistisch ausblenden, damit das Antippen sofort etwas tut.
         setDismissedIds((prev) => new Set(prev).add(entityId));
+        const undo = () =>
+            setDismissedIds((prev) => {
+                const next = new Set(prev);
+                next.delete(entityId);
+                return next;
+            });
         try {
             const id = entityId.replace(/^persistent_notification\./, "");
-            await fetch("/api/ha/action", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    entityId,
-                    domain: "persistent_notification",
-                    service: "dismiss",
-                    data: { notification_id: id },
-                }),
+            const res = await haAction({
+                entityId,
+                domain: "persistent_notification",
+                service: "dismiss",
+                data: { notification_id: id },
             });
+            // Eine abgelehnte Anfrage löst kein catch aus. Ohne diese Prüfung
+            // verschwindet die Karte lokal, bleibt in Home Assistant stehen und
+            // ist beim nächsten Abruf wieder da — ohne jeden Hinweis.
+            if (!res || !res.ok) undo();
         } catch (e) {
+            undo();
             console.error("Failed to dismiss notification", e);
         }
     }
@@ -252,10 +309,16 @@ export default function HANotificationWidget({
                         // Fresh trigger! Record the time it entered the map.
                         const initialClearObj = rule.clearEntityId ? statesDict[rule.clearEntityId] : null;
                         
+                        // last_changed nur, wenn es NACH dem Start dieser Seite
+                        // liegt: es ist dann wirklich "gerade eben passiert".
+                        // Liegt es davor, hat der Schalter schon vorher an
+                        // gestanden — dann zählt der Moment, in dem dieses
+                        // Display die Karte zum ersten Mal aufbaut, sonst wäre
+                        // sie sofort abgelaufen.
                         let tTime = Date.now();
                         if (stateObj && stateObj.last_changed) {
                             const parsed = new Date(stateObj.last_changed).getTime();
-                            if (!isNaN(parsed)) tTime = parsed;
+                            if (!isNaN(parsed) && parsed >= mountedAtRef.current) tTime = parsed;
                         }
 
                         existing = {
@@ -371,11 +434,7 @@ export default function HANotificationWidget({
         if (!targetEntity) return;
 
         try {
-           await fetch('/api/ha/action', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ entityId: targetEntity, service: 'toggle' })
-           });
+           await haAction({ entityId: targetEntity, service: 'toggle' });
            setTimeout(fetchState, 500);
         } catch (e) {
            console.error("Tap action failed", e);

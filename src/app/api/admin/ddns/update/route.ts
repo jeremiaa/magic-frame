@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -11,7 +13,7 @@ export const dynamic = "force-dynamic";
 /** Manueller Sofort-Update — vom „Jetzt aktualisieren"-Button. */
 export async function POST() {
   try {
-    await verifySession();
+    await verifyAdmin();
     const result = await runDdnsNow();
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 502 });
@@ -19,6 +21,7 @@ export async function POST() {
     return NextResponse.json(result);
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
   }
 }

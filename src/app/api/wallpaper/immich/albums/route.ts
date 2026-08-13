@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAppSettings } from "@/lib/settings/store";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Listet alle Immich-Alben für gegebene Credentials.
- * POST { url, apiKey } → { albums: [{ id, albumName, assetCount }] }
+ * POST { url?, apiKey? } → { albums: [{ id, albumName, assetCount }] }
  *
  * Bewusst credential-in-body (analog zu /api/webdav/browse), damit der Editor
  * Alben live laden kann, BEVOR die Wallpaper-Config gespeichert ist. Es wird
  * nichts persistiert.
+ *
+ * Fehlen die Angaben, gilt die globale Verbindung aus Einstellungen →
+ * Integrationen (#78). Die Playlist-Route macht das seit jeher so; nur hier
+ * fehlte es, weshalb "Alben holen" in einer neuen Ansicht blockiert blieb,
+ * obwohl das Wallpaper nach dem Speichern funktioniert hätte.
  */
 export async function POST(req: NextRequest) {
   let body: any = {};
@@ -17,12 +23,18 @@ export async function POST(req: NextRequest) {
   } catch {
     /* leer */
   }
-  const url = body.url as string | undefined;
-  const apiKey = body.apiKey as string | undefined;
+  let url = (body.url as string | undefined)?.trim();
+  let apiKey = (body.apiKey as string | undefined)?.trim();
+
+  if (!url || !apiKey) {
+    const settings = await getAppSettings();
+    url = url || settings.immichUrl;
+    apiKey = apiKey || settings.immichApiKey;
+  }
 
   if (!url || !apiKey) {
     return NextResponse.json(
-      { error: "Immich-URL und API-Key sind erforderlich." },
+      { error: "Keine Immich-Verbindung — bitte hier eintragen oder unter Einstellungen → Integrationen hinterlegen." },
       { status: 400 },
     );
   }

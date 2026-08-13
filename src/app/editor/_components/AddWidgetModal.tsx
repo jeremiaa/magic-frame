@@ -74,6 +74,27 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                 <div className="text-3xl mb-2 text-sky-400">🚦</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Status")}</div>
              </button>
+             {/* Die vier Familien-Karten fehlten hier komplett. Der Editor am
+                 Rechner hat sie in seiner Palette, dieses Fenster ist der
+                 Wähler des Handy-Editors — auf dem Handy waren Timer,
+                 Nachrichten, Einkaufsliste und Todos also nicht hinzufügbar,
+                 also ausgerechnet die Karten, die man unterwegs anlegt. */}
+             <button onClick={() => addWidget("TimerWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-emerald-500/10 border border-[var(--mf-bdr)]/10 hover:border-emerald-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-emerald-400">⏱️</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Timer")}</div>
+             </button>
+             <button onClick={() => addWidget("MessagesWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-blue-500/10 border border-[var(--mf-bdr)]/10 hover:border-blue-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-blue-400">💬</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Nachrichten")}</div>
+             </button>
+             <button onClick={() => addWidget("ShoppingListWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-orange-500/10 border border-[var(--mf-bdr)]/10 hover:border-orange-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-orange-400">🛒</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Einkaufsliste")}</div>
+             </button>
+             <button onClick={() => addWidget("TodosWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-violet-500/10 border border-[var(--mf-bdr)]/10 hover:border-violet-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-violet-400">📋</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Todos")}</div>
+             </button>
           </div>
        </div>
     </div>

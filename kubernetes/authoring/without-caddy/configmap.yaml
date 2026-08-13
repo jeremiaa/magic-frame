@@ -9,7 +9,8 @@ metadata:
     app: magic-frame-env
 data:
   ADMIN_EMAIL: ""
-  ADMIN_PASSWORD: ""
+  # ADMIN_PASSWORD steht bewusst NICHT hier, sondern nur in secret.yaml —
+  # eine ConfigMap kann jeder lesen, der ConfigMaps auflisten darf.
   APP_BASE_URL: ""
   CADDY_ADMIN_URL: "http://magic-frame-caddy:2019"
   COOKIE_SECURE: ""
@@ -19,5 +20,11 @@ data:
   MS_CLIENT_SECRET: ""
   NODE_ENV: "production"
   OPENWEATHERMAP_API_KEY: ""
-  SESSION_SECRET: "YOUR_SESSION_SECRET_HERE"
+  # SESSION_SECRET steht bewusst NICHT hier, sondern nur in secret.yaml:
+  # eine ConfigMap kann jeder lesen, der ConfigMaps auflisten darf. Es
+  # muss mindestens 32 Zeichen haben, sonst antwortet die App auf /login
+  # und /editor mit 503. Erzeugen mit: openssl rand -hex 32
   DATABASE_URL: "postgresql://postgres:YOUR_SECURE_PASSWORD_HERE@magic-frame-db:5432/magicdashboard?schema=public"
+  # Ein Display darf nur Entitäten schalten, die auf einer Ansicht liegen.
+  # "1" hebt das auf — siehe wiki/home-assistant.md.
+  MAGIC_FRAME_HA_ACTION_UNRESTRICTED: ""

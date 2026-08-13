@@ -44,7 +44,14 @@ appConfig:
   msClientSecret: ""
   openWeatherMapApiKey: ""
 
-  sessionSecret: "YOUR_SESSION_SECRET_HERE" # ########################### CHANGE THIS!
+  # Absichtlich zu kurz: die App verweigert /login und /editor unter 32
+  # Zeichen. Ein Platzhalter, der die Prüfung besteht, wäre schlimmer als
+  # keiner — dann läuft ein Cluster mit einem Geheimnis, das auf GitHub steht.
+  # Erzeugen mit: openssl rand -hex 32
+  sessionSecret: "CHANGE_ME"
+  # Ein Display darf nur Entitäten schalten, die auf einer Ansicht liegen.
+  # "1" hebt das auf — siehe wiki/home-assistant.md.
+  haActionUnrestricted: "" # ########################### CHANGE THIS!
   dbPassword: "YOUR_SECURE_PASSWORD_HERE" # ############################# CHANGE THIS!
 
 # Toggle Caddy deployment and related configs on or off

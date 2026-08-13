@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -18,7 +20,7 @@ function num(v: any, fallback = 0): number {
 // Nicht im Backup enthaltene Views bleiben unangetastet.
 export async function POST(req: NextRequest) {
   try {
-    await verifySession();
+    await verifyAdmin();
 
     const body = await req.json().catch(() => null);
     if (!body || body.magicFrameBackup !== true || !Array.isArray(body.dashboards)) {
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, imported: results });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     console.error("backup import error", err);
     return NextResponse.json({ error: "Import fehlgeschlagen." }, { status: 500 });
   }

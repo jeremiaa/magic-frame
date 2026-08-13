@@ -21,7 +21,10 @@ export default function ImageWidget({ config, dashboardId }: { config?: any; das
   const albumId: string = config?.immichAlbumId ?? "";
   const source: string = config?.immichSource ?? "global";
   const intervalSec: number = Math.max(5, config?.intervalSec ?? 30);
-  const fitClass = FIT_CLASS[config?.fit as string] ?? "object-cover";
+  // "blur" = ganzes Bild (contain) + weiche, gezoomte Kopie füllt die Balken,
+  // statt sie schwarz zu lassen (#38, #72). Gleiches Rezept wie beim Wallpaper.
+  const isBlurFill = config?.fit === "blur";
+  const fitClass = isBlurFill ? "object-contain" : (FIT_CLASS[config?.fit as string] ?? "object-cover");
   // Expliziter Ecken-Radius: rounded-[inherit] erbt vom direkten Parent (= 0),
   // darum blieb das Bild eckig. Default 16 px = dezent abgerundet — außer der
   // View läuft im Randlos-Modus: dann setzt der Canvas --mf-img-radius auf 0
@@ -121,14 +124,34 @@ export default function ImageWidget({ config, dashboardId }: { config?: any; das
     backfaceVisibility: "hidden",
   });
 
+  // Ein Slot = Hintergrundkopie + scharfes Bild in EINEM Container. Beide
+  // müssen zusammen blenden — läge der weiche Hintergrund ausserhalb, würde er
+  // beim Wechsel hart umspringen, während das scharfe Bild noch überblendet.
+  const renderSlot = (slot: "A" | "B", data: Slide | null) =>
+    data && (
+      <div key={slot} className="absolute inset-0" style={slotStyle(slot)}>
+        {isBlurFill && (
+          <img
+            src={data.url}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110"
+            decoding="async"
+          />
+        )}
+        <img
+          src={data.url}
+          alt=""
+          className={`absolute inset-0 w-full h-full ${fitClass}`}
+          decoding="async"
+        />
+      </div>
+    );
+
   return (
     <div className="relative w-full h-full overflow-hidden bg-black" style={{ borderRadius: cornerRadius }}>
-      {slotA && (
-        <img src={slotA.url} alt="" className={`absolute inset-0 w-full h-full ${fitClass}`} style={slotStyle("A")} decoding="async" />
-      )}
-      {slotB && (
-        <img src={slotB.url} alt="" className={`absolute inset-0 w-full h-full ${fitClass}`} style={slotStyle("B")} decoding="async" />
-      )}
+      {renderSlot("A", slotA)}
+      {renderSlot("B", slotB)}
     </div>
   );
 }

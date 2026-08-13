@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -18,7 +20,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await verifySession();
+    await verifyAdmin();
     const cfg = await getDdnsConfig();
     const state = await getDdnsState();
     return NextResponse.json({
@@ -37,13 +39,14 @@ export async function GET() {
     });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "failed" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const body = await req.json();
     const provider: ProviderName = PROVIDER_NAMES.includes(body.provider)
       ? body.provider
@@ -74,6 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, config: next });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
   }
 }

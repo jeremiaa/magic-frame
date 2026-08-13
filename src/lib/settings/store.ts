@@ -45,10 +45,16 @@ export async function getAppSettings(): Promise<AppSettingsShape> {
   if (row && (row.haUrl || row.haToken)) {
     return { haUrl: row.haUrl, haToken: row.haToken, ...immich };
   }
-  // Als HA-Add-on ohne eigene Eingabe: über den Supervisor-Proxy verbinden.
-  // Damit muss niemand mehr einen langlebigen Token anlegen — die Integration
-  // funktioniert direkt nach der Installation. Eigene Eingaben oben gewinnen
-  // weiterhin (wer auf eine ANDERE HA-Instanz zeigen will, kann das).
+  // Als HA-Add-on über den Supervisor-Proxy verbinden. Damit muss niemand mehr
+  // einen langlebigen Token anlegen — die Integration funktioniert direkt nach
+  // der Installation.
+  //
+  // Wichtig, weil hier vorher das Gegenteil stand: der Proxy gewinnt IMMER,
+  // eigene Eingaben werden im Add-on-Betrieb nicht gelesen. Auf eine andere
+  // Home-Assistant-Instanz als die eigene zu zeigen, geht als Add-on also
+  // nicht. Das ist bewusst so gelassen: ein alter, längst abgelaufener Token
+  // aus der Zeit vor dem Add-on würde sonst den funktionierenden Proxy
+  // verdrängen, und der Fehler wäre für den Nutzer nicht zu erkennen.
   const sup = supervisorHaCredentials();
   if (sup) return { ...sup, ...immich };
   const legacy = await legacyFromDashboardOne();

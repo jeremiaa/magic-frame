@@ -48,6 +48,14 @@ services:
       - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY:-}
       # Caddy-Admin-API für Reloads. Standard-URL des Sidecar-Containers.
       - CADDY_ADMIN_URL=${CADDY_ADMIN_URL:-http://caddy:2019}
+      # Notbremse für die Entitäts-Erlaubnisliste von /api/ha/action (auf "1"
+      # setzen hebt sie auf). Muss HIER stehen und nicht nur in der .env: der
+      # app-Dienst hat eine ausdrückliche environment-Liste, und Compose reicht
+      # die .env sonst nur zur Interpolation in dieser Datei weiter — im
+      # Container käme die Variable nie an.
+      - MAGIC_FRAME_HA_ACTION_UNRESTRICTED=${MAGIC_FRAME_HA_ACTION_UNRESTRICTED:-}
+      # Anzahl der Reverse-Proxies vor Magic Frame (siehe .env.example).
+      - TRUSTED_PROXY_HOPS=${TRUSTED_PROXY_HOPS:-1}
     volumes:
       - magic_configs:/app/configs
       - magic_wallpapers:/app/wallpapers
@@ -95,8 +103,23 @@ services:
       # Host-Timezone-Passthrough (#73), s. app. Gespeicherte Timestamps bleiben
       # UTC (Prisma normalisiert) — TZ betrifft nur Log-/Session-Defaults.
       TZ: ${TZ:-}
-    ports:
-      - "5432:5432"
+    # Kein `ports:` — die Datenbank ist über das Compose-Netz als `db:5432`
+    # erreichbar, und mehr braucht niemand: die App verbindet über DATABASE_URL,
+    # das dokumentierte Backup läuft über `docker compose exec db pg_dump`.
+    #
+    # Hier stand früher `- "5432:5432"`. Damit lag ein Superuser-Zugang mit
+    # postgres/postgres im ganzen Netz — Passwort-Hashes, TOTP-Geheimnisse,
+    # Shortcut-Token, der Home-Assistant-Token und die Kalender-Token inklusive.
+    # Ein veröffentlichter Docker-Port hängt sich ausserdem vor die Firewall des
+    # Hosts, ist also auch dann offen, wenn ufw den Port sperrt.
+    #
+    # Wer ihn wirklich braucht (pgAdmin, DBeaver), legt eine
+    # docker-compose.override.yml daneben — Compose führt sie automatisch mit,
+    # und ein Update fasst sie nie an:
+    #   services:
+    #     db:
+    #       ports:
+    #         - "127.0.0.1:5432:5432"
     volumes:
       - magic_pgdata:/var/lib/postgresql/data
     healthcheck:

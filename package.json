@@ -1,12 +1,14 @@
 {
   "name": "magic-frame",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:wiki": "node scripts/check-wiki.mjs",
+    "build:llms": "node scripts/build-llms.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

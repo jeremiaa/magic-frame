@@ -6,6 +6,7 @@ import { verifySession, UnauthorizedError, unauthorizedResponse } from "@/lib/au
 import { layoutSyncBodySchema } from "@/lib/widgets/schemas";
 import { remapButtonTargets } from "@/lib/widgets/remap-targets";
 import { createSnapshot } from "@/lib/backups/snapshots";
+import { forgetAllowedEntities } from "@/lib/ha/action-policy";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -83,6 +84,12 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    // Die Entitäts-Erlaubnisliste von /api/ha/action wird aus genau diesen
+    // Widget-Configs gebaut — ohne das Verwerfen hier wäre ein frisch
+    // platzierter Button auf dem Display bis zu 30 Sekunden lang gesperrt,
+    // obwohl er sichtbar da ist.
+    forgetAllowedEntities();
 
     // Ping via den globalen Socket.IO-Server aus server.js, damit alle
     // verbundenen Displays das neue Layout sofort laden.

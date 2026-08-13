@@ -55,6 +55,36 @@ die()  { echo "$(c_red "ERROR:") $*" >&2; exit 1; }
 # -----------------------------------------------------------------------------
 step "Checking prerequisites"
 
+# curl and git are checked BEFORE docker, because their absence used to show up
+# far later and as the wrong problem. A minimal Debian, a Proxmox container
+# template or a stripped VM image ships neither. Without git the clone below
+# fails halfway; without curl everything builds fine and then the readiness
+# check at the end silently reports 000, so the script says the app is not
+# responding while it is running perfectly.
+pkg_hint() {
+  echo "     Debian, Ubuntu, Raspberry Pi OS   sudo apt update && sudo apt install -y $1
+     Fedora, Rocky, AlmaLinux          sudo dnf install -y $1
+     Arch                              sudo pacman -S --noconfirm $1
+     Alpine                            sudo apk add $1"
+}
+
+# git is genuinely required — the clone below is how the repo gets here.
+command -v git >/dev/null || die "git not installed. Install it first:
+$(pkg_hint git)"
+
+# curl is only used for the readiness check at the end. Somebody who arrived by
+# `git clone` may not have it, and refusing the whole install would be absurd:
+# the README and the wiki send exactly that person to this script. Warn, skip
+# the check, and say so — rather than reporting later that the app is not
+# responding when it is running perfectly.
+HAVE_CURL=1
+if ! command -v curl >/dev/null; then
+  HAVE_CURL=0
+  warn "curl not installed — the install will run, but the final check that the app
+     is answering has to be skipped. To get it:
+$(pkg_hint curl)"
+fi
+
 command -v docker >/dev/null || die "docker not installed. See https://docs.docker.com/engine/install/"
 docker compose version >/dev/null 2>&1 || die "docker compose plugin missing (not docker-compose). Update Docker to >= 20.10."
 
@@ -117,6 +147,47 @@ update_repo() {
     echo "  → already up to date"
     return 0
   fi
+  # Hand-edited tracked files abort `git pull --ff-only` with "your local
+  # changes would be overwritten" — and the update stops there, silently
+  # leaving the stack on the old version. The common case is somebody who
+  # changed docker-compose.yml to move a port, which is exactly what
+  # docker-compose.override.yml is for. Say so by name instead of failing.
+  # Compared against HEAD, not the index: `git diff --name-only` alone reports
+  # nothing for a file that was edited AND staged, so the warning would stay
+  # silent and the pull would abort anyway — the exact failure this exists to
+  # prevent.
+  local DIRTY
+  DIRTY=$(git diff --name-only HEAD 2>/dev/null)
+  if [ -n "$DIRTY" ]; then
+    # The edits are only in the worktree, so `git checkout` erases them with no
+    # reflog and no stash to recover from — and the advice below is useless to
+    # somebody who no longer has the content. Keep a copy first.
+    local BACKUP_DIR
+    BACKUP_DIR=".magic-frame-local-changes/$(date +%Y-%m-%d_%H%M%S)"
+    mkdir -p "$BACKUP_DIR"
+    echo "$DIRTY" | while IFS= read -r f; do
+      [ -f "$f" ] || continue
+      mkdir -p "$BACKUP_DIR/$(dirname "$f")"
+      cp "$f" "$BACKUP_DIR/$f"
+    done
+
+    echo "  ⚠  These files were edited by hand and will be replaced with the"
+    echo "     published version:"
+    echo "$DIRTY" | sed 's/^/       /'
+    echo
+    echo "     A copy of each was saved to:"
+    echo "       $(pwd)/$BACKUP_DIR"
+    echo
+    echo "     Your .env, the database and uploaded modules are untouched —"
+    echo "     they live outside the repo. To keep compose changes across"
+    echo "     updates, put them in docker-compose.override.yml instead;"
+    echo "     Compose merges that file automatically and updates never touch it."
+    echo
+    # `-f HEAD --` and not `-- .`: the latter restores from the INDEX, so a
+    # staged hand-edit would survive and the pull would still abort.
+    git checkout -f HEAD -- . 2>/dev/null || git reset --hard HEAD
+  fi
+
   BASE=$(git merge-base HEAD "$REMOTE" 2>/dev/null || echo "")
   if [ "$LOCAL" = "$BASE" ]; then
     # clean fast-forward
@@ -179,15 +250,33 @@ else
   cp .env.example .env
 fi
 
-# Generate SESSION_SECRET if empty
+# Generate SESSION_SECRET if empty — or if it is too short to be usable.
+# The app refuses to serve /login and /editor below 32 characters (it used to
+# let every request through instead, which was the actual bug). An installer
+# that keeps a 9-character secret would hand the operator a 503 and no clue.
+if [ -n "$EXISTING_SESSION_SECRET" ] && [ "${#EXISTING_SESSION_SECRET}" -lt 32 ]; then
+  warn "SESSION_SECRET in .env is only ${#EXISTING_SESSION_SECRET} characters — the app needs at least 32"
+  echo "     and will otherwise answer 503 on /login. Generating a new one."
+  echo "     Everyone currently signed in will have to log in again."
+  EXISTING_SESSION_SECRET=""
+fi
+
 if [ -z "$EXISTING_SESSION_SECRET" ]; then
   NEW_SECRET=$(gen_secret)
   echo "  → SESSION_SECRET generated (64 chars hex)"
-  # In-place edit — macOS-compatible sed (BSD)
-  if sed --version >/dev/null 2>&1; then
-    sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+  # sed ersetzt nur, was da ist. In einer von Hand geschriebenen .env fehlt die
+  # Zeile oft ganz — dann ersetzte sed nichts, das Skript meldete trotzdem
+  # Erfolg, und die App antwortete danach mit 503, dessen eigener Text auf
+  # dieses Skript verweist. Deshalb derselbe Anhäng-Fall wie beim TZ-Block.
+  if grep -qE '^SESSION_SECRET=' .env; then
+    # In-place edit — macOS-compatible sed (BSD)
+    if sed --version >/dev/null 2>&1; then
+      sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+    else
+      sed -i '' "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+    fi
   else
-    sed -i '' "s|^SESSION_SECRET=.*|SESSION_SECRET=\"$NEW_SECRET\"|" .env
+    printf '\nSESSION_SECRET="%s"\n' "$NEW_SECRET" >> .env
   fi
 else
   echo "  → SESSION_SECRET kept (existing sessions stay valid)"
@@ -266,17 +355,35 @@ if [ "$HTTP_PORT_VAL" != "80" ]; then PORT_SUFFIX=":$HTTP_PORT_VAL"; fi
 URL="http://${HOST_BIND}:${HTTP_PORT_VAL}"
 if [ "$HOST_BIND" = "0.0.0.0" ]; then URL="http://localhost${PORT_SUFFIX}"; fi
 
+BODY=""
+if [ "$HAVE_CURL" = "0" ]; then
+  code="skipped"
+  echo "  → skipping the readiness check (no curl). Open the address below in a"
+  echo "    browser; if it does not answer, run: docker compose logs -f app"
+else
 for i in $(seq 1 60); do
-  code=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 3 "$URL/login" 2>/dev/null || echo "000")
+  BODY=$(curl -sS --max-time 3 -w $'\n%{http_code}' "$URL/login" 2>/dev/null || printf '\n000')
+  code=$(printf '%s' "$BODY" | tail -1)
   if [ "$code" = "200" ]; then
     echo "  → ready (HTTP $code) after $i attempt(s)"
+    break
+  fi
+  # 503 is a deliberate refusal with a readable explanation in the body, not a
+  # slow start — waiting two minutes and then pointing at empty logs helps
+  # nobody. Print what the app said and stop.
+  if [ "$code" = "503" ]; then
+    echo
+    warn "The app is running but refusing requests:"
+    printf '%s' "$BODY" | sed '$d' | sed 's/^/     /'
     break
   fi
   printf "."
   sleep 2
 done
 
-if [ "$code" != "200" ]; then
+fi
+
+if [ "$code" != "200" ] && [ "$code" != "503" ] && [ "$code" != "skipped" ]; then
   warn "App not responding yet — check logs: docker compose logs -f app"
 fi
 

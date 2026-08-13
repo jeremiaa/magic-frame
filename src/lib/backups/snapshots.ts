@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/companion/prisma";
+import { forgetAllowedEntities } from "@/lib/ha/action-policy";
 
 export const MAX_SNAPSHOTS = 20;
 
@@ -98,6 +99,9 @@ export async function applyDashboardState(
       settings: data.settings ?? {},
     },
   });
+  // Ein Restore tauscht alle Widgets aus — die Erlaubnisliste von
+  // /api/ha/action stammt daraus und muss neu gelesen werden.
+  forgetAllowedEntities();
   await prisma.widget.deleteMany({ where: { dashboardId } });
   for (const w of data.widgets) {
     await prisma.widget.create({

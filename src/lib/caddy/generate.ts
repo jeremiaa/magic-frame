@@ -34,6 +34,30 @@ function appUpstream(): string {
   return /^[A-Za-z0-9._-]+(:\d{1,5})?$/.test(raw) ? raw : "app:3000";
 }
 
+/**
+ * A reverse_proxy block that tells the app who the client is.
+ *
+ * Only the managed-HTTPS block ever set these headers. Every other shape — the
+ * no-domain default, the custom-mode fallback, the plain :80 listener when the
+ * HTTPS redirect is off — proxied without them, and that is the shape a normal
+ * LAN install runs. The app then saw no client address at all and recorded
+ * every login attempt against the same placeholder, which turned the per-address
+ * lockout into ONE SHARED LOCK: five wrong guesses by anybody locked the login
+ * page for the whole household for half an hour.
+ *
+ * `{remote_host}` is the peer Caddy actually accepted the connection from, so
+ * it cannot be spoofed by a header the client sends.
+ */
+function proxyBlock(indent = ""): string[] {
+  return [
+    `${indent}reverse_proxy ${appUpstream()} {`,
+    `${indent}    header_up X-Real-IP {remote_host}`,
+    `${indent}    header_up X-Forwarded-For {remote_host}`,
+    `${indent}    header_up X-Forwarded-Proto {scheme}`,
+    `${indent}}`,
+  ];
+}
+
 export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
   caddyfile: string;
   warnings: string[];
@@ -44,7 +68,10 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
     if (!cfg.customCaddyfile.trim()) {
       warnings.push("Custom-Caddyfile ist leer.");
       return {
-        caddyfile: `# Custom-Modus, aber leeres Caddyfile — fallback auf transparenten Proxy.\n:80 {\n    reverse_proxy ${appUpstream()}\n}\n`,
+        caddyfile:
+          "# Custom-Modus, aber leeres Caddyfile — fallback auf transparenten Proxy.\n:80 {\n" +
+          proxyBlock("    ").join("\n") +
+          "\n}\n",
         warnings,
       };
     }
@@ -64,7 +91,7 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
 
   if (!cfg.enabled || !cfg.domain) {
     lines.push(":80 {");
-    lines.push(`    reverse_proxy ${appUpstream()}`);
+    lines.push(...proxyBlock("    "));
     lines.push("}");
     return { caddyfile: lines.join("\n") + "\n", warnings };
   }
@@ -112,18 +139,14 @@ export async function generateCaddyfile(cfg: CaddyConfig): Promise<{
   lines.push(`${domains} {`);
   for (const l of tlsBlock) lines.push(`    ${l}`);
   lines.push("    encode zstd gzip");
-  lines.push(`    reverse_proxy ${appUpstream()} {`);
-  lines.push("        header_up X-Real-IP {remote_host}");
-  lines.push("        header_up X-Forwarded-For {remote_host}");
-  lines.push("        header_up X-Forwarded-Proto {scheme}");
-  lines.push("    }");
+  lines.push(...proxyBlock("    "));
   lines.push("}");
 
   if (!cfg.redirectHttp) {
     lines.push("");
     lines.push("# HTTP→HTTPS-Redirect deaktiviert; Caddy lauscht weiter auf :80 mit reverse_proxy.");
     lines.push(":80 {");
-    lines.push(`    reverse_proxy ${appUpstream()}`);
+    lines.push(...proxyBlock("    "));
     lines.push("}");
   }
 

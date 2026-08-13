@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Music, Play, Pause, SkipBack, SkipForward, Volume, Volume2 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { useGlassStyle } from "@/lib/ui/glass";
+import { haAction } from "@/lib/ha/action-client";
 
 // Media-Player-Widget (Discussion #50): Now-Playing für jede HA media_player-
 // Entity (Sonos, HomePod, Chromecast, Music Assistant, …).
@@ -393,13 +394,7 @@ export default function MediaPlayerWidget({
 
   const control = async (service: string, data?: Record<string, any>) => {
     if (!activeId) return;
-    try {
-      await fetch("/api/ha/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ entityId: activeId, domain: "media_player", service, ...(data ? { data } : {}) }),
-      });
-    } catch { /* nächster Poll zeigt den echten Zustand */ }
+    await haAction({ entityId: activeId, domain: "media_player", service, ...(data ? { data } : {}) });
   };
 
   // Vorspulen über die Zeitleiste: während des Ziehens Vorschau, beim
