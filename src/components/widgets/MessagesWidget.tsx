@@ -6,6 +6,7 @@ import { MessageSquare, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { writeAndReport } from "@/lib/ha/action-client";
 
 type Message = {
   id: string;
@@ -60,7 +61,7 @@ export default function MessagesWidget({
 
   async function dismiss(id: string) {
     setMessages((prev) => prev.filter((m) => m.id !== id));
-    try { await fetch(`/api/messages/${id}`, { method: "DELETE" }); } catch {}
+    try { await writeAndReport(`/api/messages/${id}`, { method: "DELETE" }); } catch {}
   }
 
   const maxShow = Math.max(1, Math.min(10, config?.maxMessages ?? 5));

@@ -13,6 +13,7 @@ import { CAMERA_FULLSCREEN_EVENT } from "@/components/widgets/CameraWidget";
 import { ViewThemeScope } from "@/lib/ui/view-theme";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
+import ActionRefusedToast from "@/components/ActionRefusedToast";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -546,6 +547,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     <ViewThemeScope settings={viewSettings}>
     <div className="relative w-screen h-screen overflow-hidden text-white font-sans bg-black">
       <WallpaperEngine dashboardId={dashboardId} config={wallpaperConfig} />
+      <ActionRefusedToast />
 
       <div
         className={`absolute inset-x-0 top-0 z-20 dashboard-static-grid ${edgeToEdge ? "p-0" : "p-4 md:px-8 md:pt-8"}`}

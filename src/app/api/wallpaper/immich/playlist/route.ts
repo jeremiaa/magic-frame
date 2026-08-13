@@ -27,6 +27,43 @@ const MAX_PLAYLIST = 1500;
 const MAX_SEARCH_PAGES = 20;
 const SEARCH_PAGE_SIZE = 1000;
 
+/**
+ * Rückblick-Assets nachreichen (#76).
+ *
+ * `/api/memories` liefert die Assets ohne `exifInfo` — anders als die
+ * Metadata-Suche, die alle anderen Quellen benutzen (`withExif: true`). Dadurch
+ * fehlt bei Rückblicken der Ort in der Bildinfo-Leiste, und weil dieselbe
+ * exifInfo auch Breite/Höhe trägt, gilt jedes Rückblick-Foto im Split-Raster
+ * als Querformat. Das Asset-Detail hat beides, also holen wir es einzeln nach.
+ *
+ * Bewusst gedeckelt und nur bei Bedarf: pro Tag sind das eine Handvoll Fotos,
+ * aber eine grosse Instanz soll nicht hunderte Einzelabrufe abbekommen.
+ */
+const MAX_MEMORY_ENRICH = 120;
+const ENRICH_CONCURRENCY = 8;
+
+async function withExifInfo(baseUrl: string, headers: Record<string, string>, assets: any[]): Promise<any[]> {
+  const todo = assets.slice(0, MAX_MEMORY_ENRICH).filter((a) => a?.id && !a.exifInfo);
+  if (todo.length === 0) return assets;
+
+  const byId = new Map<string, any>();
+  for (let i = 0; i < todo.length; i += ENRICH_CONCURRENCY) {
+    const batch = todo.slice(i, i + ENRICH_CONCURRENCY);
+    await Promise.all(batch.map(async (a) => {
+      try {
+        const r = await fetch(`${baseUrl}/api/assets/${a.id}`, { headers, signal: AbortSignal.timeout(8_000) });
+        if (!r.ok) return;
+        const full = await r.json();
+        if (full?.exifInfo) byId.set(a.id, full.exifInfo);
+      } catch {
+        /* Ein fehlgeschlagenes Detail darf den Rückblick nicht kippen. */
+      }
+    }));
+  }
+  if (byId.size === 0) return assets;
+  return assets.map((a) => (byId.has(a?.id) ? { ...a, exifInfo: byId.get(a.id) } : a));
+}
+
 /** Metadata-Suche mit Seitenlauf — sonst endet ein Album bei 1000 Fotos. */
 async function searchAllPages(baseUrl: string, headers: Record<string, string>, body: any): Promise<any[]> {
   const out: any[] = [];
@@ -58,8 +95,34 @@ async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Prom
     const body: any = { type: 'IMAGE', withExif: true };
     if (mode === 'favorites') body.isFavorite = true;
     if (mode === 'people') {
-      if (!wp.immichPersonId) throw new Error('Missing personId');
-      body.personIds = [wp.immichPersonId];
+      // #75: mehrere Personen möglich. immichPersonIds ist der neue Weg,
+      // immichPersonId bleibt als Einzel-Fallback, damit vorhandene Views
+      // unverändert weiterlaufen. Immich sucht mit mehreren personIds nach
+      // Fotos, auf denen ALLE genannten Personen zu sehen sind — gefragt war
+      // aber "irgendeine davon", also fragen wir je Person und führen zusammen.
+      const personIds: string[] = (Array.isArray(wp.immichPersonIds) ? wp.immichPersonIds : [])
+        .map((x: any) => String(x || '').trim())
+        .filter(Boolean);
+      if (personIds.length === 0 && wp.immichPersonId) personIds.push(String(wp.immichPersonId));
+      if (personIds.length === 0) throw new Error('Keine Person gewählt — bitte im Wallpaper-Menü mindestens eine auswählen.');
+
+      const perPerson = await Promise.all(personIds.map(async (personId) => {
+        try {
+          return await searchAllPages(baseUrl, headers, { ...body, personIds: [personId] });
+        } catch (e: any) {
+          // Eine gelöschte Person darf die anderen nicht mitreißen.
+          console.warn(`[immich] Personen-Suche ${personId} fehlgeschlagen: ${e?.message}`);
+          return [];
+        }
+      }));
+      // Ein Foto mit mehreren ausgewählten Personen darf nur einmal vorkommen.
+      const seen = new Set<string>();
+      return perPerson.flat().filter((a: any) => {
+        const id = String(a?.id ?? '');
+        if (!id || seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
     }
     return searchAllPages(baseUrl, headers, body);
   }
@@ -107,7 +170,9 @@ async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Prom
     }
 
     // Jede Memory hat ein eigenes assets[]-Array — alle zusammenführen.
-    return use.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
+    const memoryAssets = use.flatMap((m: any) => (Array.isArray(m?.assets) ? m.assets : []));
+    // Ort und Bildmaße fehlen hier, anders als bei allen anderen Quellen (#76).
+    return withExifInfo(baseUrl, headers, memoryAssets);
   }
 
   // album (default) — #40: mehrere Alben möglich. immichAlbumIds ist der

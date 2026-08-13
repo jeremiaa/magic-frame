@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Icon } from "../WidgetIcon";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { haAction } from "@/lib/ha/action-client";
 
 interface EntityModalProps {
     domain: string;
@@ -36,11 +37,7 @@ export default function EntityModal({ domain, entityId, friendlyName, stateVal, 
     }, []);
 
     const applyAction = (service: string, data: any) => {
-        fetch('/api/ha/action', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ entityId, domain, service, data })
-        });
+        void haAction({ entityId, domain, service, data });
     };
 
     const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {

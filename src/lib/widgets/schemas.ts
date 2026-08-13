@@ -146,17 +146,26 @@ const buttonConfig = baseConfig
   })
   .passthrough();
 
-const haEntitySlot = z.object({
-  entityId: z.string().optional(),
-  icon: z.string().optional(),
-  label: z.string().optional(),
-  color: z.string().optional(),
-  hideWhen: z.string().optional(),
-  colorWhen: z.string().optional(),
-  colorTarget: z.string().optional(),
-  showIfEntity: z.string().optional(),
-  showIfState: z.string().optional(),
-});
+// Anders als die Widget-Configs war das hier ein striktes z.object: alles, was
+// nicht deklariert ist, wird beim Speichern still entfernt — auch verschachtelt
+// unter einer passthrough-Elternebene. tapAction/tapActionEntity werden von
+// HomeAssistantWidget gelesen (handleTap), fehlten aber hier und überlebten
+// deshalb keinen einzigen Layout-Speichervorgang.
+const haEntitySlot = z
+  .object({
+    entityId: z.string().optional(),
+    icon: z.string().optional(),
+    label: z.string().optional(),
+    color: z.string().optional(),
+    hideWhen: z.string().optional(),
+    colorWhen: z.string().optional(),
+    colorTarget: z.string().optional(),
+    showIfEntity: z.string().optional(),
+    showIfState: z.string().optional(),
+    tapAction: z.string().optional(),
+    tapActionEntity: z.string().optional(),
+  })
+  .passthrough();
 
 const homeAssistantConfig = baseConfig
   .extend({

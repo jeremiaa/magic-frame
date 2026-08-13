@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createClient } from "webdav";
-import { normalizeWebdavUrl } from "@/lib/wallpaper-engine/webdav";
+import { normalizeWebdavUrl, webdavContentType } from "@/lib/wallpaper-engine/webdav";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
      const buffer = await client.getFileContents(targetFile) as Buffer;
      
      const headers = new Headers();
-     headers.set('Content-Type', targetFile.toLowerCase().endsWith('.png') ? 'image/png' : targetFile.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg');
+     headers.set('Content-Type', webdavContentType(targetFile));
      headers.set('Cache-Control', 'public, max-age=864000');
      
      return new NextResponse(buffer as unknown as BodyInit, { status: 200, headers });

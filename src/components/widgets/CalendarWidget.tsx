@@ -282,7 +282,22 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
         if (cancelled) return;
         const evts: CalendarEvent[] = data.events || [];
         setEvents(evts);
-        setError(null);
+
+        // Die Route liefert pro Feed ein error-Feld und trotzdem HTTP 200 —
+        // ein einzelner kaputter Kalender (abgelaufenes Token, Tippfehler in
+        // der URL) war deshalb komplett unsichtbar: die Karte zeigte einfach
+        // die Termine der anderen Feeds und sah gesund aus.
+        const broken = (data.feeds || []).filter((f: any) => f?.error);
+        if (broken.length > 0) {
+          const names = broken.map((f: any) => f.label || f.id).filter(Boolean);
+          setError(
+            broken.length === (data.feeds || []).length
+              ? t("Kalender konnte nicht geladen werden")
+              : `${t("Ein Kalender antwortet nicht")}: ${names.join(", ")}`,
+          );
+        } else {
+          setError(null);
+        }
 
         // hideOnEmpty gilt nur für die Listen-Ansicht; Agenda/Monat zeigen
         // ihr Gerüst auch ohne Termine.

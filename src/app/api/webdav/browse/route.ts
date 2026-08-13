@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "webdav";
-import { normalizeWebdavUrl } from "@/lib/wallpaper-engine/webdav";
+import { normalizeWebdavUrl, countWebdavImages } from "@/lib/wallpaper-engine/webdav";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +28,13 @@ export async function POST(req: NextRequest) {
     // Sort alphabetically
     folders.sort((a, b) => a.basename.localeCompare(b.basename));
 
-    return NextResponse.json({ folders, path });
+    // Wie viele Bilder liegen im aktuell geöffneten Ordner? Der Inhalt ist eh
+    // schon geladen, kostet also nichts — und der Nutzer sieht beim Auswählen,
+    // ob dieser Ordner überhaupt etwas hergibt, statt erst am schwarzen
+    // Bildschirm zu merken, dass nichts passt (#80).
+    const images = countWebdavImages(directoryItems as any[]);
+
+    return NextResponse.json({ folders, path, images });
   } catch (error: any) {
     console.error("WebDAV Browse Error:", error);
     

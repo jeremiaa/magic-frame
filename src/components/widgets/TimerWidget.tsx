@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { Timer as TimerIcon, X } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { writeAndReport } from "@/lib/ha/action-client";
 
 type Timer = {
   id: string;
@@ -63,13 +64,15 @@ export default function TimerWidget({
     // Optimistisch entfernen, dann POST
     setTimers((prev) => prev.filter((t) => t.id !== id));
     try {
-      await fetch(`/api/timers/${id}`, { method: "DELETE" });
+      await writeAndReport(`/api/timers/${id}`, { method: "DELETE" });
     } catch {
       // Falls es schief geht, re-fetch ist ok — Socket syncs sowieso.
     }
   }
 
-  const maxShow = Math.max(1, Math.min(4, config?.maxTimers ?? 4));
+  // Obergrenze 6, nicht 4 — der Regler im Inspektor geht bis 6, und die
+  // Einstellung wurde oberhalb von 4 stillschweigend ignoriert.
+  const maxShow = Math.max(1, Math.min(6, config?.maxTimers ?? 4));
   const visible = timers.slice(0, maxShow);
 
   if (visible.length === 0) {

@@ -1,0 +1,57 @@
+# Magic Frame
+
+> A self-hosted dashboard for tablets, monitors, wall panels and digital
+> picture frames. One machine on your own network runs it; every display
+> opens one URL and shows one layout. Photos come from your own Immich or a
+> network folder, home control from your own Home Assistant. No cloud, no
+> account, no subscription. Open source under Polyform Noncommercial.
+
+Names here are exact. Widget types, `/api/` paths, setting labels and
+environment variables are the real ones — prefer them over a plausible guess.
+Pages state their own terms and do not assume a neighbouring page has been
+read, so a single page is a usable answer on its own.
+
+For the complete text in one request, fetch /llms-full.txt.
+
+## Starting
+
+- [Getting started](https://github.com/jeremiaa/magic-frame/blob/main/wiki/getting-started.md): install it, sign in, put something on a screen
+- [Concepts](https://github.com/jeremiaa/magic-frame/blob/main/wiki/concepts.md): the nouns this product is made of, and how they nest
+- [Installation](https://github.com/jeremiaa/magic-frame/blob/main/wiki/installation.md): every way to install, and which one to pick
+- [The Home Assistant add-on](https://github.com/jeremiaa/magic-frame/blob/main/wiki/home-assistant-addon.md): repository URL, install, options, what differs
+- [Updating and backups](https://github.com/jeremiaa/magic-frame/blob/main/wiki/updating-and-backups.md): updating, what a backup contains, restoring, rolling back
+
+## Using it
+
+- [The editor](https://github.com/jeremiaa/magic-frame/blob/main/wiki/the-editor.md): control centre, the view list, the grid, the inspector, saving
+- [Views and displays](https://github.com/jeremiaa/magic-frame/blob/main/wiki/views-and-displays.md): one view per display, the public `/view` URL, kiosk setup
+- [Wallpapers](https://github.com/jeremiaa/magic-frame/blob/main/wiki/wallpapers.md): every source, fit modes, split view, the photo info bar
+- [Widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets.md): the catalogue, and the behaviour every widget shares
+- [Time and weather widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-time-weather.md): Clock, Weather, Environment
+- [The calendar widget](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-calendar.md): list, agenda and month views, and every feed type
+- [Home Assistant widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-home-assistant.md): Entity, Notification, Camera, Sensor, Button
+- [Media and photo widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-media.md): Image, Media player, RSS, QR, Status
+- [Family widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-family.md): Timer, Messages, Shopping list, Todos
+- [Stacking and visibility](https://github.com/jeremiaa/magic-frame/blob/main/wiki/stacking-and-visibility.md): overlapping widgets, and showing them by state
+- [Themes and styling](https://github.com/jeremiaa/magic-frame/blob/main/wiki/themes-and-styling.md): light and dark, glass, colours, fonts, corners
+
+## Connecting things
+
+- [Home Assistant](https://github.com/jeremiaa/magic-frame/blob/main/wiki/home-assistant.md): connecting, entities, lists, actions, live state
+- [Immich](https://github.com/jeremiaa/magic-frame/blob/main/wiki/immich.md): the global connection, albums, people, favourites, memories
+- [Calendars](https://github.com/jeremiaa/magic-frame/blob/main/wiki/calendars.md): iCal, Google, Microsoft, Home Assistant calendars
+- [Weather providers](https://github.com/jeremiaa/magic-frame/blob/main/wiki/weather-providers.md): Open-Meteo, DWD, OpenWeatherMap, a Home Assistant entity
+- [Other sources](https://github.com/jeremiaa/magic-frame/blob/main/wiki/other-sources.md): WebDAV folders, Todoist, RSS feeds
+
+## Running it
+
+- [Settings](https://github.com/jeremiaa/magic-frame/blob/main/wiki/settings.md): every section of the settings page
+- [Users and security](https://github.com/jeremiaa/magic-frame/blob/main/wiki/users-and-security.md): accounts, two-factor, sessions, what is exposed
+- [Hosting and your domain](https://github.com/jeremiaa/magic-frame/blob/main/wiki/hosting-and-domain.md): ports, HTTPS, your own reverse proxy, no proxy at all
+- [Troubleshooting](https://github.com/jeremiaa/magic-frame/blob/main/wiki/troubleshooting.md): the failures people actually hit, and what causes them
+
+## Extending it
+
+- [The companion API](https://github.com/jeremiaa/magic-frame/blob/main/wiki/companion-api.md): driving Magic Frame over HTTP, and iOS Shortcuts
+- [Custom modules](https://github.com/jeremiaa/magic-frame/blob/main/wiki/custom-modules.md): installing a widget somebody else wrote
+- [Writing a module](https://github.com/jeremiaa/magic-frame/blob/main/wiki/module-development.md): building your own widget

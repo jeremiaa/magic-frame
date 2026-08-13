@@ -260,7 +260,8 @@ export interface WallpaperConfig {
   immichAlbumId?: string;
   immichAlbumIds?: string[]; // #40: mehrere Alben als Quelle
   immichMode?: "album" | "favorites" | "memories" | "people"; // Immich-Quelle (#16, Schritt 2)
-  immichPersonId?: string; // bei immichMode === "people"
+  immichPersonId?: string; // bei immichMode === "people" — Einzel-Fallback
+  immichPersonIds?: string[]; // #75: mehrere Personen als Quelle
   showDateTaken?: boolean; // deprecated, use metaShowDate
   metaShowDate?: boolean;
   metaShowLocation?: boolean;
@@ -272,6 +273,7 @@ export interface WallpaperConfig {
   metaTextShadowBlur?: number;
   metaColor?: string;
   metaBgOpacity?: number;
+  metaPosition?: "left" | "right"; // #44: Seite der Bildinfo-Leiste, Default rechts
   overlayBlur?: number;
   overlayVignette?: number;
   gradientTop?: number;

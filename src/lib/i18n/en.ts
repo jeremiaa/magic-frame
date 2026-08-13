@@ -487,6 +487,7 @@ export const EN: Record<string, string> = {
   "Füllen (Ausschnitt, Standard)": "Fill (crop, default)",
   "Einpassen (ganzes Bild)": "Fit (whole image)",
   "Einpassen + Blur-Rand": "Fit + blurred fill",
+  "Zeigt das ganze Bild und füllt die Ränder mit einer unscharfen Kopie statt mit Schwarz — gut für Hochformat in einer breiten Kachel.": "Shows the whole image and fills the edges with a blurred copy instead of black — good for portrait photos in a wide tile.",
   "Strecken (verzerrt)": "Stretch (distorted)",
   "Zentriert (Originalgröße)": "Center (original size)",
   "Füllen schneidet Ränder ab. Einpassen zeigt das ganze Bild ohne Beschneiden — gut für Hochformat-Fotos.": "Fill crops the edges. Fit shows the whole image without cropping — good for portrait photos.",
@@ -978,7 +979,22 @@ export const EN: Record<string, string> = {
   "Album auswählen ({n} gefunden)": "Select album ({n} found)",
   "— Album wählen —": "— Select album —",
   "Fotos": "photos",
-  "Noch keine Alben geladen. URL + API-Key eintragen und „Alben laden“ drücken.": "No albums loaded yet. Enter URL + API key and press “Load albums”.",
+  "Noch keine Alben geladen. „Alben laden“ drücken — ohne eigene Zugangsdaten wird die globale Verbindung benutzt.": "No albums loaded yet. Press “Load albums” — without your own credentials the global connection is used.",
+  "Beides leer lassen, um die globale Immich-Verbindung aus Einstellungen → Integrationen zu benutzen.": "Leave both empty to use the global Immich connection from Settings → Integrations.",
+  "Keine Immich-Verbindung — bitte hier eintragen oder unter Einstellungen → Integrationen hinterlegen.": "No Immich connection — enter one here or set it up under Settings → Integrations.",
+  "Personen": "People",
+  "Position": "Position",
+  "Im geteilten Modus steht die Info an jedem Bild einzeln, damit klar bleibt, wozu sie gehört.": "In split mode the info sits on each photo separately, so it stays clear what it belongs to.",
+  "Lade Personen…": "Loading people…",
+  "Mit Immich verbinden / Personen laden": "Connect to Immich / load people",
+  "Personen auswählen ({n} gefunden)": "Select people ({n} found)",
+  "Noch niemand gewählt — ohne Auswahl bleibt der Rahmen leer.": "Nobody selected yet — without a selection the frame stays empty.",
+  "Zeigt jedes Foto, auf dem mindestens eine der gewählten Personen zu sehen ist.": "Shows every photo containing at least one of the selected people.",
+  "Noch keine Personen geladen. Es erscheinen nur Personen, denen in Immich ein Name gegeben wurde.": "No people loaded yet. Only people you have named in Immich appear here.",
+  "Keine benannten Personen gefunden — in Immich zuerst Gesichtern Namen geben.": "No named people found — name some faces in Immich first.",
+  "Personen-ID (manuell)": "Person ID (manual)",
+  "API-Key ungültig oder hat keine Rechte für Personen.": "API key invalid or lacking permission to read people.",
+  "Keine Person gewählt — bitte im Wallpaper-Menü mindestens eine auswählen.": "No person selected — pick at least one in the wallpaper menu.",
   "Ausgewählte ID:": "Selected ID:",
   "Album ID (manuell)": "Album ID (manual)",
   "z.B. a2f...": "e.g. a2f...",
@@ -988,6 +1004,12 @@ export const EN: Record<string, string> = {
   "NAS Verbinden / Ordner wählen": "Connect NAS / choose folder",
   "Zurück": "Back",
   "Keine Unterordner": "No subfolders",
+  "Bilder in diesem Ordner": "images in this folder",
+  "Bilder hier kann kein Browser anzeigen (HEIC/RAW) — bitte JPG, PNG oder WebP": "images here can't be displayed by any browser (HEIC/RAW) — please use JPG, PNG or WebP",
+  "Keine Bilder in diesem Ordner — bitte einen Unterordner wählen": "No images in this folder — pick a subfolder",
+  "In diesem Ordner liegen keine Bilder.": "There are no images in this folder.",
+  "Der eingestellte Ordner existiert auf dem Server nicht.": "The configured folder does not exist on the server.",
+  "NAS nicht erreichbar.": "NAS not reachable.",
   "Suchbegriffe (komma-getrennt)": "Search terms (comma-separated)",
   "Bild-URL (https://...)": "Image URL (https://...)",
   "Crossfade (sanfte Blende)": "Crossfade (smooth fade)",
@@ -1022,7 +1044,7 @@ export const EN: Record<string, string> = {
   // ── Modules page + dev guide ──
   "Unser eigener Markt: Module im Magic-Frame-Format durchsuchen, installieren und automatisch updaten — direkt im Browser, ohne Server-Restart. Jedes Modul bringt sein eigenes module.json mit (Manifest + Bundle), aus dem Inspector & Registrierung automatisch entstehen.": "Our own market: browse, install and auto-update modules in the Magic Frame format — right in the browser, no server restart. Each module ships its own module.json (manifest + bundle) from which inspector & registration are generated automatically.",
   "Ein Modul ist ein Widget-Typ (Uhr, Wetter, …). Schreib eine": "A module is a widget type (clock, weather, …). Write a",
-  "-Komponente und trag sie an 7 Stellen ein. Aufklappen für die Anleitung.": " component and register it in 7 places. Expand for the guide.",
+  "-Komponente plus einen Inspector und trag sie in neun weiteren Dateien ein. Aufklappen für die Anleitung.": " component plus an inspector, and register them in nine more files. Expand for the guide.",
   "Die": "The",
   "Typ-ID": "type ID",
   "ist immer der Dateiname, z.B.": "is always the file name, e.g.",
@@ -1036,7 +1058,7 @@ export const EN: Record<string, string> = {
   "Inspector mit Karten-Listen → Typ in": "Inspector with card lists → add the type to",
   "aufnehmen.": ".",
   "Minimal-Beispiel „HelloWidget“ anzeigen": "Show minimal “HelloWidget” example",
-  "Vollständige Referenz inkl. Props-Contract, Live-Sync, Checkliste und dem geplanten Market-Manifest:": "Full reference incl. props contract, live sync, checklist and the planned market manifest:",
+  "Vollständige Referenz mit Props-Contract, Live-Sync und Checkliste:": "Full reference with the props contract, live sync and checklist:",
   "im Repo. Einfachstes Vorbild im Code:": "in the repo. Simplest example in code:",
 
   // ── Icon picker ──
@@ -1472,20 +1494,28 @@ export const EN: Record<string, string> = {
     "Update URL must contain the {ip} placeholder.",
 
   // — Module dev guide (STEPS.what strings on /editor/modules) —
-  "Die React-Komponente. \"use client\", Props { config, dashboardId? }, Größen in em.":
-    "The React component. \"use client\", props { config, dashboardId? }, sizes in em.",
-  "Live-Registry: import + eine Zeile in renderWidgetContent (rendert auf dem Display).":
-    "Live registry: import + one line in renderWidgetContent (renders on the display).",
-  "Editor-Katalog: WIDGET_CATALOG, WIDGET_ACCENT, widgetIconFor, addWidget.":
-    "Editor catalog: WIDGET_CATALOG, WIDGET_ACCENT, widgetIconFor, addWidget.",
-  "Config + Union-Mitglied (z.literal). PFLICHT — ohne Schema schlägt das Speichern fehl!":
-    "Config + union member (z.literal). REQUIRED — without a schema, saving fails!",
-  "Einstellungen rechts + Routing in InspectorPanel.tsx (ContentTab).":
-    "Settings on the right + routing in InspectorPanel.tsx (ContentTab).",
-  "WIDGET_META — Farbe + Icon im Views-Listen-Thumbnail (optional).":
-    "WIDGET_META — colour + icon in the views-list thumbnail (optional).",
-  "INSTALLED-Liste — damit das Modul hier als „Installiert\" auftaucht (optional).":
-    "INSTALLED list — so the module shows up here as “Installed” (optional).",
+  "Neu: die React-Komponente. \"use client\", Props { config, dashboardId? }, Größen in em.":
+    "New: the React component. \"use client\", props { config, dashboardId? }, sizes in em.",
+  "Neu: der Inhalt-Tab rechts im Inspector.":
+    "New: the Content tab on the right of the inspector.",
+  "Live-Registry: import + eine Zeile. Fehlt sie, bleibt die Kachel leer — auf dem Display und in der Editor-Vorschau.":
+    "Live registry: an import + one line. Without it the tile stays blank — on the display and in the editor preview.",
+  "Config + Union-Mitglied (z.literal). PFLICHT — ohne Schema schlägt das Speichern der ganzen View fehl.":
+    "Config + union member (z.literal). REQUIRED — without a schema, saving the whole view fails.",
+  "WIDGET_DEFAULT_LABEL — sonst heißt die Kachel wie ihre Typ-ID und übersetzt sich nie.":
+    "WIDGET_DEFAULT_LABEL — otherwise the tile is named after its type id and never translates.",
+  "WIDGET_CATALOG + ein case in widgetSkeletonFor() — hinzufügbar machen, Platzhalter zeichnen.":
+    "WIDGET_CATALOG + a case in widgetSkeletonFor() — makes it addable, draws its placeholder.",
+  "WIDGET_ACCENT + ein case in widgetIconFor() — Farbe und Icon in Palette, Ebenenliste und Inspector.":
+    "WIDGET_ACCENT + a case in widgetIconFor() — colour and icon in the palette, the layer list and the inspector.",
+  "Import + activeWidget.type-Zweig, sonst bleibt der Inhalt-Tab leer.":
+    "An import + an activeWidget.type branch, or the Content tab stays empty.",
+  "Ein Button — sonst fehlt das Widget im mobilen Editor.":
+    "A button — otherwise the widget is missing from the mobile editor.",
+  "WIDGET_META — Farbe + Icon im Thumbnail der Views-Liste.":
+    "WIDGET_META — colour + icon in the thumbnail on the view list.",
+  "WIDGET_META — Farbe + Icon im Thumbnail auf dem Dashboard.":
+    "WIDGET_META — colour + icon in the thumbnail on the dashboard.",
 
   // — Generic Stat values + labels (Server / Session cards) —
   "Node": "Node",
@@ -2048,4 +2078,7 @@ export const EN: Record<string, string> = {
   "klicken zum Übernehmen": "click to use it",
   "noch keine Entität gewählt": "no entity picked yet",
   "Hoch drehen, bis die Farbe die ganze Karte füllt.": "Turn it up until the colour fills the whole card.",
+  "Einige dieser Werte kann dieses Konto nicht abrufen — sie brauchen eine Administrator-Rolle. Was hier steht, ist deshalb unvollständig.":
+    "Some of these cannot be read by this account — they need an administrator role, so what you see here is incomplete.",
+  "Ein Kalender antwortet nicht": "A calendar is not answering",
 };

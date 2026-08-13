@@ -1,0 +1,22 @@
+# Compose overlay for the screenshot rig — NOT for running Magic Frame.
+#
+# scripts/demo-sources.mjs serves the invented calendar, photos and news feed on
+# the host. The seeded views point at them by NAME (photos.example.com,
+# news.example.com) rather than at an address, because a screenshot is published
+# forever and `host.docker.internal` in a wiki picture is both ugly and a lie
+# about how anybody's real installation is configured.
+#
+# Those names have to resolve to the host from inside the container, and nothing
+# in the shipped docker-compose.yml does that — nor should it. Hence this file,
+# used only while taking pictures:
+#
+#   docker compose -f docker-compose.yml -f scripts/demo-compose.yml -p mf-shoot up -d
+#
+# Without it every calendar card in the wiki reads "Calendar could not be
+# loaded", which is exactly what happened once and is why this file exists.
+services:
+  app:
+    extra_hosts:
+      - "photos.example.com:host-gateway"
+      - "news.example.com:host-gateway"
+      - "home.example.com:host-gateway"

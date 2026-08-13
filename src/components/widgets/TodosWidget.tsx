@@ -7,6 +7,7 @@ import { format, isPast, isToday, isTomorrow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { renderInlineMarkdown } from "@/lib/inline-markdown";
+import { writeAndReport } from "@/lib/ha/action-client";
 
 type Todo = {
   id: string;
@@ -106,7 +107,7 @@ export default function TodosWidget({ config }: { config?: any }) {
       ),
     );
     if (useHa && cur) {
-      await fetch(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
+      await writeAndReport(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,7 +116,7 @@ export default function TodosWidget({ config }: { config?: any }) {
         }),
       });
     } else if (useTodoist) {
-      await fetch(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
+      await writeAndReport(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,11 +125,17 @@ export default function TodosWidget({ config }: { config?: any }) {
         }),
       });
     } else {
-      await fetch(`/api/todos/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ toggle: true }),
-      });
+      // reload als Rückfall: schlägt der Schreibzugriff fehl (auf einem
+      // Display ohne Anmeldung 401), stünde der Haken sonst dauerhaft falsch.
+      await writeAndReport(
+        `/api/todos/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ toggle: true }),
+        },
+        reload,
+      );
     }
   }
 
@@ -137,21 +144,21 @@ export default function TodosWidget({ config }: { config?: any }) {
     if (!title) return;
     setNewTitle("");
     if (useHa) {
-      await fetch(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
+      await writeAndReport(`/api/ha-lists/${encodeURIComponent(haEntity)}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ item: title }),
       });
       reload();
     } else if (useTodoist) {
-      await fetch(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
+      await writeAndReport(`/api/todoist/tasks/${encodeURIComponent(todoistProject)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: title }),
       });
       reload();
     } else {
-      await fetch("/api/todos", {
+      await writeAndReport("/api/todos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, assignee: assigneeFilter ?? null }),

@@ -437,7 +437,16 @@ function ShortcutTokenCard() {
         </div>
         <p className="text-[var(--mf-fg)]/40 mt-2">
           {t("Alle Endpoints, Socket-Events und Beispiele:")}{" "}
-          <a href="/docs/companion-api.md" className="text-emerald-400 hover:underline">docs/companion-api.md</a> {t("(im Repo).")}
+          {/* Zeigte auf /docs/companion-api.md — diese Datei wird von keiner
+              Route ausgeliefert, der Link lief in jeder Installation ins Leere. */}
+          <a
+            href="https://github.com/jeremiaa/magic-frame/blob/main/wiki/companion-api.md"
+            target="_blank"
+            rel="noreferrer"
+            className="text-emerald-400 hover:underline"
+          >
+            wiki/companion-api.md
+          </a>
         </p>
       </div>
     </Card>

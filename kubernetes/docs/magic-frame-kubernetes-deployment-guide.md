@@ -38,8 +38,8 @@ Before deploying, make sure you have:
 
 1. **A Kubernetes cluster** with at least one node with local storage available (see [Storage](#6-storage) for why this matters).
 2. **The application images are built and available to the cluster:**
-   - App image: `ghcr.io/magic-frame-app:latest`
-   - Caddy image (only if using Caddy): `ghcr.io/magic-frame-caddy:latest`
+   - App image: `ghcr.io/jeremiaa/magic-frame-app:latest`
+   - Caddy image (only if using Caddy): `ghcr.io/jeremiaa/magic-frame-caddy:latest`
    - Both are pulled with `imagePullPolicy: Always`, so your cluster nodes need network access to `ghcr.io`, or you need to have pushed the images to a registry your cluster can reach.
 3. **A namespace decision.** The default namespace across all three options is `magic-frame`. It's created for you by the manifests/chart - you don't need to `kubectl create namespace` yourself.
 4. **(Helm only)** Helm 3.x installed locally.
@@ -60,6 +60,12 @@ If you want to go really hard-core, type 32 random hex numbers.
 $ head -c 32 /dev/urandom | od -An -tx1 -v | tr -d ' \n'
 ```
 Copy the secret and save it for now.
+
+> **It has to be at least 32 characters.** Below that the app refuses to serve
+> `/login` and `/editor` and answers a plain-text 503 instead — deliberately, so
+> that a missing secret can never leave the login gate open. The command above
+> produces 64. Put the value in `secret.yaml` (or `appConfig.sessionSecret` for
+> Helm) — **not** in the ConfigMap, which anyone who can list ConfigMaps can read.
 
 ## 3. Deployment options
 
@@ -153,7 +159,7 @@ This table applies to both Helm options (Option A and B). For raw manifests, the
 |-------------------------------------------------------------|--------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `caddy.enabled`                                             | Toggle Caddy on/off                                    | See [section 4](#4-choosing-with-or-without-caddy)                                                                                                               |
 | `namespace.namespace`                                       | Target namespace for all resources                     | Default: `magic-frame`                                                                                                                                           |
-| `image.repository`                                          | App container image                                    | Default: `ghcr.io/magic-frame-app`                                                                                                                               |
+| `image.repository`                                          | App container image                                    | Default: `ghcr.io/jeremiaa/magic-frame-app`                                                                                                                               |
 | `image.tag`                                                 | App image tag                                          | Default: `latest`                                                                                                                                                |
 | `image.pullPolicy`                                          | Image pull policy                                      | Should be `Always`                                                                                                                                               |
 | `nodePorts.httpPort`                                        | External NodePort for HTTP                             | Default `30080`. **Must fall within your cluster's NodePort range** - k3s defaults to `30000–32767`. Change if it conflicts with something else on your cluster. |
@@ -210,5 +216,7 @@ This is generally the better option unless you specifically need the data pinned
 - **App can't reach the database:** check `appConfig.dbHost`/`dbPort`/`dbName`/`dbUser`/`dbPassword` match what's actually running, and confirm the `magic-frame-db` Service and pod are healthy (`kubectl get pods,svc -n magic-frame`).
 - **502/Bad Gateway from Caddy:** confirm the app Service name and port match what's configured in Caddy's config, and that DNS resolution works inside the Caddy pod (`kubectl exec` into it and `wget http://magic-frame:<port>`).
 - **NodePort not reachable:** confirm the chosen ports fall within your cluster's allowed NodePort range (k3s default: `30000–32767`) and aren't yet in use by another service.
-- **Pod stuck in `ImagePullBackOff`:** confirm the images are reachable from your nodes and that you're using the fully qualified `ghcr.io/magic-frame-app:latest` / `ghcr.io/magic-frame-caddy:latest` image names.
+- **Pod stuck in `ImagePullBackOff`:** confirm the images are reachable from your nodes and that you're using the fully qualified `ghcr.io/jeremiaa/magic-frame-app:latest` / `ghcr.io/jeremiaa/magic-frame-caddy:latest` image names.
+- **`/login` and `/editor` return a plain-text 503 saying the session secret is missing:** `SESSION_SECRET` in your Secret is shorter than 32 characters (the shipped placeholder is deliberately obvious, not usable). Generate one as in step 2.2, update `secret.yaml` or `appConfig.sessionSecret`, and restart the app pod. The pod is healthy in `kubectl get pods` — it is refusing on purpose, so there is nothing in the logs.
+- **A button on a display does nothing and the app log says "not on any view":** a login-free display may only act on entities that appear on a saved view. If something else needs to reach an entity that is not placed anywhere, set `MAGIC_FRAME_HA_ACTION_UNRESTRICTED: "1"` in the ConfigMap (Helm: `appConfig.haActionUnrestricted`).
 - **PVC stuck in `Pending`:** confirm `storage.className` matches an existing StorageClass on your cluster, and (for static provisioning) that `storage.hostPathBase` exists and is writable on the target node.

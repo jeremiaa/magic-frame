@@ -23,7 +23,7 @@ import {
   widgetTitle,
 } from "../_types";
 import AddWidgetModal from "../_components/AddWidgetModal";
-import WallpaperSettingsModal, { type ImmichAlbum } from "../_components/WallpaperSettingsModal";
+import WallpaperSettingsModal, { type ImmichAlbum, type ImmichPerson } from "../_components/WallpaperSettingsModal";
 import IntegrationsModal from "../_components/IntegrationsModal";
 import DashboardSettingsModal from "../_components/DashboardSettingsModal";
 import InspectorPanel from "../_components/InspectorPanel";
@@ -54,10 +54,14 @@ function MobileEditorInner() {
   const [settings, setSettings] = useState<any>({ haUrl: "", haToken: "" });
 
   const [webdavFolders, setWebdavFolders] = useState<any[]>([]);
+  // Bildzahl des gerade geöffneten Ordners (#80) — {usable, unsupported}.
+  const [webdavImages, setWebdavImages] = useState<{ usable: number; unsupported: number } | null>(null);
   const [isFetchingFolders, setIsFetchingFolders] = useState(false);
   const [webdavError, setWebdavError] = useState("");
   const [immichAlbums, setImmichAlbums] = useState<ImmichAlbum[]>([]);
   const [isFetchingAlbums, setIsFetchingAlbums] = useState(false);
+  const [immichPeople, setImmichPeople] = useState<ImmichPerson[]>([]);
+  const [isFetchingPeople, setIsFetchingPeople] = useState(false);
   const [immichError, setImmichError] = useState("");
 
   const [citySearchQuery, setCitySearchQuery] = useState("");
@@ -292,6 +296,7 @@ function MobileEditorInner() {
     setIsFetchingFolders(true);
     setWebdavError("");
     setWebdavFolders([]);
+    setWebdavImages(null);
     try {
       const res = await fetch("/api/webdav/browse", {
         method: "POST",
@@ -306,6 +311,7 @@ function MobileEditorInner() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t("Unbekannter Fehler"));
       setWebdavFolders(data.folders);
+      setWebdavImages(data.images ?? null);
       setWallpaper((prev) => ({ ...prev, webdavPath: path }));
     } catch (err: any) {
       setWebdavError(err.message);
@@ -314,11 +320,37 @@ function MobileEditorInner() {
     }
   };
 
-  const fetchImmichAlbums = async () => {
-    if (!wallpaper.immichUrl || !wallpaper.immichApiKey) {
-      setImmichError(t("Bitte Immich-URL und API-Key ausfüllen."));
-      return;
+  const fetchImmichPeople = async () => {
+    // Wie bei den Alben: leere Felder heissen "globale Verbindung" (#75).
+    setIsFetchingPeople(true);
+    setImmichError("");
+    try {
+      const res = await fetch("/api/wallpaper/immich/people", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: wallpaper.immichUrl,
+          apiKey: wallpaper.immichApiKey,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t("Unbekannter Fehler"));
+      setImmichPeople(data.people || []);
+      if ((data.people || []).length === 0) {
+        setImmichError(t("Keine benannten Personen gefunden — in Immich zuerst Gesichtern Namen geben."));
+      }
+    } catch (err: any) {
+      setImmichError(err.message);
+      setImmichPeople([]);
+    } finally {
+      setIsFetchingPeople(false);
     }
+  };
+
+  const fetchImmichAlbums = async () => {
+    // Nicht mehr vorab blocken: leere Felder heissen "globale Verbindung
+    // benutzen", und die Route löst das auf (#78). Nur wenn auch global
+    // nichts hinterlegt ist, kommt von dort eine verständliche Meldung.
     setIsFetchingAlbums(true);
     setImmichError("");
     try {
@@ -598,9 +630,13 @@ function MobileEditorInner() {
           setWallpaper={setWallpaper}
           webdavFolders={webdavFolders}
           fetchWebdavFolders={fetchWebdavFolders}
+          webdavImages={webdavImages}
           isFetchingFolders={isFetchingFolders}
           webdavError={webdavError}
           immichAlbums={immichAlbums}
+          immichPeople={immichPeople}
+          fetchImmichPeople={fetchImmichPeople}
+          isFetchingPeople={isFetchingPeople}
           fetchImmichAlbums={fetchImmichAlbums}
           isFetchingAlbums={isFetchingAlbums}
           immichError={immichError}

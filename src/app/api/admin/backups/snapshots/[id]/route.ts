@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -14,12 +16,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const { id } = await params;
     await prisma.snapshot.delete({ where: { id } }).catch(() => {});
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: "Interner Fehler." }, { status: 500 });
   }
 }

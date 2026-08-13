@@ -54,3 +54,7 @@ next-env.d.ts
 
 # AI-assistant guide — local only, contains private paths/IPs
 CLAUDE.md
+
+# Lokale Compose-Anpassungen (z. B. den DB-Port bewusst wieder veröffentlichen).
+# Compose führt die Datei automatisch mit; sie gehört dem Betreiber, nicht dem Repo.
+docker-compose.override.yml

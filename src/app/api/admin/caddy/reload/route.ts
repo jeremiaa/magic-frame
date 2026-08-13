@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -14,7 +16,7 @@ export const dynamic = "force-dynamic";
 /** Erzwingt einen Reload mit der aktuellen Config (z. B. nach DDNS-Token-Update). */
 export async function POST() {
   try {
-    await verifySession();
+    await verifyAdmin();
     if (isAddonMode()) {
       return NextResponse.json(
         { error: "Im Home-Assistant-Add-on übernimmt der Supervisor Proxy und HTTPS." },
@@ -27,6 +29,7 @@ export async function POST() {
     return NextResponse.json({ ...r, warnings });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     return NextResponse.json({ error: err?.message || "failed" }, { status: 500 });
   }
 }

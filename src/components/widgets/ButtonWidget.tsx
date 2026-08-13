@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Icon } from './WidgetIcon';
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { haAction } from "@/lib/ha/action-client";
 
 interface ButtonWidgetProps {
   config?: any;
@@ -40,30 +41,14 @@ async function runButtonAction(slot: any, longPress: boolean) {
                 console.error("HA-Service: ungültiges JSON in Service-Daten", rawData);
             }
         }
-        try {
-            await fetch("/api/ha/action", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entityId: entity, domain: parts[0], service: parts[1], data }),
-            });
-        } catch (e) {
-            console.error("HA-Service failed", e);
-        }
+        await haAction({ entityId: entity, domain: parts[0], service: parts[1], data });
         return;
     }
 
     if (action === "ha_toggle") {
         const entity = longPress ? slot.longPressEntity : slot.haEntity;
         if (!entity) return;
-        try {
-            await fetch("/api/ha/action", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entityId: entity, service: "toggle" }),
-            });
-        } catch (e) {
-            console.error("HA-Toggle failed", e);
-        }
+        await haAction({ entityId: entity, service: "toggle" });
         return;
     }
 
@@ -269,9 +254,19 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
           haServiceData: config[`haServiceData${suffix}`],
           webhook: config[`webhook${suffix}`],
           longPressAction: config[`longPressAction${suffix}`] || 'none',
-          longPressEntity: config[`longPressEntity${suffix}`],
-          longPressService: config[`longPressService${suffix}`],
-          longPressServiceData: config[`longPressServiceData${suffix}`],
+          // Der Inspektor legt die Langdruck-Felder unter longPressHaEntity /
+          // longPressHaService ab (ButtonInspector baut den Schlüssel aus dem
+          // Präfix plus der grossgeschriebenen Basis). Hier standen die Namen
+          // ohne "Ha" — gelesen wurde also immer ein Schlüssel, den nichts
+          // schreibt, und ein Langdruck mit HA-Service-Aufruf tat schlicht
+          // nichts. Die alten Namen bleiben als Rückfall stehen, falls doch
+          // irgendwo etwas darunter liegt.
+          longPressEntity:
+            config[`longPressHaEntity${suffix}`] ?? config[`longPressEntity${suffix}`],
+          longPressService:
+            config[`longPressHaService${suffix}`] ?? config[`longPressService${suffix}`],
+          longPressServiceData:
+            config[`longPressHaServiceData${suffix}`] ?? config[`longPressServiceData${suffix}`],
           longPressWebhook: config[`longPressWebhook${suffix}`],
           customColor: config[`color${suffix}`] || config.color
       };

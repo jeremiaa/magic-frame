@@ -217,7 +217,17 @@ function CustomModulesSection() {
         <div className="min-w-0 flex-1">
           <h2 className="font-semibold">{t("Custom-Module")}</h2>
           <p className="text-xs text-[var(--mf-fg)]/50 mt-0.5">
-            {t("Hochgeladen + sofort aktiv im View-Editor. Build aus deinem Modul-Source mit")} <code className="bg-[var(--mf-elev)]/5 px-1 rounded">node scripts/build-module.mjs &lt;file&gt;</code> {t("— Doku in")} <code className="bg-[var(--mf-elev)]/5 px-1 rounded">docs/custom-modules.md</code>.
+            {t("Hochgeladen + sofort aktiv im View-Editor. Build aus deinem Modul-Source mit")} <code className="bg-[var(--mf-elev)]/5 px-1 rounded">node scripts/build-module.mjs &lt;file&gt;</code> {t("— Doku in")}{" "}
+            {/* Zeigte auf docs/custom-modules.md — die Datei gibt es nicht mehr,
+                und ausgeliefert wurde sie ohnehin nie. Jetzt aufs Wiki. */}
+            <a
+              href="https://github.com/jeremiaa/magic-frame/blob/main/wiki/custom-modules.md"
+              target="_blank"
+              rel="noreferrer"
+              className="text-emerald-400 hover:underline"
+            >
+              wiki/custom-modules.md
+            </a>.
           </p>
         </div>
       </div>
@@ -358,34 +368,55 @@ function CustomModulesSection() {
 
 /* ---------- Eigenes Modul bauen ---------- */
 
+// Zwei Dateien anlegen, neun anpassen. Die Liste stand jahrelang auf „7
+// Stellen" und nannte dabei zwei Dateien, aus denen die Registry längst
+// ausgezogen ist (die Live-Registry sitzt in renderWidget.tsx, Farbe und Icon
+// in widget-visuals.tsx). Gepflegt wird sie in wiki/module-development.md —
+// wer hier etwas ändert, ändert es dort mit.
 const STEPS: { file: string; what: string }[] = [
   {
     file: "src/components/widgets/<Name>Widget.tsx",
-    what: "Die React-Komponente. \"use client\", Props { config, dashboardId? }, Größen in em.",
-  },
-  {
-    file: "src/app/view/[id]/page.tsx",
-    what: "Live-Registry: import + eine Zeile in renderWidgetContent (rendert auf dem Display).",
-  },
-  {
-    file: "src/app/editor/(app)/views/[id]/page.tsx",
-    what: "Editor-Katalog: WIDGET_CATALOG, WIDGET_ACCENT, widgetIconFor, addWidget.",
-  },
-  {
-    file: "src/lib/widgets/schemas.ts",
-    what: "Config + Union-Mitglied (z.literal). PFLICHT — ohne Schema schlägt das Speichern fehl!",
+    what: "Neu: die React-Komponente. \"use client\", Props { config, dashboardId? }, Größen in em.",
   },
   {
     file: "src/app/editor/_inspectors/<Name>Inspector.tsx",
-    what: "Einstellungen rechts + Routing in InspectorPanel.tsx (ContentTab).",
+    what: "Neu: der Inhalt-Tab rechts im Inspector.",
+  },
+  {
+    file: "src/components/widgets/renderWidget.tsx",
+    what: "Live-Registry: import + eine Zeile. Fehlt sie, bleibt die Kachel leer — auf dem Display und in der Editor-Vorschau.",
+  },
+  {
+    file: "src/lib/widgets/schemas.ts",
+    what: "Config + Union-Mitglied (z.literal). PFLICHT — ohne Schema schlägt das Speichern der ganzen View fehl.",
+  },
+  {
+    file: "src/app/editor/_types.ts",
+    what: "WIDGET_DEFAULT_LABEL — sonst heißt die Kachel wie ihre Typ-ID und übersetzt sich nie.",
+  },
+  {
+    file: "src/app/editor/(app)/views/[id]/page.tsx",
+    what: "WIDGET_CATALOG + ein case in widgetSkeletonFor() — hinzufügbar machen, Platzhalter zeichnen.",
+  },
+  {
+    file: "src/app/editor/_components/widget-visuals.tsx",
+    what: "WIDGET_ACCENT + ein case in widgetIconFor() — Farbe und Icon in Palette, Ebenenliste und Inspector.",
+  },
+  {
+    file: "src/app/editor/_components/InspectorPanel.tsx",
+    what: "Import + activeWidget.type-Zweig, sonst bleibt der Inhalt-Tab leer.",
+  },
+  {
+    file: "src/app/editor/_components/AddWidgetModal.tsx",
+    what: "Ein Button — sonst fehlt das Widget im mobilen Editor.",
   },
   {
     file: "src/app/editor/(app)/views/page.tsx",
-    what: "WIDGET_META — Farbe + Icon im Views-Listen-Thumbnail (optional).",
+    what: "WIDGET_META — Farbe + Icon im Thumbnail der Views-Liste.",
   },
   {
-    file: "src/app/editor/(app)/modules/page.tsx",
-    what: "INSTALLED-Liste — damit das Modul hier als „Installiert\" auftaucht (optional).",
+    file: "src/app/editor/(app)/page.tsx",
+    what: "WIDGET_META — Farbe + Icon im Thumbnail auf dem Dashboard.",
   },
 ];
 
@@ -401,8 +432,8 @@ export default function HelloWidget({ config }: { config?: any }) {
   );
 }
 
-// 2) view/[id]/page.tsx — Live-Registry
-import HelloWidget from "@/components/widgets/HelloWidget";
+// 2) components/widgets/renderWidget.tsx — Live-Registry
+import HelloWidget from "./HelloWidget";
 if (type === 'HelloWidget.tsx')
   return <HelloWidget config={config} dashboardId={dashboardId} />;
 
@@ -430,7 +461,7 @@ function ModuleDevGuide() {
           <h2 className="font-semibold text-lg">{t("Eigenes Modul bauen")}</h2>
           <p className="text-sm text-[var(--mf-fg)]/50 mt-1 max-w-2xl">
             {t("Ein Modul ist ein Widget-Typ (Uhr, Wetter, …). Schreib eine")}
-            <code className="text-[var(--mf-fg)]/70 bg-[var(--mf-elev)]/5 px-1 rounded mx-1">.tsx</code>{t("-Komponente und trag sie an 7 Stellen ein. Aufklappen für die Anleitung.")}
+            <code className="text-[var(--mf-fg)]/70 bg-[var(--mf-elev)]/5 px-1 rounded mx-1">.tsx</code>{t("-Komponente plus einen Inspector und trag sie in neun weiteren Dateien ein. Aufklappen für die Anleitung.")}
           </p>
         </div>
         <ChevronDown size={18} className="text-[var(--mf-fg)]/40 shrink-0 transition-transform group-open:rotate-180" />
@@ -484,8 +515,17 @@ function ModuleDevGuide() {
       </div>
 
       <p className="text-[11px] text-[var(--mf-fg)]/40 mt-4 leading-relaxed">
-        {t("Vollständige Referenz inkl. Props-Contract, Live-Sync, Checkliste und dem geplanten Market-Manifest:")}{" "}
-        <code className="text-[var(--mf-fg)]/60 bg-[var(--mf-elev)]/5 px-1 rounded">docs/module-development.md</code>{" "}
+        {t("Vollständige Referenz mit Props-Contract, Live-Sync und Checkliste:")}{" "}
+        {/* Zeigte auf docs/module-development.md — die Datei gibt es nicht mehr,
+            und ihre Dateiliste war falsch. Jetzt aufs Wiki. */}
+        <a
+          href="https://github.com/jeremiaa/magic-frame/blob/main/wiki/module-development.md"
+          target="_blank"
+          rel="noreferrer"
+          className="text-emerald-400 hover:underline"
+        >
+          wiki/module-development.md
+        </a>{" "}
         {t("im Repo. Einfachstes Vorbild im Code:")}{" "}
         <code className="text-[var(--mf-fg)]/60 bg-[var(--mf-elev)]/5 px-1 rounded">src/components/widgets/ClockWidget.tsx</code>.
       </p>

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifySession,
+  verifyAdmin,
+  ForbiddenError,
+  forbiddenResponse,
   UnauthorizedError,
   unauthorizedResponse,
 } from "@/lib/auth/dal";
@@ -15,7 +17,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await verifySession();
+    await verifyAdmin();
     const { id } = await params;
     const ok = await restoreSnapshot(id);
     if (!ok) {
@@ -27,6 +29,7 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    if (err instanceof ForbiddenError) return forbiddenResponse();
     console.error("snapshot restore error", err);
     return NextResponse.json({ error: "Wiederherstellen fehlgeschlagen." }, { status: 500 });
   }

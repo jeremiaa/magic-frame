@@ -1,0 +1,44 @@
+name: Magic Frame
+version: "1.3.4"
+slug: magic_frame
+description: Dashboard for tablets, monitors, wall panels and picture frames
+url: https://github.com/jeremiaa/magic-frame
+# Nur die Architekturen, für die es ein veröffentlichtes App-Image gibt —
+# release-images.yml baut amd64 + arm64. armv7 fehlt bewusst, sonst schlägt
+# der Supervisor-Build bei Pi-Zero-Nutzern mit einer unverständlichen
+# Manifest-Meldung fehl.
+arch:
+  - amd64
+  - aarch64
+init: false
+# Kein Ingress: Wandtablets rufen /view/<id> ohne Anmeldung auf, und hinter
+# Ingress ginge das nicht — der Pfad wechselt pro Sitzung und HA verlangt
+# eine angemeldete Sitzung. Stattdessen ein fester Port.
+ports:
+  3000/tcp: 8098
+ports_description:
+  3000/tcp: Web-Oberfläche (Editor und Ansichten)
+# Erlaubt den Zugriff auf Home Assistant über den Supervisor-Proxy. Damit
+# braucht niemand mehr einen langlebigen Zugriffstoken anzulegen — die App
+# erkennt das selbst (src/lib/runtime/addon.ts).
+homeassistant_api: true
+# Der Supervisor hält das Add-on vorm Sichern an. Bei einer eingebauten
+# Datenbank ist das der Unterschied zwischen einer sauberen Sicherung und
+# einer, die beim Zurückspielen nicht startet.
+backup: cold
+options:
+  admin_email: ""
+  admin_password: ""
+  timezone: ""
+  ha_action_unrestricted: false
+schema:
+  admin_email: str?
+  admin_password: password?
+  timezone: str?
+  # Ein Display darf nur die Entitäten schalten, die auf einer Ansicht liegen.
+  # Diese Option hebt das auf. Nur einschalten, wenn etwas anderes (ein eigenes
+  # Modul, ein Skript) Entitäten anspricht, die nirgends platziert sind.
+  ha_action_unrestricted: bool?
+# Kein `image:` — der Supervisor baut aus dem Dockerfile. Ein leeres oder
+# null-Feld liest er als "Image erwartet" und bricht mit einer irreführenden
+# Meldung ab.
