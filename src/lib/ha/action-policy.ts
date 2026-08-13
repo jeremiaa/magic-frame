@@ -40,6 +40,58 @@ const prisma = new PrismaClient({ adapter });
 /** `light.kitchen`, `binary_sensor.front_door` — domain, dot, object id. */
 const ENTITY_ID = /^[a-z][a-z0-9_]*\.[a-z0-9_]+$/;
 
+/** `device_id`, `area_id`, `label_id` — ein Ziel, das dieser Code nicht auflösen kann. */
+const OPAQUE_KEY = /^(device_id|area_id|label_id)$/;
+
+/** Nimmt einen String, eine Komma-Liste oder ein Array und gibt saubere Kennungen zurück. */
+function asIdList(v: unknown): string[] {
+  if (typeof v === "string") return v.split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+  if (Array.isArray(v)) return v.flatMap(asIdList);
+  return [];
+}
+
+/**
+ * Geräte-, Bereichs- und Label-Kennungen aus den gespeicherten Konfigurationen.
+ *
+ * Der Server kann eine device_id nicht auflösen, ohne Home Assistant zu fragen —
+ * deshalb wurde sie pauschal abgelehnt. Dasselbe Argument galt einmal für
+ * Entitäten und wurde dadurch gelöst, dass man sie aus den Konfigurationen
+ * einsammelt. Genau das hier: was der Besitzer selbst in einen Knopf
+ * geschrieben hat, liegt auf der Wand und darf benutzt werden. Was nicht darin
+ * steht, weiterhin nicht.
+ *
+ * Ohne das lehnt eine Konfiguration ab, die der Editor selbst anbietet: wer die
+ * Dienst-Daten aus Home Assistants Entwicklerwerkzeugen kopiert, bekommt dort
+ * `device_id` — im Browser des Admins geht der Knopf, auf dem Tablett nicht.
+ */
+function collectOpaqueTargets(value: unknown, into: Set<string>, depth = 0): void {
+  if (depth > 8 || value == null) return;
+  if (typeof value === "string") {
+    const t = value.trim();
+    if ((t.startsWith("{") || t.startsWith("[")) && t.length < 20_000) {
+      try {
+        collectOpaqueTargets(JSON.parse(t), into, depth + 1);
+      } catch {
+        /* kein JSON */
+      }
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const v of value) collectOpaqueTargets(v, into, depth + 1);
+    return;
+  }
+  if (typeof value === "object") {
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (OPAQUE_KEY.test(k)) {
+        for (const id of asIdList(v)) into.add(id);
+        continue;
+      }
+      collectOpaqueTargets(v, into, depth + 1);
+    }
+  }
+}
+
 /** Config keys whose value is a `domain.service` string, not an entity id. */
 const SERVICE_KEY = /^(haService|longPressHaService|longPressService)\d*$/;
 
@@ -125,6 +177,14 @@ function collectEntityIds(value: unknown, into: Set<string>, depth = 0): void {
   if (typeof value === "string") {
     const v = normaliseEntityId(value);
     if (ENTITY_ID.test(v)) into.add(v);
+    // "light.a, light.b" — Home Assistant nimmt eine Komma-Liste an, und aus den
+    // Entwicklerwerkzeugen kopiert man sie genau so. Nur aufteilen, wenn JEDER
+    // Teil die Form einer entity_id hat: sonst würde ein Fliesstext, in dem
+    // zufällig eine Kennung vorkommt, die Liste heimlich erweitern.
+    if (v.includes(",")) {
+      const parts = v.split(",").map((x) => x.trim()).filter(Boolean);
+      if (parts.length > 1 && parts.every((x) => ENTITY_ID.test(x))) for (const x of parts) into.add(x);
+    }
     // Manche Felder halten JSON als Text: die Dienst-Daten eines Buttons sind
     // ein Freitextfeld, in das man aus Home Assistants Entwicklerwerkzeugen
     // etwas wie {"entity_id": "light.decke"} hineinkopiert. Ohne dieses
@@ -173,7 +233,7 @@ function collectServices(value: unknown, into: Set<string>, depth = 0): void {
 // Short cache; the write paths that change the set clear it outright, so the
 // TTL only covers changes made straight in the database.
 const TTL_MS = 30_000;
-let cache: { at: number; ids: Set<string>; services: Set<string> } | null = null;
+let cache: { at: number; ids: Set<string>; services: Set<string>; targets: Set<string> } | null = null;
 
 /**
  * Drops the cached allowlist.
@@ -187,21 +247,24 @@ export function forgetAllowedEntities(): void {
   cache = null;
 }
 
-async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string> }> {
+async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string>; targets: Set<string> }> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache;
   const ids = new Set<string>();
   const services = new Set<string>();
+  const targets = new Set<string>();
   try {
     const widgets = await prisma.widget.findMany({ select: { config: true } });
     for (const w of widgets) {
       collectEntityIds(w.config, ids);
       collectServices(w.config, services);
+      collectOpaqueTargets(w.config, targets);
     }
     // Wallpapers carry an artwork player, and view settings can carry entities.
     const dashboards = await prisma.dashboard.findMany({ select: { wallpaper: true, settings: true } });
     for (const d of dashboards) {
       collectEntityIds(d.wallpaper, ids);
       collectEntityIds(d.settings, ids);
+      collectOpaqueTargets(d.settings, targets);
     }
     // A custom module's manifest can ship a field default that the user never
     // opens — the value then lives in manifestJson and never reaches
@@ -209,7 +272,12 @@ async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string> }
     const modules = await prisma.customModule.findMany({ select: { manifestJson: true } });
     for (const m of modules) {
       try {
-        collectEntityIds(JSON.parse(m.manifestJson), ids);
+        const manifest = JSON.parse(m.manifestJson);
+        collectEntityIds(manifest, ids);
+        // Dienste standen hier nie — ein Modul, das ein Feld `haService` mitbringt,
+        // wurde für Entitäten gelesen und für Dienste ignoriert.
+        collectServices(manifest, services);
+        collectOpaqueTargets(manifest, targets);
       } catch {
         // A malformed manifest is the modules page's problem, not this one.
       }
@@ -224,9 +292,9 @@ async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string> }
       cache ? "using the last known set" : "allowing every entity until the database answers",
       err,
     );
-    return cache ?? { ids: new Set(["*"]), services: new Set(["*"]) };
+    return cache ?? { ids: new Set(["*"]), services: new Set(["*"]), targets: new Set(["*"]) };
   }
-  cache = { at: Date.now(), ids, services };
+  cache = { at: Date.now(), ids, services, targets };
   return cache;
 }
 
@@ -289,6 +357,14 @@ export async function callerMayUse(entityId: string): Promise<boolean> {
   return mayActOn(entityId);
 }
 
+/** `true`, wenn dieses Gerät oder dieser Bereich in einer gespeicherten Konfiguration steht. */
+export async function mayTarget(id: string): Promise<boolean> {
+  if (unrestricted()) return true;
+  const { targets } = await loadPolicy();
+  if (targets.has("*")) return true;
+  return targets.has(String(id).trim().toLowerCase());
+}
+
 /** A persistent notification's id is minted by HA and is never in a config. */
 export function isPersistentNotification(entityId: string): boolean {
   return normaliseEntityId(entityId).startsWith("persistent_notification.");
@@ -305,14 +381,15 @@ export function isPersistentNotification(entityId: string): boolean {
  */
 export function payloadTargets(payload: Record<string, unknown>): {
   entityIds: string[];
-  hasOpaqueTarget: boolean;
+  opaqueTargets: string[];
 } {
   const entityIds: string[] = [];
-  let hasOpaqueTarget = false;
+  const opaqueTargets: string[] = [];
 
+  // asIdList teilt auch Komma-Listen auf — sonst nennt die Ablehnung
+  // "light.a, light.b" als eine Kennung, was niemand zuordnen kann.
   const readEntity = (v: unknown) => {
-    if (typeof v === "string") entityIds.push(normaliseEntityId(v));
-    else if (Array.isArray(v)) for (const x of v) if (typeof x === "string") entityIds.push(normaliseEntityId(x));
+    for (const id of asIdList(v)) entityIds.push(id);
   };
 
   const scan = (obj: unknown) => {
@@ -322,10 +399,12 @@ export function payloadTargets(payload: Record<string, unknown>): {
     // device_id and area_id name a set of entities this code cannot resolve
     // without asking Home Assistant, so they cannot be checked against the
     // allowlist at all. A login-free caller does not get to use them.
-    if (o.device_id != null || o.area_id != null || o.label_id != null) hasOpaqueTarget = true;
+    if (o.device_id != null) for (const id of asIdList(o.device_id)) opaqueTargets.push(id);
+    if (o.area_id != null) for (const id of asIdList(o.area_id)) opaqueTargets.push(id);
+    if (o.label_id != null) for (const id of asIdList(o.label_id)) opaqueTargets.push(id);
     if (o.target && typeof o.target === "object") scan(o.target);
   };
 
   scan(payload);
-  return { entityIds: entityIds.filter(Boolean), hasOpaqueTarget };
+  return { entityIds: entityIds.filter(Boolean), opaqueTargets };
 }

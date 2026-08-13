@@ -6,6 +6,7 @@ import {
   mayCallService,
   isPersistentNotification,
   payloadTargets,
+  mayTarget,
 } from "@/lib/ha/action-policy";
 
 /** Same wording everywhere, and it names the way out. */
@@ -55,10 +56,16 @@ export async function POST(req: NextRequest) {
            return refuse(`${domain}.${serviceName} is not a service any of your widgets calls.`);
         }
 
-        const { entityIds, hasOpaqueTarget } = payloadTargets(payload);
-        if (hasOpaqueTarget) {
-           console.warn(`[ha/action] refused ${domain}.${serviceName} — device_id/area_id target`);
-           return refuse("A display may not target a device or an area, only named entities.");
+        const { entityIds, opaqueTargets } = payloadTargets(payload);
+        // Geräte und Bereiche kann dieser Code nicht auflösen, ohne Home
+        // Assistant zu fragen — erlaubt sind deshalb genau die, die in einer
+        // gespeicherten Konfiguration stehen. Vorher wurden sie pauschal
+        // abgelehnt, und das traf einen Knopf, den der Editor selbst anbietet.
+        for (const t of opaqueTargets) {
+           if (!(await mayTarget(t))) {
+              console.warn(`[ha/action] refused ${domain}.${serviceName} — device/area ${t} not on any view`);
+              return refuse(`The device or area ${t} is not used by any of your widgets.`);
+           }
         }
         for (const id of entityIds) {
            // Persistent-notification ids are minted by Home Assistant at
