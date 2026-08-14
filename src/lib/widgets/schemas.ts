@@ -570,6 +570,36 @@ function commonWidgetFields() {
   });
 }
 
+
+/**
+ * Jedes Widget-Typ-Schema unter seinem Typ-Namen — für den MCP-Katalog.
+ *
+ * Die Einzel-Konstanten oben sind bewusst modulprivat geblieben; das hier ist
+ * der eine Export, über den Werkzeuge an die Schemas kommen, ohne dass sich an
+ * der discriminatedUnion etwas ändert. Die Schlüssel MÜSSEN den type-Literalen
+ * der Union entsprechen — der Katalog prüft das beim Laden.
+ */
+export const WIDGET_CONFIG_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  "ClockWidget.tsx": clockConfig,
+  "WeatherWidget.tsx": weatherConfig,
+  "CalendarWidget.tsx": calendarConfig,
+  "ButtonWidget.tsx": buttonConfig,
+  "HomeAssistantWidget.tsx": homeAssistantConfig,
+  "HANotificationWidget.tsx": haNotificationConfig,
+  "TimerWidget.tsx": timerConfig,
+  "MessagesWidget.tsx": messagesConfig,
+  "ImageWidget.tsx": imageConfig,
+  "SensorWidget.tsx": sensorConfig,
+  "EnvironmentWidget.tsx": environmentConfig,
+  "CameraWidget.tsx": cameraConfig,
+  "MediaPlayerWidget.tsx": mediaPlayerConfig,
+  "ShoppingListWidget.tsx": shoppingConfig,
+  "TodosWidget.tsx": todosConfig,
+  "RssWidget.tsx": rssConfig,
+  "QrWidget.tsx": qrConfig,
+  "StatusWidget.tsx": statusConfig,
+};
+
 export const layoutSchema = z.array(widgetLayoutItemSchema);
 
 export const wallpaperSchema = z
