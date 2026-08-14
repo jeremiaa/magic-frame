@@ -66,18 +66,34 @@ export async function createSnapshot(
       data: data as any,
     },
   });
-  await pruneSnapshots();
+  await pruneSnapshots(dashboardId);
 }
 
-async function pruneSnapshots(): Promise<void> {
+async function pruneSnapshots(dashboardId: string): Promise<void> {
+  // Je Ansicht kappen, nicht global: vorher teilten sich ALLE Ansichten die
+  // 20 Plätze, und wer eine Ansicht zwanzigmal speicherte, löschte damit die
+  // Wiederherstellungspunkte aller anderen — einschliesslich pre-restore.
+  // Auto-Saves fliegen zuerst raus; von Hand angelegte Snapshots und
+  // pre-restore bleiben stehen, solange irgendein Auto-Save noch weichen kann.
   const all = await prisma.snapshot.findMany({
+    where: { dashboardId },
     orderBy: { createdAt: "desc" },
-    select: { id: true },
+    select: { id: true, reason: true },
   });
-  if (all.length > MAX_SNAPSHOTS) {
-    const toDelete = all.slice(MAX_SNAPSHOTS).map((s) => s.id);
-    await prisma.snapshot.deleteMany({ where: { id: { in: toDelete } } });
+  if (all.length <= MAX_SNAPSHOTS) return;
+  let excess = all.length - MAX_SNAPSHOTS;
+  const oldestFirst = [...all].reverse();
+  const toDelete: string[] = [];
+  for (const snap of oldestFirst) {
+    if (toDelete.length >= excess) break;
+    if (snap.reason === "auto-save") toDelete.push(snap.id);
   }
+  for (const snap of oldestFirst) {
+    if (toDelete.length >= excess) break;
+    if (snap.reason !== "auto-save") toDelete.push(snap.id);
+  }
+  if (toDelete.length)
+    await prisma.snapshot.deleteMany({ where: { id: { in: toDelete } } });
 }
 
 /** Schreibt eine SnapshotData zurück in ein Dashboard (überschreibt Widgets). */

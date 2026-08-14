@@ -554,14 +554,19 @@ export const widgetLayoutItemSchema = z.union([
 ]);
 
 function commonWidgetFields() {
+  // Ganzzahlen mit Rasterschranken, nicht bare z.number(): die Spalten sind
+  // Int, das Raster ist 24 breit. 1.5 oder Infinity bestand die Validierung
+  // und platzte erst an Postgres — nach dem deleteMany, mit halber Ansicht.
+  // y darf über 24 hinaus (hohe Hochkant-Ansichten scrollen das Raster).
+  const grid = z.number().int();
   return z.object({
-    i: z.string(),
-    x: z.number(),
-    y: z.number(),
-    w: z.number(),
-    h: z.number(),
+    i: z.string().min(1).max(120),
+    x: grid.min(0).max(23),
+    y: grid.min(0).max(500),
+    w: grid.min(1).max(24),
+    h: grid.min(1).max(500),
     label: z.string().optional().default(""),
-    bgOpacity: z.number().default(20),
+    bgOpacity: z.number().min(0).max(100).default(20),
   });
 }
 
