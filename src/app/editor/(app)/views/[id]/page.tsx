@@ -39,6 +39,7 @@ import {
   QrCode,
   Activity,
   Leaf,
+  Type as TypeIcon,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -47,6 +48,7 @@ import {
   WallpaperConfig,
   defaultLayout,
   widgetTitle,
+  WIDGET_DEFAULT_SIZE,
 } from "@/app/editor/_types";
 import InspectorPanel from "@/app/editor/_components/InspectorPanel";
 import WidgetPreview from "@/app/editor/_components/WidgetPreview";
@@ -82,6 +84,7 @@ const WIDGET_CATALOG: {
   { type: "RssWidget.tsx", label: "RSS Feed", icon: <Rss size={16} /> },
   { type: "QrWidget.tsx", label: "QR-Code", icon: <QrCode size={16} /> },
   { type: "StatusWidget.tsx", label: "Status", icon: <Activity size={16} /> },
+  { type: "TextWidget.tsx", label: "Text", icon: <TypeIcon size={16} /> },
 ];
 
 
@@ -383,6 +386,16 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "TextWidget.tsx":
+      // Zwei Schriftzeilen: eine kräftige Überschrift, darunter eine kürzere,
+      // blassere Zweitzeile. Genau das, was das Widget später zeichnet.
+      return (
+        <div className="w-full h-full flex flex-col justify-center gap-[8%] p-[14%]">
+          <div className="rounded-full" style={{ height: "22%", width: "78%", backgroundColor: dim, minHeight: 3 }} />
+          <div className="rounded-full" style={{ height: "12%", width: "46%", backgroundColor: faint, minHeight: 2 }} />
+        </div>
+      );
+
     default:
       // Custom modules etc — caller falls back to a single big icon.
       return null;
@@ -669,15 +682,16 @@ export default function ViewEditor({
       }
     }
 
+    const size = WIDGET_DEFAULT_SIZE[type];
     const newWidget: WidgetLayoutItem = {
       i: newId,
       x: 0,
       y: 5,
-      w: 8,
-      h: 4,
+      w: size?.w ?? 8,
+      h: size?.h ?? 4,
       type,
       label,
-      bgOpacity: 20,
+      bgOpacity: size?.bgOpacity ?? 20,
       config: initialConfig,
     };
     setLayout((prev) => [...prev, newWidget]);

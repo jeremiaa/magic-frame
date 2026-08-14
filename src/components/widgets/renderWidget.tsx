@@ -17,6 +17,7 @@ import CameraWidget from "./CameraWidget";
 import MediaPlayerWidget from "./MediaPlayerWidget";
 import RssWidget from "./RssWidget";
 import QrWidget from "./QrWidget";
+import TextWidget from "./TextWidget";
 import StatusWidget from "./StatusWidget";
 import EnvironmentWidget from "./EnvironmentWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
@@ -28,10 +29,16 @@ import { CustomWidget } from "@/lib/modules/runtime";
 export type RenderWidgetOpts = {
   dashboardId?: string;
   onVisibilityChange?: (isVisible: boolean) => void;
+  /**
+   * #41: der Live-View meldet hier, dass dieses Widget gerade DURCH einen
+   * HA-Trigger sichtbar ist. Nur die Kamera wertet es aus (Vollbild ohne
+   * Antippen); der Editor gibt es nie mit, seine Vorschau bleibt in der Kachel.
+   */
+  shownByTrigger?: boolean;
 };
 
 export function renderWidget(type: string, config: any, opts: RenderWidgetOpts = {}): React.ReactNode {
-  const { dashboardId, onVisibilityChange } = opts;
+  const { dashboardId, onVisibilityChange, shownByTrigger } = opts;
   if (type === "ClockWidget.tsx") return <ClockWidget config={config} />;
   if (type === "ButtonWidget.tsx") return <ButtonWidget config={config} />;
   if (type === "TimerWidget.tsx") return <TimerWidget config={config} dashboardId={dashboardId} />;
@@ -41,9 +48,16 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
   if (type === "ImageWidget.tsx") return <ImageWidget config={config} dashboardId={dashboardId} />;
   if (type === "SensorWidget.tsx") return <SensorWidget config={config} />;
   if (type === "EnvironmentWidget.tsx") return <EnvironmentWidget config={config} />;
-  if (type === "CameraWidget.tsx") return <CameraWidget config={config} />;
+  if (type === "CameraWidget.tsx")
+    return (
+      <CameraWidget
+        config={config}
+        openFullscreen={config?.triggerFullscreen === true && shownByTrigger === true}
+      />
+    );
   if (type === "RssWidget.tsx") return <RssWidget config={config} />;
   if (type === "QrWidget.tsx") return <QrWidget config={config} />;
+  if (type === "TextWidget.tsx") return <TextWidget config={config} />;
   if (type === "StatusWidget.tsx") return <StatusWidget config={config} onVisibilityChange={onVisibilityChange} />;
   if (type === "MediaPlayerWidget.tsx") return <MediaPlayerWidget config={config} onVisibilityChange={onVisibilityChange} />;
   if (type === "CalendarWidget.tsx") return <CalendarWidget config={config} dashboardId={dashboardId} onVisibilityChange={onVisibilityChange} />;

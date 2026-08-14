@@ -34,6 +34,7 @@ const PURPOSE: Record<string, string> = {
   "RssWidget.tsx": "Headlines from RSS feeds, with a QR code to read on.",
   "QrWidget.tsx": "A QR code for Wi-Fi, a link or plain text.",
   "StatusWidget.tsx": "A device card with a picture and live details (car charging, printer, washer).",
+  "TextWidget.tsx": "Free text: a heading or caption that labels the widgets around it.",
 };
 
 const GRID_CONTRACT = {

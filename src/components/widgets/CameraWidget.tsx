@@ -23,7 +23,19 @@ type CameraConfig = {
   caption?: string;
 };
 
-export default function CameraWidget({ config }: { config?: CameraConfig }) {
+/**
+ * `openFullscreen` is the live view's trigger signal (#41): the doorbell fires,
+ * the tile becomes visible, and the camera is supposed to fill the screen
+ * without anyone touching it. It is edge-detected below, not mirrored — a
+ * viewer who closes the overlay while the trigger is still on stays closed.
+ */
+export default function CameraWidget({
+  config,
+  openFullscreen,
+}: {
+  config?: CameraConfig;
+  openFullscreen?: boolean;
+}) {
   const { t } = useLocale();
   const source: "ha" | "url" = config?.source === "url" ? "url" : "ha";
   const entityId = config?.entityId?.trim() || "";
@@ -165,6 +177,17 @@ export default function CameraWidget({ config }: { config?: CameraConfig }) {
       fsVideoRef.current.srcObject = mediaStream;
     }
   }, [mediaStream, fullscreen]);
+
+  // #41: the trigger opens the overlay on its RISING edge and closes it when it
+  // clears. Only the edge — mirroring the signal would fight the close button
+  // and reopen the overlay on the next render for as long as the trigger holds.
+  const prevOpenRef = useRef(false);
+  useEffect(() => {
+    const want = openFullscreen === true;
+    if (want && !prevOpenRef.current) setFullscreen(true);
+    else if (!want && prevOpenRef.current) setFullscreen(false);
+    prevOpenRef.current = want;
+  }, [openFullscreen]);
 
   if (!configured) {
     return (

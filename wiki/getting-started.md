@@ -169,7 +169,7 @@ proportions on a bigger screen.
   **Layout**, **Text & colour** (Text & Farbe) and **Content** (Inhalt) — and
   **Copy** and **Delete** buttons at the bottom.
 - **Add a tile**: click any entry in the **Add widget** (Widget hinzufügen)
-  list on the left. There are 18 to choose from; see [Widgets](widgets.md).
+  list on the left. There are 19 to choose from; see [Widgets](widgets.md).
 - **Find a tile you cannot see**: the **Layers** (Ebenen) list under the widget
   list holds every placed widget, including ones hidden behind another. See
   [Stacking and visibility](stacking-and-visibility.md).

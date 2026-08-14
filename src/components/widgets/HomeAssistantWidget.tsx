@@ -9,21 +9,7 @@ import { useGlassStyle } from "@/lib/ui/glass";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { haAction } from "@/lib/ha/action-client";
-
-const ACTIVE_STATES = [
-  "on",
-  "playing",
-  "home",
-  "open",
-  "active",
-  "detected",
-  "unlocked",
-  "charging",
-  "cleaning",
-  "heat",
-  "cool",
-  "mowing",
-];
+import { ACTIVE_STATES } from "@/lib/ha/active-states";
 
 const TimerCountdown = ({ finishesAt, baseState }: { finishesAt?: string, baseState: string }) => {
    const [timeLeft, setTimeLeft] = useState<string>("");

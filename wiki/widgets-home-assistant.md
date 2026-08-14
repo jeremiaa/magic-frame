@@ -147,6 +147,7 @@ notification in Home Assistant too.
 | `triggerState` | The exact state that raises the tile. Compared without regard to upper and lower case. |
 | `message` | The text on the tile. |
 | `icon`, `color` | The icon and the tile's accent colour. Default `#F43F5E`. |
+| `colorFollowsState` | Off by default. On, the tile uses `color` only while the entity is active, and a neutral grey when it is not. |
 | `durationMinutes` | How long the tile stays. Default 15 on a new rule. See the warning below. |
 | `quitMode` | When the tile may go away: `both`, `time` or `entity`. |
 | `clearEntityId` | An entity that acknowledges the tile — a button by the door, a motion sensor in the utility room. |
@@ -168,6 +169,25 @@ notification in Home Assistant too.
 Acknowledging a tile — by the clear entity or by the ✕ on the tile — marks it
 silently satisfied. It disappears, and it stays gone until the trigger entity
 leaves the trigger state and comes back.
+
+### Letting the colour follow the state
+
+A tile keeps the colour you gave the rule, whatever the entity does afterwards.
+For a tile you can tap — a lock, a light — that is one signal short: you tap it,
+the lock closes, and the tile looks exactly as it did before.
+
+Tick **Farbe folgt dem Status** (Colour follows the state) on the rule and the
+colour becomes an answer instead of a label: the rule's colour while the entity
+is active, a neutral grey while it is not. Unlocked is amber, locked is calm,
+and the tile is still there because the rule says it should be.
+
+"Active" means the same here as it does for the entity widget above: the state
+matches the rule's `triggerState`, or — if you left that empty — it is one of
+`on`, `playing`, `home`, `open`, `active`, `detected`, `unlocked`, `charging`,
+`cleaning`, `heat`, `cool`, `mowing`.
+
+It is off unless you turn it on, per rule. A tile whose colour you picked on
+purpose is not going to start greying itself out because of an update.
 
 ### `durationMinutes` — read this
 
@@ -269,6 +289,7 @@ tap-for-fullscreen.
 | `refreshIntervalSec` | 5 | Snapshot mode only. |
 | `aspectRatio` | `auto` | `auto` lets the picture keep its own shape; `16:9`, `4:3` and `1:1` fill the tile and crop. |
 | `clickFullscreen` | on | Tapping anywhere in the tile opens the picture full screen. Tap again, or the ✕, to close. |
+| `triggerFullscreen` | off | With a visibility trigger set, the picture opens full screen by itself when the trigger fires. See [Stacking and visibility](stacking-and-visibility.md). |
 | `caption` | — | The corner chip. Empty = no chip. |
 
 ### Which mode to pick

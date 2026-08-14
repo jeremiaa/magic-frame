@@ -222,6 +222,17 @@ export interface WidgetLayoutItem {
     showWhenEntity?: string;
     showWhenState?: string;
     autoHideSeconds?: number;
+    // #41 Kamera: beim Trigger direkt ins Vollbild (nur CameraWidget)
+    triggerFullscreen?: boolean;
+    // #69 Text-Widget: freie Überschrift/Beschriftung
+    text?: string;
+    subtext?: string;
+    subtextScale?: number;
+    iconScale?: number;
+    vAlign?: 'top' | 'middle' | 'bottom';
+    uppercase?: boolean;
+    letterSpacing?: number;
+    divider?: boolean;
     // #33 calendar time-format override
     calendarTimeFormat?: 'auto' | '12h' | '24h';
     // Media Player widget (Discussion #50)
@@ -303,6 +314,18 @@ export interface WallpaperConfig {
 // The title is ALWAYS rendered through t(), so it follows the active app
 // locale. New widgets store an EMPTY label and derive their title from the
 // type via widgetTitle() — no German string is ever baked into the DB.
+/**
+ * Abweichende Startmaße beim Hinzufügen. Ohne Eintrag gilt 8×4 mit 20 %
+ * Hintergrund — das passt für Karten, aber nicht für alles.
+ *
+ * Eine Überschrift (#69) ist breit, flach und hat keinen Kasten: käme sie als
+ * graues Rechteck in Uhrengröße, wäre der erste Handgriff jedes Nutzers, sie
+ * flach zu ziehen und den Hintergrund abzuschalten.
+ */
+export const WIDGET_DEFAULT_SIZE: Record<string, { w: number; h: number; bgOpacity?: number }> = {
+  "TextWidget.tsx": { w: 10, h: 2, bgOpacity: 0 },
+};
+
 export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "ClockWidget.tsx": "Uhr",
   "WeatherWidget.tsx": "Wetter",
@@ -322,6 +345,7 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "RssWidget.tsx": "RSS Feed",
   "QrWidget.tsx": "QR-Code",
   "StatusWidget.tsx": "Status",
+  "TextWidget.tsx": "Text",
 };
 
 // Every German default string we have ever auto-assigned (the current types

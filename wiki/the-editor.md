@@ -132,7 +132,7 @@ Both of these disappear in **Randlos** (Edge-to-edge) mode; see
 
 ## The widget catalogue
 
-The left column lists every widget you can add — 18 types, described in
+The left column lists every widget you can add — 19 types, described in
 [Widgets](widgets.md):
 
 Uhr (Clock), Wetter (Weather), Kalender (Calendar), HA Entity, Buttons,
@@ -256,10 +256,9 @@ Two things it does not have:
 
 - **A grid.** You cannot drag a widget to a position here. Set the position
   numerically in the inspector's Layout tab, or do the arranging on a computer.
-- **The full widget list.** Its **Neues Modul wählen** (Choose new module)
-  dialog offers 14 of the 18 types: Timer, Nachrichten (Messages),
-  Einkaufsliste (Shopping list) and Todos are missing, and custom modules are
-  not listed either. Add those from the desktop editor.
+- **Custom modules.** Its **Neues Modul wählen** (Choose new module) dialog
+  offers all 19 built-in types, but not the modules you installed yourself. Add
+  those from the desktop editor.
 
 ## What the editor does not do
 

@@ -17,6 +17,7 @@ import {
 } from "./_shared/useDockedTimers";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { haAction } from "@/lib/ha/action-client";
+import { isActiveState, INACTIVE_COLOR } from "@/lib/ha/active-states";
 
 export interface NotificationRule {
     entityId?: string;
@@ -25,6 +26,12 @@ export interface NotificationRule {
     durationMinutes?: number;
     icon?: string;
     color?: string;
+    /**
+     * #47: Farbe folgt dem Status statt fest zu bleiben. Aufgeschlossen färbt,
+     * abgeschlossen beruhigt. Opt-in — bestehende Kacheln behalten die bewusst
+     * gewählte feste Farbe.
+     */
+    colorFollowsState?: boolean;
     clearEntityId?: string;
     clearStateVal?: string;
     clearMatchMode?: "fixed" | "change";
@@ -915,7 +922,15 @@ export default function HANotificationWidget({
             {statusTop && statusCards}
             {activeAlertArray.map((alert) => {
                 const rule = alert.rule;
-                const color = rule.color || "#F43F5E";
+                // #47: Ohne die Option bleibt die Farbe fest — genau wie bisher.
+                // Mit ihr fragt die Kachel den LEBENDEN Status ab (statesDict
+                // wird alle 5 s aufgefrischt), damit ein Tipp aufs Schloss sich
+                // auch sehen lässt und nicht nur passiert.
+                const color =
+                    rule.colorFollowsState === true &&
+                    !isActiveState(statesDict[rule.entityId || ""]?.state, rule.triggerState)
+                        ? INACTIVE_COLOR
+                        : rule.color || "#F43F5E";
                 const icon = rule.icon || "mdi:bell-ring";
                 const timeString = formatNotifAge(new Date(alert.triggerTime), timeFormat, nowMs, locale);
                 const isTappable = rule.tapAction && rule.tapAction !== 'none';

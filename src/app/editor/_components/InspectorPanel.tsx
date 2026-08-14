@@ -28,6 +28,7 @@ import { MediaPlayerInspector } from "../_inspectors/MediaPlayerInspector";
 import RssInspector from "../_inspectors/RssInspector";
 import QrInspector from "../_inspectors/QrInspector";
 import StatusInspector from "../_inspectors/StatusInspector";
+import TextInspector from "../_inspectors/TextInspector";
 import CustomModuleInspector from "../_inspectors/CustomModuleInspector";
 import HAEntityInput from "./HAEntityInput";
 
@@ -406,6 +407,14 @@ function LayoutTab({
                     className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </Field>
+                {activeWidget.type === "CameraWidget.tsx" && (
+                  <Toggle
+                    label="Beim Auslösen sofort im Vollbild öffnen"
+                    checked={activeWidget.config?.triggerFullscreen ?? false}
+                    onChange={(v) => updateConfig(activeWidget.i, "triggerFullscreen", v)}
+                    accent="purple"
+                  />
+                )}
               </>
             )}
           </div>
@@ -648,6 +657,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "StatusWidget.tsx" && (
         <StatusInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "TextWidget.tsx" && (
+        <TextInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type.startsWith("custom:") && (
         <CustomModuleInspector widget={activeWidget} updateConfig={updateConfig} />

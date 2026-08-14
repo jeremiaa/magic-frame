@@ -21,6 +21,7 @@ import {
   WallpaperConfig,
   defaultLayout,
   widgetTitle,
+  WIDGET_DEFAULT_SIZE,
 } from "../_types";
 import AddWidgetModal from "../_components/AddWidgetModal";
 import WallpaperSettingsModal, { type ImmichAlbum, type ImmichPerson } from "../_components/WallpaperSettingsModal";
@@ -212,15 +213,16 @@ function MobileEditorInner() {
     // See the desktop editor for the rationale (issue #7).
     const label = "";
 
+    const size = WIDGET_DEFAULT_SIZE[type];
     const newWidget: WidgetLayoutItem = {
       i: newId,
       x: 0,
       y: 5,
-      w: 8,
-      h: 4,
+      w: size?.w ?? 8,
+      h: size?.h ?? 4,
       type,
       label,
-      bgOpacity: 20,
+      bgOpacity: size?.bgOpacity ?? 20,
       config: { fontSize: 20, fontFamily: "var(--font-geist-sans)" },
     };
     setLayout((prev) => [...prev, newWidget]);

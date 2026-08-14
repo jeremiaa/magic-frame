@@ -154,11 +154,27 @@ entity does in the meantime.
    your doorbell — for example `binary_sensor.doorbell`.
 4. Leave **Status** empty, or set it to `on`.
 5. Set **Auto-ausblenden nach Sek.** to `20`.
-6. Press **Speichern** (Save).
+6. Tick **Beim Auslösen sofort im Vollbild öffnen** (Open fullscreen when
+   triggered) if you want the picture to fill the screen instead of sitting in
+   its tile. The option only appears on a camera, and only once a trigger entity
+   is set.
+7. Press **Speichern** (Save).
 
 Now: the doorbell rings, the camera appears over the calendar, and twenty
 seconds later it goes away by itself. If the sensor drops back and fires again
 in the meantime, the twenty seconds start over.
+
+### Fullscreen without touching anything
+
+With **Beim Auslösen sofort im Vollbild öffnen** on, the camera opens the same
+fullscreen overlay a tap would open — the point being that nobody has to reach
+the screen to see who is at the door. It closes again on its own when the pulse
+ends or the entity stops matching, and the view goes back to what it was.
+
+The overlay opens on the **moment the trigger starts**, not for as long as it
+holds. That matters if somebody dismisses it: tap the **✕**, and it stays closed
+even while the doorbell is still reporting `on`. The next ring opens it again.
+A person closing something should not have to fight the wall for it.
 
 Two details worth having:
 

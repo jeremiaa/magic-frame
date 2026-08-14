@@ -334,6 +334,22 @@ export const EN: Record<string, string> = {
   "Icon mit Rahmen": "Icon with frame",
   "Icon-Größe": "Icon size",
   "Icon im Kasten": "Icon in box",
+
+  // Text-Widget (#69)
+  "Mitte": "Centre",
+  "Stil": "Style",
+  "Icon (optional)": "Icon (optional)",
+  "Großbuchstaben": "Uppercase",
+  "Laufweite": "Letter spacing",
+  "Trennlinie darunter": "Divider below",
+  "Größe der zweiten Zeile": "Second line size",
+  "Zweite Zeile (optional)": "Second line (optional)",
+  "z.B. Heute im Angebot": "e.g. On the menu today",
+  "Schriftgröße, Farbe und Schriftart stellst du im Reiter „Text“ ein — wie bei jedem Widget.":
+    "Font size, colour and typeface live in the “Text” tab — same as every other widget.",
+  "Senkrecht „Unten“ setzt die Überschrift direkt über das Widget darunter.":
+    "Vertical “Bottom” drops the heading right onto the widget below it.",
+
   "Steuerungs-Button ausblenden": "Hide control button",
   "Kasten-Größe": "Box size",
   "Standard": "Default",
@@ -464,6 +480,7 @@ export const EN: Record<string, string> = {
   "Nur zeigen wenn HA-Entity einen Status hat": "Only show when an HA entity has a state",
   "Status (leer = sobald aktiv / an)": "State (empty = whenever active / on)",
   "Auto-ausblenden nach Sek. (0 = solange aktiv)": "Auto-hide after sec. (0 = while active)",
+  "Beim Auslösen sofort im Vollbild öffnen": "Open fullscreen when triggered",
   "Sichtbarkeit": "Visibility",
   "Automatisch über Home Assistant": "Automatic via Home Assistant",
   "Beim Laden versteckt (per Button einblendbar)": "Hidden on load (shown via a button)",
@@ -886,6 +903,7 @@ export const EN: Record<string, string> = {
   "z.B. open": "e.g. open",
   "Alert droppen sobald Trigger weg ist (ohne explizites Clear)":
     "Drop alert as soon as the trigger is gone (without explicit clear)",
+  "Farbe folgt dem Status (inaktiv = gedämpft)": "Colour follows the state (inactive = dimmed)",
   "+ Neue Benachrichtigungs-Regel": "+ New notification rule",
   "Quelle: Home Assistant Persistent-Notifications": "Source: Home Assistant persistent notifications",
   "Alle persistent_notification.*-Einträge deiner HA-Instanz erscheinen hier automatisch. Das Wegwischen-X im Widget ruft auch HA's persistent_notification.dismiss auf.":

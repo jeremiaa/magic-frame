@@ -1,7 +1,7 @@
 # Widgets
 
 A **widget** is one tile on a view — the clock, the weather, a photo, a light
-switch. There are 18 kinds. This page is the catalogue, and then the settings
+switch. There are 19 kinds. This page is the catalogue, and then the settings
 that every one of them has, whatever kind it is.
 
 A **view** is one screenful shown at one address; you build it in the editor,
@@ -29,18 +29,19 @@ described in [The editor](the-editor.md).
 | Messages (`Nachrichten`) | `MessagesWidget.tsx` | Short notes sent to the screen from a phone | [Family widgets](widgets-family.md) |
 | Shopping list (`Einkaufsliste`) | `ShoppingListWidget.tsx` | A shared shopping list you can tick off on the screen | [Family widgets](widgets-family.md) |
 | To-dos (`Todos`) | `TodosWidget.tsx` | Tasks, optionally filtered to one person | [Family widgets](widgets-family.md) |
+| Text | `TextWidget.tsx` | A heading or caption that labels the widgets around it | [Labelling a view](#labelling-a-view), below |
 
-Anything beyond these 18 is a **custom module** — a widget somebody else wrote,
+Anything beyond these 19 is a **custom module** — a widget somebody else wrote,
 installed under `Editor → Modules`. Its type id starts with `custom:` instead
 of ending in `.tsx`. See [Custom modules](custom-modules.md).
 
 ## Adding one
 
-![The 'Add widget' palette down the left of the editor, each of the 18 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
+![The 'Add widget' palette down the left of the editor, each of the 19 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
 
 1. Open `/editor`, sign in, and click the view you want to change.
 2. Down the left of the canvas is the **Add widget** (`Widget hinzufügen`)
-   palette, listing all 18 with their icons, and any custom modules under a
+   palette, listing all 19 with their icons, and any custom modules under a
    **Custom** heading below them.
 3. Click a row. The widget lands on the grid and its inspector opens.
 4. Drag it where you want it and drag its bottom-right corner to resize.
@@ -66,7 +67,7 @@ get renamed once released: renaming one would break every layout that uses it.
 
 Select a widget in the editor and the inspector opens with three tabs:
 **Layout**, **Text & colour** (`Text & Farbe`) and **Content** (`Inhalt`). The
-first two are the same for all 18 widgets; the Content tab is what the
+first two are the same for all 19 widgets; the Content tab is what the
 individual widget pages document.
 
 ### Layout
@@ -118,6 +119,43 @@ preview moves into its own column beside the inspector. Widgets that would
 normally be empty — a calendar with no appointments, a notification stack with
 nothing to report — fill the preview with invented example entries so you can
 judge the layout. Those examples exist only in the editor and never on a display.
+
+## Labelling a view
+
+The **Text** widget (`TextWidget.tsx`) is the odd one out: it fetches nothing
+and shows nothing but the words you type. It exists because a view can become
+ambiguous — two calendars next to each other, one holding this week's meals and
+one the family's appointments, look identical until something says which is
+which.
+
+Give it a **Text**, and optionally a **second line** under it in a smaller size.
+Both are plain text; there is no Markdown and no HTML.
+
+It deliberately has **no font settings of its own**. Size, typeface, colour,
+weight and shadow come from the inspector's **Text** tab, the same one every
+widget has — a heading is not a special kind of text, it is text set larger.
+Turn on **Responsive auto-scale** there and the heading grows with its tile
+instead of staying at a fixed pixel size.
+
+What it does add, in the Content tab:
+
+- **Alignment**, horizontal and vertical. Vertical is the useful one: set it to
+  **Bottom** and the heading sits on the lower edge of its tile, right above
+  whatever it labels, no matter how tall you drag the tile.
+- **An icon** in front of the text, from the same picker the other widgets use,
+  with its own size relative to the text.
+- **Uppercase** and **letter spacing**, which belong together — capitals need
+  the extra air to stay readable across a room.
+- **A divider** under the text: a thin line in the text's own colour, which
+  turns a label into a section heading.
+
+A new Text widget arrives 10 columns wide, 2 rows high and with no background,
+rather than the usual tile — a heading with a grey box behind it is almost never
+what you want. Drag it to fit like any other widget.
+
+If the text is longer than the tile, it wraps, and what does not fit is cut off
+at the bottom edge. It always starts at the top of the visible area, so you lose
+the end of a heading, never its beginning.
 
 ## When two widgets overlap
 

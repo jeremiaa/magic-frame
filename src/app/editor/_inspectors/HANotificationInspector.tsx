@@ -445,6 +445,22 @@ export default function HANotificationInspector({
                     </div>
                  </div>
 
+                 {/* #47: Farbe folgt dem Status. Bewusst opt-in — wer eine feste
+                     Farbe gewählt hat, hat sie so gemeint. */}
+                 <label className="flex items-center gap-3 cursor-pointer group mt-3">
+                    <input
+                       type="checkbox"
+                       checked={rule.colorFollowsState ?? false}
+                       onChange={(e) => {
+                           const newRules = [...(activeWidget.config?.rules || [])];
+                           newRules[rIdx] = { ...rule, colorFollowsState: e.target.checked };
+                           updateConfig(activeWidget.i, 'rules', newRules);
+                       }}
+                       className="w-4 h-4 rounded accent-fuchsia-500"
+                    />
+                    <span className="text-xs text-[var(--mf-fg)]/80">{t("Farbe folgt dem Status (inaktiv = gedämpft)")}</span>
+                 </label>
+
                   {/* Advanced Options Group */}
                   <div className="mt-4 p-3 bg-[var(--mf-ovl)]/20 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg space-y-4">
 

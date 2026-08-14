@@ -341,7 +341,28 @@ const cameraConfig = baseConfig
     aspectRatio: z.enum(["auto", "16:9", "4:3", "1:1"]).optional(),
     streamMode: z.enum(["snapshot", "mjpeg", "webrtc"]).optional(),
     clickFullscreen: z.boolean().optional(),
+    // #41: Wird das Widget von showWhenEntity eingeblendet, springt das Bild
+    // direkt ins Vollbild — die Türklingel-Kamera soll ohne Antippen gross sein.
+    // Ohne Trigger wirkungslos.
+    triggerFullscreen: z.boolean().optional(),
     caption: z.string().optional(),
+  })
+  .passthrough();
+
+// TextWidget — freie Überschrift/Beschriftung für den Rest der Ansicht (#69).
+// Schriftgröße, Farbe, Familie und Gewicht stehen bewusst NICHT hier: die
+// liegen in baseConfig und gelten für jedes Widget gleich.
+const textConfig = baseConfig
+  .extend({
+    text: z.string().optional(),
+    subtext: z.string().optional(),
+    subtextScale: z.number().optional(),
+    icon: z.string().optional(),
+    iconScale: z.number().optional(),
+    vAlign: z.enum(["top", "middle", "bottom"]).optional(),
+    uppercase: z.boolean().optional(),
+    letterSpacing: z.number().optional(),
+    divider: z.boolean().optional(),
   })
   .passthrough();
 
@@ -550,6 +571,9 @@ export const widgetLayoutItemSchema = z.union([
   z
     .object({ type: z.literal("StatusWidget.tsx"), config: statusConfig })
     .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("TextWidget.tsx"), config: textConfig })
+    .merge(commonWidgetFields()),
   ]),
 ]);
 
@@ -598,6 +622,7 @@ export const WIDGET_CONFIG_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "RssWidget.tsx": rssConfig,
   "QrWidget.tsx": qrConfig,
   "StatusWidget.tsx": statusConfig,
+  "TextWidget.tsx": textConfig,
 };
 
 export const layoutSchema = z.array(widgetLayoutItemSchema);

@@ -468,6 +468,13 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
       dashboardId,
       onVisibilityChange: (isVisible) =>
         setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : { ...prev, [id]: !isVisible }),
+      // #41: sichtbar GEWORDEN durch einen HA-Trigger — nicht bloss sichtbar.
+      // Ein Widget ohne Trigger-Konfiguration meldet hier nie true, sonst
+      // stünde die Kamera dauerhaft im Vollbild.
+      shownByTrigger:
+        triggerHiddenWidgets[id] === false &&
+        !userHiddenWidgets[id] &&
+        !autoHiddenWidgets[id],
     });
 
   return (

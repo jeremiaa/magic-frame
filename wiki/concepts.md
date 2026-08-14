@@ -41,7 +41,7 @@ another.
 ## A widget
 
 A **widget** is one tile on a view: the clock, the weather, the calendar, a
-photo, a light switch. There are 18 kinds, listed in [Widgets](widgets.md).
+photo, a light switch. There are 19 kinds, listed in [Widgets](widgets.md).
 
 Two things about widgets matter everywhere else in this wiki:
 
