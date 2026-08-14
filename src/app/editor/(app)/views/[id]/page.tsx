@@ -1004,7 +1004,11 @@ export default function ViewEditor({
             }`}
           >
             <Save size={14} />
-            <span>
+            {/* Aufs Telefon passt die Leiste mit deutschem "Speichern" nicht —
+                der Knopf ragte rechts raus. Unter sm spricht der Knopf über
+                Symbol und Farbe (grün = gespeichert, rot = Fehler), wie es
+                TV-Sync und Refresh mit ihren Chips längst tun. */}
+            <span className="hidden sm:inline">
               {saveStatus === "saving" && t("Speichere…")}
               {saveStatus === "saved" && t("Gespeichert")}
               {saveStatus === "error" && t("Fehler")}
@@ -1582,7 +1586,13 @@ export default function ViewEditor({
           onClick={() => setShowMobileWidgets(false)}
         >
           <div
-            className="w-full bg-[var(--mf-surface-2)] border-t border-[var(--mf-bdr)]/10 rounded-t-3xl p-4 pb-8"
+            // max-h + eigenes Scrollen: 19 Widgets plus Module sind länger als
+            // jedes Telefon. Ohne Limit ankert items-end das Sheet unten und
+            // schiebt Uhr/Wetter/Kalender unerreichbar über den Bildrand —
+            // genau so auf dem iPhone passiert. dvh statt vh wegen der
+            // ein-/ausfahrenden Safari-Leiste; der Puffer unten ist die
+            // Home-Geste (safe-area).
+            className="w-full max-h-[80dvh] overflow-y-auto overscroll-contain bg-[var(--mf-surface-2)] border-t border-[var(--mf-bdr)]/10 rounded-t-3xl p-4 pb-[calc(2rem+env(safe-area-inset-bottom))]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-12 h-1 rounded-full bg-[var(--mf-elev)]/20 mx-auto mb-4" />

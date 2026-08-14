@@ -229,6 +229,39 @@ export default function CameraInspector({
         </span>
       </label>
 
+      {/* #41: derselbe config-Schlüssel wie im Layout-Reiter unter Sichtbarkeit
+          — EIN Wert, zwei Sichten. Er steht auch hier, weil man Kamera-Optionen
+          im Kamera-Reiter sucht und nicht hinter der Trigger-Entity im
+          Layout-Reiter. Ohne Trigger ist der Schalter aus gutem Grund gesperrt:
+          er täte nichts, und ein Schalter, der nichts tut, sieht aus wie kaputt. */}
+      {(() => {
+        const hasTrigger = ((cfg.showWhenEntity as string) || "").trim() !== "";
+        return (
+          <div>
+            <label className={`flex items-center gap-3 group ${hasTrigger ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={cfg.triggerFullscreen === true}
+                  disabled={!hasTrigger}
+                  onChange={(e) => updateConfig(activeWidget.i, "triggerFullscreen", e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500" />
+              </div>
+              <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
+                {t("Beim Auslösen sofort im Vollbild öffnen")}
+              </span>
+            </label>
+            <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
+              {hasTrigger
+                ? t("Öffnet das Vollbild von selbst, sobald der Sichtbarkeits-Trigger auslöst — Türklingel klingelt, Kamera füllt den Schirm.")
+                : t("Braucht einen Trigger: im Reiter „Layout“ unter „Sichtbarkeit“ eine HA-Entity setzen (z.B. die Türklingel), dann wird der Schalter frei.")}
+            </p>
+          </div>
+        );
+      })()}
+
       <div>
         <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">
           {t("Beschriftung (optional)")}

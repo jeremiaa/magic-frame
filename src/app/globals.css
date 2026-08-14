@@ -195,3 +195,26 @@ input[type="checkbox"].appearance-none:checked {
   background-position: center;
   background-size: 66%;
 }
+
+/* iOS zoomt in jedes fokussierte Eingabefeld, dessen Schrift kleiner als 16 px
+   ist — im Editor mit seinen text-xs/text-sm-Feldern also in praktisch jedes,
+   und danach steht die Seite halb außerhalb des Bildes. Auf Touch-Geräten
+   bekommen Text-Eingaben deshalb mindestens 16 px; damit unterbleibt der Zoom,
+   ohne dass wir das Pinch-Zoomen der Nutzer anfassen (maximum-scale wäre auf
+   Android eine Barriere).
+
+   Bewusst auf .mf-admin (Editor, Handy-Editor, Login) gescoped und NICHT
+   global: die Eingabefelder der Live-Ansicht (Einkaufsliste, Todos am
+   Wandtablet) skalieren in em mit ihrer Widget-Schrift — eine fixe 16-px-Regel
+   würde dort die Typografie aus dem Tritt bringen. Checkbox/Radio/Range/Color
+   lösen keinen Zoom aus und bleiben außen vor. Ungelayerte Regel: gewinnt
+   gegen die Tailwind-Utilities im @layer. */
+@media (hover: none) and (pointer: coarse) {
+  .mf-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+    select,
+    textarea
+  ) {
+    font-size: 16px;
+  }
+}

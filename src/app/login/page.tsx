@@ -374,7 +374,7 @@ function SetupForm({ onDone }: { onDone: () => void }) {
 export default function LoginPage() {
   return (
     <LocaleProvider>
-      <div className="flex-1 flex items-center justify-center bg-black text-white p-6">
+      <div className="mf-admin flex-1 flex items-center justify-center bg-black text-white p-6">
         <Suspense fallback={<div className="text-white/50">…</div>}>
           <AuthGate />
         </Suspense>

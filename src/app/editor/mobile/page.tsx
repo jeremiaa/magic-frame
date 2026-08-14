@@ -385,7 +385,7 @@ function MobileEditorInner() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[var(--mf-surface)] text-[var(--mf-fg)] flex flex-col">
+    <div className="mf-admin min-h-screen bg-[var(--mf-surface)] text-[var(--mf-fg)] flex flex-col">
       <header className="sticky top-0 z-20 bg-[var(--mf-surface)]/90 backdrop-blur border-b border-[var(--mf-bdr)]/10 px-4 py-3 flex items-center gap-3">
         <MagicFrameLogo className="w-8 h-8 shrink-0" />
         <select

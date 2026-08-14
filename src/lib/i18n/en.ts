@@ -485,6 +485,10 @@ export const EN: Record<string, string> = {
   "Status (leer = sobald aktiv / an)": "State (empty = whenever active / on)",
   "Auto-ausblenden nach Sek. (0 = solange aktiv)": "Auto-hide after sec. (0 = while active)",
   "Beim Auslösen sofort im Vollbild öffnen": "Open fullscreen when triggered",
+  "Öffnet das Vollbild von selbst, sobald der Sichtbarkeits-Trigger auslöst — Türklingel klingelt, Kamera füllt den Schirm.":
+    "Opens fullscreen by itself the moment the visibility trigger fires — doorbell rings, camera fills the screen.",
+  "Braucht einen Trigger: im Reiter „Layout“ unter „Sichtbarkeit“ eine HA-Entity setzen (z.B. die Türklingel), dann wird der Schalter frei.":
+    "Needs a trigger: set an HA entity under “Visibility” in the “Layout” tab (e.g. the doorbell), and this switch unlocks.",
   "Sichtbarkeit": "Visibility",
   "Automatisch über Home Assistant": "Automatic via Home Assistant",
   "Beim Laden versteckt (per Button einblendbar)": "Hidden on load (shown via a button)",

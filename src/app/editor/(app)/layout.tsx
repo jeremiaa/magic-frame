@@ -169,7 +169,7 @@ function EditorAppLayoutInner({
   );
 
   return (
-    <div data-theme={theme} className="h-screen flex bg-[var(--mf-surface)] light:bg-[#eef2f7] text-[var(--mf-fg)] overflow-hidden">
+    <div data-theme={theme} className="mf-admin h-screen flex bg-[var(--mf-surface)] light:bg-[#eef2f7] text-[var(--mf-fg)] overflow-hidden">
       <aside className="hidden md:flex w-60 shrink-0 border-r border-[var(--mf-bdr)]/10 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] flex-col">
         {sidebarContent}
       </aside>
