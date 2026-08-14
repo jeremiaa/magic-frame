@@ -206,6 +206,15 @@ const SOLO = {
       { entity: 'sensor.car_time_left', label: 'Time to full' },
     ],
   }, [14, 9]],
+  // Die Ueberschrift zeigt sich nur mit dem, was sie beschriftet — allein in
+  // einer Kachel waere ein Text-Widget kein Bild, sondern ein Satz. Darum
+  // gross gesetzt, mit zweiter Zeile und Trennlinie, damit der Shot zeigt,
+  // wofuer es da ist.
+  'w-text': ['TextWidget.tsx', {
+    text: 'This week', subtext: "What's on the table", fontSize: 46,
+    divider: true, icon: 'lucide:utensils', align: 'left', vAlign: 'middle',
+    subtextScale: 45,
+  }, [12, 5]],
 };
 
 async function main() {

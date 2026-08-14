@@ -26,7 +26,7 @@ For the complete text in one request, fetch /llms-full.txt.
 - [The editor](https://github.com/jeremiaa/magic-frame/blob/main/wiki/the-editor.md): control centre, the view list, the grid, the inspector, saving
 - [Views and displays](https://github.com/jeremiaa/magic-frame/blob/main/wiki/views-and-displays.md): one view per display, the public `/view` URL, kiosk setup
 - [Wallpapers](https://github.com/jeremiaa/magic-frame/blob/main/wiki/wallpapers.md): every source, fit modes, split view, the photo info bar
-- [Widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets.md): the catalogue, and the behaviour every widget shares
+- [Widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets.md): the catalogue, the Text widget for headings, and the behaviour every widget shares
 - [Time and weather widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-time-weather.md): Clock, Weather, Environment
 - [The calendar widget](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-calendar.md): list, agenda and month views, and every feed type
 - [Home Assistant widgets](https://github.com/jeremiaa/magic-frame/blob/main/wiki/widgets-home-assistant.md): Entity, Notification, Camera, Sensor, Button

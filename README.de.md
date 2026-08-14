@@ -100,7 +100,7 @@ Statuskarten zeigen deine Geräte mit Bild und Live-Details. Die Media-Karte mac
 <!-- s:widgets -->
 ## Widgets
 
-18 sind bei jeder Installation dabei: Uhr, Wetter, Umwelt, Kalender, Home-Assistant-Entität, HA-Benachrichtigungen, Kamera, Sensor, Bild, Buttons, Timer, Nachrichten, Einkaufsliste, Todos, Media Player, RSS, QR-Code und Status — plus eigene als [Custom-Module](wiki/custom-modules.md).
+19 sind bei jeder Installation dabei: Uhr, Wetter, Umwelt, Kalender, Home-Assistant-Entität, HA-Benachrichtigungen, Kamera, Sensor, Bild, Buttons, Timer, Nachrichten, Einkaufsliste, Todos, Media Player, RSS, QR-Code, Status und Text — plus eigene als [Custom-Module](wiki/custom-modules.md).
 
 Jede Option von jedem: [Zeit und Wetter](wiki/widgets-time-weather.md) · [Kalender](wiki/widgets-calendar.md) · [Home Assistant](wiki/widgets-home-assistant.md) · [Medien und Fotos](wiki/widgets-media.md) · [Familie](wiki/widgets-family.md)
 

@@ -604,7 +604,7 @@
     {
       "id": "widgets-add-palette",
       "page": "widgets.md",
-      "caption": "The 'Add widget' palette down the left of the editor, each of the 18 widgets a row with its icon and a plus.",
+      "caption": "The 'Add widget' palette down the left of the editor, each of the 19 widgets a row with its icon and a plus.",
       "shows": [
         "src/app/editor/_components/AddWidgetModal.tsx",
         "src/app/editor/(app)/views/[id]/page.tsx"

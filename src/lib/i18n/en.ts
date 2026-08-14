@@ -228,6 +228,10 @@ export const EN: Record<string, string> = {
     "Wi-Fi, links and text as a QR code — rounded dots, gradients, icon in the middle.",
   "Gerätekarte mit Bild und Live-Details — wahlweise dauerhaft oder nur bei aktivem Ereignis.":
     "Device card with a picture and live details — permanently, or only while the event is active.",
+  "Luftqualität, Pollen, Feinstaub und UV als Kacheln.":
+    "Air quality, pollen, particulates and UV as tiles.",
+  "Freie Überschrift für die Widgets drumherum — mit zweiter Zeile, Icon und Trennlinie.":
+    "A free heading for the widgets around it — with a second line, icon and divider.",
   "Keine Sensoren gewählt — im Inspector hinzufügen.": "No sensors selected — add them in the inspector.",
   "Media Player": "Media Player",
   "Kein Media-Player gewählt — im Inspector wählen.": "No media player selected — pick one in the inspector.",

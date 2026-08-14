@@ -138,7 +138,8 @@ The left column lists every widget you can add — 19 types, described in
 Uhr (Clock), Wetter (Weather), Kalender (Calendar), HA Entity, Buttons,
 Benachrichtigungen (Notifications), Timer, Nachrichten (Messages),
 Einkaufsliste (Shopping list), Todos, Bild (Image), Sensor, Umwelt
-(Environment), Kamera (Camera), Media Player, RSS Feed, QR-Code and Status.
+(Environment), Kamera (Camera), Media Player, RSS Feed, QR-Code, Status and
+Text.
 
 Click one and it is added straight away: 8 columns wide, 4 rows high, at the
 left edge on row 5, with its inspector already open. There is no

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:wiki": "node scripts/check-wiki.mjs",
+    "check:widgets": "node scripts/check-widgets.mjs",
     "build:llms": "node scripts/build-llms.mjs"
   },
   "dependencies": {

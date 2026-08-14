@@ -16,6 +16,14 @@ invented options.
 page must appear in the index and in `llms.txt`, and no example may contain a
 real address. Documentation that drifts turns the build red.
 
+`scripts/check-widgets.mjs` runs beside it and answers the other half of the
+question: a core widget is not one file but a dozen entries in a dozen lists —
+the layout schema, the render map, the palette, the phone picker, the accent
+colours, the MCP catalogue, the catalogue table on [Widgets](widgets.md). Miss
+one and nothing errors; the widget is simply not addable, or addable and never
+saveable. The check also compares every "N widgets" in this wiki and in both
+READMEs against the real number, because those go stale silently.
+
 Screenshots are held to the same standard. Each one records which source files
 it shows; when one of those changes the check says which pictures have started
 lying, and `scripts/shoot-wiki.mjs` retakes them.

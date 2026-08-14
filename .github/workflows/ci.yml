@@ -45,6 +45,13 @@ jobs:
       - name: Check the wiki against the code
         run: npm run check:wiki
 
+      # Ein Kern-Widget ist ein Dutzend Eintraege in einem Dutzend Listen. Wer
+      # einen vergisst, merkt nichts — das Widget ist dann nur still nicht
+      # hinzufuegbar oder nicht speicherbar. Gleiche Begruendung wie oben fuer
+      # die Platzierung hier statt im Build.
+      - name: Check every widget is registered everywhere
+        run: npm run check:widgets
+
       - name: Production build
         run: npm run build
         env:

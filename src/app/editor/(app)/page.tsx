@@ -35,6 +35,10 @@ import {
   AlertOctagon,
   Leaf,
   Type as TypeIcon,
+  Music,
+  Rss,
+  QrCode,
+  Activity,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
@@ -61,6 +65,14 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "EnvironmentWidget.tsx":    { color: "rgba(132,204,22,0.55)",  Icon: Leaf },
   "CameraWidget.tsx":         { color: "rgba(244,63,94,0.55)",   Icon: Video },
   "TextWidget.tsx":           { color: "rgba(14,165,233,0.55)",  Icon: TypeIcon },
+  // Diese vier fehlten hier seit ihrer Einfuehrung: ohne Eintrag faellt die
+  // Mini-Vorschau auf ein graues Rechteck ohne Icon zurueck (Zeile mit
+  // WIDGET_META[w.type] ?? …), und wer eine Medien- oder Status-Kachel auf
+  // seiner Karte sucht, findet sie nicht wieder. Farben wie in widget-visuals.
+  "MediaPlayerWidget.tsx":    { color: "rgba(236,72,153,0.55)",  Icon: Music },
+  "RssWidget.tsx":            { color: "rgba(245,158,11,0.55)",  Icon: Rss },
+  "QrWidget.tsx":             { color: "rgba(6,182,212,0.55)",   Icon: QrCode },
+  "StatusWidget.tsx":         { color: "rgba(14,165,233,0.55)",  Icon: Activity },
 };
 const GRID_COLS = 24;
 

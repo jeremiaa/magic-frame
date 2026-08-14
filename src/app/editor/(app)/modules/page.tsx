@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Clock, CloudSun, Calendar, Power, Bell, Timer, MessageSquare, ShoppingCart, ClipboardList, Code2, FileCode, CheckCircle2, ChevronDown, Upload, Trash2, Eye, EyeOff, Zap, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity } from "lucide-react";
+import { Clock, CloudSun, Calendar, Power, Bell, Timer, MessageSquare, ShoppingCart, ClipboardList, Code2, FileCode, CheckCircle2, ChevronDown, Upload, Trash2, Eye, EyeOff, Zap, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity, Leaf, Type as TypeIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type CustomModule = {
@@ -45,6 +45,8 @@ const INSTALLED = [
   { key: "rss", label: "RSS Feed", desc: "Schlagzeilen mit Vorschaubild, Teaser und QR zum Weiterlesen.", icon: <Rss size={16} />, accent: "text-amber-300 bg-amber-500/10 border-amber-500/30" },
   { key: "qr", label: "QR-Code", desc: "WLAN, Links & Texte als QR — runde Punkte, Farbverläufe, Icon in der Mitte.", icon: <QrCode size={16} />, accent: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30" },
   { key: "status", label: "Status", desc: "Gerätekarte mit Bild und Live-Details — wahlweise dauerhaft oder nur bei aktivem Ereignis.", icon: <Activity size={16} />, accent: "text-sky-300 bg-sky-500/10 border-sky-500/30" },
+  { key: "environment", label: "Umwelt", desc: "Luftqualität, Pollen, Feinstaub und UV als Kacheln.", icon: <Leaf size={16} />, accent: "text-lime-300 bg-lime-500/10 border-lime-500/30" },
+  { key: "text", label: "Text", desc: "Freie Überschrift für die Widgets drumherum — mit zweiter Zeile, Icon und Trennlinie.", icon: <TypeIcon size={16} />, accent: "text-sky-300 bg-sky-500/10 border-sky-500/30" },
 ];
 
 export default function ModulesPage() {

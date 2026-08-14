@@ -100,7 +100,7 @@ Status cards show your devices with a picture and live details. The media card t
 <!-- s:widgets -->
 ## Widgets
 
-18 ship with every install: Clock, Weather, Environment, Calendar, Home Assistant entity, HA Notifications, Camera, Sensor, Image, Buttons, Timer, Messages, Shopping, Todos, Media Player, RSS, QR Code and Status — plus your own as [custom modules](wiki/custom-modules.md).
+19 ship with every install: Clock, Weather, Environment, Calendar, Home Assistant entity, HA Notifications, Camera, Sensor, Image, Buttons, Timer, Messages, Shopping, Todos, Media Player, RSS, QR Code, Status and Text — plus your own as [custom modules](wiki/custom-modules.md).
 
 Every option of every one: [Time and weather](wiki/widgets-time-weather.md) · [Calendar](wiki/widgets-calendar.md) · [Home Assistant](wiki/widgets-home-assistant.md) · [Media and photos](wiki/widgets-media.md) · [Family](wiki/widgets-family.md)
 

@@ -362,6 +362,9 @@ which reads a filtered stream from `/api/ha/stream`.
    `scripts/check-wiki.mjs` runs in CI and fails if a widget file exists that no
    page mentions. It is deliberately not part of `npm run build`, so installing
    from source never breaks over stale documentation.
+5. `node scripts/check-widgets.mjs` — only relevant if you added a **core**
+   widget rather than a module. It names every list your widget is still
+   missing from, and what breaks without each one.
 
 ## Worked examples in the code
 

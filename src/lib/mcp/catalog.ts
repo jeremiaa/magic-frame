@@ -69,7 +69,7 @@ export async function widgetCatalog(type?: string): Promise<unknown> {
     };
   }
 
-  // Ohne Argument: die Übersicht. Der volle Schema-Dump aller 18 Typen wäre
+  // Ohne Argument: die Übersicht. Der volle Schema-Dump aller Kern-Typen wäre
   // riesig — deshalb pro Typ nur der Zweck, und die Aufforderung, das Schema
   // eines Typs einzeln zu holen.
   const modules = await prisma.customModule
