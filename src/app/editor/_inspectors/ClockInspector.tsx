@@ -127,6 +127,18 @@ export default function ClockInspector({
 
        {activeWidget.config?.showMiniWeather && (
           <div className="bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] p-4 rounded-xl border border-[var(--mf-bdr)]/5 space-y-4">
+              <div>
+                 <label className="text-xs font-medium text-[var(--mf-fg)]/80 block mb-2 text-cyan-400">{t("Datenquelle")}</label>
+                 <select
+                    value={activeWidget.config?.provider || 'open-meteo'}
+                    onChange={(e) => updateConfig(activeWidget.i, 'provider', e.target.value)}
+                    className="w-full bg-[var(--mf-surface)] border border-cyan-500/30 text-[var(--mf-fg)] text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-400 cursor-pointer"
+                 >
+                    <option value="open-meteo">{t("Open-Meteo (global, kein Key)")}</option>
+                    <option value="dwd">{t("DWD ICON (Deutscher Wetterdienst, für DE am genauesten)")}</option>
+                    <option value="openweathermap">{t("OpenWeatherMap (braucht API-Key)")}</option>
+                 </select>
+              </div>
               <div className="relative">
                  <label className="text-xs font-medium text-[var(--mf-fg)]/80 block mb-2 text-cyan-400">{t("Ort suchen (Auto-Ausfüllen)")}</label>
                  <input

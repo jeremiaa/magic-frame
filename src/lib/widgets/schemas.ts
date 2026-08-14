@@ -51,6 +51,8 @@ const clockConfig = baseConfig.extend({
   // for users who want a specific regional format.
   dateFormat: z.enum(["auto", "en-US", "en-GB", "de-DE"]).optional(),
   showMiniWeather: z.boolean().optional(),
+  // #81: Datenquelle der Mini-Anzeige. Ohne Angabe Open-Meteo — wie bisher.
+  provider: z.enum(["open-meteo", "dwd", "openweathermap"]).optional(),
   lat: z.string().optional(),
   lon: z.string().optional(),
   location: z.string().optional(),

@@ -48,6 +48,9 @@ export interface WidgetLayoutItem {
     hideForecast?: boolean;
     hideSeconds?: boolean;
     showMiniWeather?: boolean;
+    // #81: Datenquelle der Mini-Wetter-Anzeige der Uhr (Wetter-Widget hat
+    // dasselbe Feld schon; die Uhr kannte es nicht und fragte immer Open-Meteo)
+    provider?: "open-meteo" | "dwd" | "openweathermap" | "home-assistant";
     // Weather widget: atmosphärischer Wetter-Hintergrund
     weatherBg?: boolean;
     weatherBgOpacity?: number;

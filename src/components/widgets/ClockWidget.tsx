@@ -37,12 +37,18 @@ export default function ClockWidget({ config }: { config?: any }) {
   // Weather Loop
   const unitTemp: "celsius" | "fahrenheit" =
     config?.unitTemp === "fahrenheit" ? "fahrenheit" : "celsius";
+  // #81: Ohne provider-Parameter fragte die Mini-Anzeige immer Open-Meteo —
+  // egal, was im Wetter-Widget daneben eingestellt war. Die beiden zeigten
+  // dann verschiedene Werte, und das las sich wie "aktualisiert nicht".
+  // "home-assistant" fehlt hier bewusst: der Provider braucht eine
+  // weather.*-Entität, und die Mini-Anzeige hat kein Feld dafür.
+  const weatherProvider: string = config?.provider || "open-meteo";
   useEffect(() => {
     if (!config?.showMiniWeather || !config?.lat || !config?.lon) return;
     const fetchWeather = async () => {
       try {
         const res = await fetch(
-          `/api/weather?lat=${config.lat}&lon=${config.lon}&temperature_unit=${unitTemp}`
+          `/api/weather?lat=${config.lat}&lon=${config.lon}&temperature_unit=${unitTemp}&provider=${encodeURIComponent(weatherProvider)}`
         );
         const result = await res.json();
         if (!result.error) setWeather(result);
@@ -53,7 +59,7 @@ export default function ClockWidget({ config }: { config?: any }) {
     fetchWeather();
     const interval = setInterval(fetchWeather, 15 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [config?.showMiniWeather, config?.lat, config?.lon, unitTemp]);
+  }, [config?.showMiniWeather, config?.lat, config?.lon, unitTemp, weatherProvider]);
 
   if (!time) return <div className="animate-pulse w-full h-full bg-white/5 rounded-xl min-h-[4em]"></div>;
 
