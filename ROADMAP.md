@@ -9,29 +9,14 @@ summary for anyone who doesn't want to scroll through them.
 
 ---
 
-## Shipping next — *security, and a manual*
+## Shipping next
 
-Two rounds of work that are done but not released yet:
-
-- **🗓️ CalDAV calendars** — connect Nextcloud, Baïkal, Radicale, Synology,
-  mailbox.org or iCloud with server URL and an app password; the calendars
-  themselves are discovered, no OAuth app to register.
-- **🔒 Security and behaviour** — the database port is closed and the app
-  refuses to start without a session secret instead of quietly letting
-  everyone in; `/api/ha/action` now only reaches entities that are actually
-  on one of your views; failed logins are counted per client instead of per
-  proxy, so five wrong passwords no longer lock out the whole household.
-  Plus the widget fixes that came out of the same review.
-- **📖 A wiki, checked in CI** — 28 pages written from the source, with
-  `llms.txt` and `llms-full.txt` for agents. A check runs on every push:
-  every widget must have a section, every route named must exist, every link
-  must resolve, and every screenshot records the files it shows so a stale
-  one turns the build red. The four old files under `docs/` are gone — they
-  had drifted far enough to be actively wrong.
+Nothing sitting on the shelf — v1.5.0 just went out (see below). What's
+coming next is the "Next up" list.
 
 ## Next up
 
-Scoped issues that are likely to land in upcoming 1.3.x patches:
+Scoped issues that are likely to land in upcoming patch releases:
 
 - **🔌 Wallpaper source switching over HTTP** ([#63](https://github.com/jeremiaa/magic-frame/issues/63)) —
   the display-control half of that issue shipped in v1.3.4 (`/api/devices/refresh`,
@@ -39,9 +24,6 @@ Scoped issues that are likely to land in upcoming 1.3.x patches:
   source from an automation is what's left
 - **🎵 Fullscreen media browser + search** for Music Assistant, based on
   @schmierlappe's module ([#57](https://github.com/jeremiaa/magic-frame/issues/57))
-- **📷 HA-triggered camera in fullscreen** instead of card size ([#41](https://github.com/jeremiaa/magic-frame/issues/41))
-- **🔔 State-based colouring for notification tiles**, like the HA entity
-  widget has ([#47](https://github.com/jeremiaa/magic-frame/issues/47))
 
 ## Later — ideas & bigger rocks
 
@@ -63,19 +45,17 @@ opening or upvoting an issue is the best way to move it up.
 
 The two most recent releases, so it's clear what no longer belongs above:
 
-- **v1.3.4** — the [Home Assistant add-on](wiki/home-assistant-addon.md)
-  ([#25](https://github.com/jeremiaa/magic-frame/issues/25)), the picture-frame
-  round (blurred fill [#38](https://github.com/jeremiaa/magic-frame/issues/38) /
-  [#72](https://github.com/jeremiaa/magic-frame/issues/72), Immich **people**
-  [#75](https://github.com/jeremiaa/magic-frame/issues/75), the photo info bar
-  in split view [#44](https://github.com/jeremiaa/magic-frame/issues/44)), and
-  display control over HTTP.
-- **v1.3.3** — the calendar rework (agenda and month views, Home Assistant
-  calendars [#65](https://github.com/jeremiaa/magic-frame/issues/65) based on
-  [#68](https://github.com/jeremiaa/magic-frame/pull/68) by @proffalken, all-day
-  timezone fixes [#70](https://github.com/jeremiaa/magic-frame/issues/70)), two
-  new weather icon families and the Environment widget, and host timezone
-  passthrough ([#73](https://github.com/jeremiaa/magic-frame/issues/73)).
+- **v1.5.0** — CalDAV calendars ([#79](https://github.com/jeremiaa/magic-frame/pull/79) by @chimmidev), the
+  Home Assistant add-on grown up (sidebar entry with one-click sign-in, icon,
+  ingress), an [MCP server](wiki/companion-api.md) so agents can manage the
+  whole configuration, the camera going fullscreen on an HA trigger
+  ([#41](https://github.com/jeremiaa/magic-frame/issues/41)), state-based
+  notification colours ([#47](https://github.com/jeremiaa/magic-frame/issues/47)),
+  and a free-text heading widget ([#69](https://github.com/jeremiaa/magic-frame/issues/69)).
+- **v1.4.0** — the security round (closed database port, fail-closed auth,
+  an allowlist for `/api/ha/action`), the [wiki](wiki/README.md) — 28 pages
+  checked against the code in CI, with `llms.txt` for agents — and both
+  READMEs rebuilt around it.
 
 ---
 
