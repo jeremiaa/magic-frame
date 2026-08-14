@@ -1,9 +1,9 @@
 # Calendars
 
-The calendar widget reads **feeds**. A feed is one calendar, and there are four
+The calendar widget reads **feeds**. A feed is one calendar, and there are five
 kinds: a plain **iCal** address, a **Google** account, a **Microsoft 365**
-account, and a calendar your **Home Assistant** already knows about. A widget can
-merge any number of them, in any mix.
+account, a **CalDAV** server, and a calendar your **Home Assistant** already
+knows about. A widget can merge any number of them, in any mix.
 
 This page is about **getting the accounts connected**. Building the widget — the
 list, agenda and month views, colours, how many events to show — is on
@@ -14,6 +14,7 @@ list, agenda and month views, colours, how many events to show — is on
 | iCal / Webcal | Nothing. Just the address. | In the widget itself |
 | Google | An OAuth app of your own, then one click to connect | `Editor → Integrations` |
 | Microsoft 365 | The same | `Editor → Integrations` |
+| CalDAV | The server address, a username and an app password | `Editor → Integrations` |
 | Home Assistant | A [Home Assistant connection](home-assistant.md) | Already done, if you have one |
 
 **Start with iCal.** It needs no accounts, no developer console and no domain,
@@ -177,6 +178,49 @@ Integrations page instead of the dropdown.
 the account the feed names, not by whoever happens to be looking at the screen —
 which is the whole point, since a wall tablet has no session. Magic Frame
 refreshes an expired token by itself, a minute before it runs out.
+
+## A CalDAV server
+
+**CalDAV** is what Nextcloud, Baïkal, Radicale, a Synology NAS, mailbox.org and
+iCloud speak. There is no OAuth app to register and no developer console: the
+server address, a username and a password are the whole setup, and Magic Frame
+discovers the calendars behind them itself.
+
+1. Open `Editor → Integrations` and find **Connect a CalDAV server**.
+2. **Server address** — the same address your phone uses. The server base is
+   enough; `https://cloud.example.com/remote.php/dav` for Nextcloud, or just
+   `https://cloud.example.com`. Magic Frame follows `/.well-known/caldav` from
+   there to the principal, and from the principal to the calendars.
+3. **Username** and **App password**. Use an app password rather than your
+   account password — with two-factor login enabled the account password will
+   not work at all.
+4. Optionally a **display name**, so a second account is distinguishable later.
+5. **Connect**.
+
+The credentials are checked against the server before anything is stored: they
+are only saved once the server accepts them **and** returns at least one
+calendar, so a dead account cannot end up in the list. If the login is rejected,
+the message says so — that is almost always the account password where the
+server wants an app password.
+
+Then, in the widget:
+
+1. Open the view and click the **Calendar** widget.
+2. Under **Calendar sources**, click **+ CalDAV**.
+3. Pick the account from the dropdown; the card shows the server's host next to
+   the name.
+4. Pick which of that account's calendars to show. The list comes from the
+   server through `/api/calendar/provider/calendars`.
+5. Name and colour the feed, then **Speichern** (Save).
+
+Like the OAuth accounts, a CalDAV feed **works on a login-free display** — the
+stored credentials belong to the account the feed names, not to whoever is
+looking at the screen. Discovery is cached for 10 minutes, so a refresh does not
+re-walk the whole server every time.
+
+The server has to be reachable **from Magic Frame**, not from your phone. A
+CalDAV server that only exists inside your VPN will time out here, and the error
+message says so.
 
 ## Home Assistant calendars
 

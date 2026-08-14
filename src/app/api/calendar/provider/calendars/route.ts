@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession, UnauthorizedError, unauthorizedResponse } from "@/lib/auth/dal";
 import { fetchGoogleCalendars, fetchMicrosoftCalendars } from "@/lib/calendar-auth/providers";
+import { discoverCaldavCalendars } from "@/lib/calendar-auth/caldav";
+import { getCaldavCredentials } from "@/lib/calendar-auth/store";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,14 @@ export async function GET(req: NextRequest) {
     }
     if (provider === "microsoft") {
       const calendars = await fetchMicrosoftCalendars({ userId: session.userId!, accountId });
+      return NextResponse.json({ calendars });
+    }
+    if (provider === "caldav") {
+      const creds = await getCaldavCredentials(accountId, session.userId!);
+      if (!creds) {
+        return NextResponse.json({ error: "CalDAV account not found" }, { status: 404 });
+      }
+      const calendars = await discoverCaldavCalendars(creds);
       return NextResponse.json({ calendars });
     }
     return NextResponse.json({ error: "Unknown provider" }, { status: 400 });

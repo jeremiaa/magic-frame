@@ -155,16 +155,25 @@ model Todo {
   @@index([completedAt, dueDate])
 }
 
-// Pro Nutzer und OAuth-Provider (google, microsoft, …) ein Set an
-// Tokens. Über accountEmail können mehrere Konten desselben Anbieters
+// Pro Nutzer und Kalender-Anbieter (google, microsoft, caldav, …) ein Set an
+// Zugangsdaten. Über accountEmail können mehrere Konten desselben Anbieters
 // parallel gespeichert werden.
+//
+// CalDAV kennt keinen OAuth-Flow: dort hält serverUrl die Server-Adresse,
+// accountEmail den Benutzernamen und accessToken das (App-)Passwort —
+// refreshToken bleibt leer, expiresAt liegt weit in der Zukunft.
 model CalendarAuth {
   id           String   @id @default(cuid())
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider     String   // "google" | "microsoft"
+  provider     String   // "google" | "microsoft" | "caldav"
   accountEmail String?
   accountName  String?
+  // Nur CalDAV; bei OAuth-Konten leer. Teil des Unique-Keys, damit derselbe
+  // Benutzername auf zwei Servern zwei getrennte Konten bleibt. Bewusst
+  // NOT NULL mit Default "" — mit NULL wären in Postgres beliebig viele
+  // gleiche (userId, provider, accountEmail)-Zeilen erlaubt.
+  serverUrl    String   @default("")
   accessToken  String
   refreshToken String?
   expiresAt    DateTime
@@ -172,7 +181,7 @@ model CalendarAuth {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@unique([userId, provider, accountEmail])
+  @@unique([userId, provider, accountEmail, serverUrl])
   @@index([userId, provider])
 }
 

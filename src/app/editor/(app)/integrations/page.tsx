@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plug, Save, Check, ChevronDown, Calendar as CalendarIcon, Trash2, ExternalLink, AlertTriangle, Copy, KeyRound, RefreshCw, ListChecks, Eye, EyeOff } from "lucide-react";
+import { Plug, Save, Check, ChevronDown, Calendar as CalendarIcon, Trash2, ExternalLink, AlertTriangle, Copy, KeyRound, RefreshCw, ListChecks, Eye, EyeOff, Server } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type CalendarAccount = {
   id: string;
-  provider: "google" | "microsoft";
+  provider: "google" | "microsoft" | "caldav";
   accountEmail: string | null;
   accountName: string | null;
+  serverUrl: string | null;
   createdAt: string;
   expiresAt: string;
 };
@@ -315,7 +316,7 @@ function CalendarAccountsSection() {
         <div className="flex-1">
           <h2 className="font-semibold text-lg">{t("Kalender-Konten")}</h2>
           <p className="text-sm text-[var(--mf-fg)]/50">
-            {t("Verbinde Google oder Microsoft 365, um echte Kalenderdaten im Kalender-Widget anzuzeigen. iCal-URLs bleiben als separate Feed-Art erhalten.")}
+            {t("Verbinde Google, Microsoft 365 oder einen CalDAV-Server (Nextcloud, Baïkal, Radicale, Synology, iCloud …), um echte Kalenderdaten im Kalender-Widget anzuzeigen. iCal-URLs bleiben als separate Feed-Art erhalten.")}
           </p>
         </div>
       </div>
@@ -354,18 +355,28 @@ function CalendarAccountsSection() {
                 className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold shrink-0 ${
                   acc.provider === "google"
                     ? "bg-red-500/20 text-red-300"
-                    : "bg-sky-500/20 text-sky-300"
+                    : acc.provider === "caldav"
+                      ? "bg-purple-500/20 text-purple-300"
+                      : "bg-sky-500/20 text-sky-300"
                 }`}
               >
-                {acc.provider === "google" ? "G" : "MS"}
+                {acc.provider === "google" ? "G" : acc.provider === "caldav" ? "DAV" : "MS"}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-[var(--mf-fg)] truncate">
                   {acc.accountName || acc.accountEmail || t("(unbenannt)")}
                 </div>
                 <div className="text-[11px] text-[var(--mf-fg)]/40 truncate">
-                  {acc.accountEmail || t("kein E-Mail ermittelbar")} ·
-                  {acc.provider === "google" ? " Google Calendar" : " Microsoft 365"}
+                  {acc.provider === "caldav" ? (
+                    <>
+                      {acc.accountEmail || t("(unbenannt)")} · CalDAV · {acc.serverUrl}
+                    </>
+                  ) : (
+                    <>
+                      {acc.accountEmail || t("kein E-Mail ermittelbar")} ·
+                      {acc.provider === "google" ? " Google Calendar" : " Microsoft 365"}
+                    </>
+                  )}
                 </div>
               </div>
               <button
@@ -418,8 +429,184 @@ function CalendarAccountsSection() {
         </a>
       </div>
 
+      <CaldavConnectForm onSaved={reload} />
+
       <OAuthCredentialsForm onSaved={reload} />
     </section>
+  );
+}
+
+const CALDAV_ERROR_KEYS: Record<string, string> = {
+  caldav_missing_fields: "Server, Benutzername und Passwort sind alle nötig.",
+  caldav_invalid_url: "Die Server-Adresse ist keine gültige URL.",
+  caldav_unauthorized: "Anmeldung abgelehnt — Benutzername oder Passwort stimmt nicht. Viele Server verlangen ein App-Passwort statt des Konto-Passworts.",
+  caldav_forbidden: "Der Server verweigert den Zugriff auf die Kalender dieses Kontos.",
+  caldav_timeout: "Zeitüberschreitung — ist der Server von hier aus erreichbar?",
+  caldav_no_calendars: "Verbindung steht, aber der Server liefert keinen Kalender mit Terminen zurück.",
+  caldav_failed: "Verbindung fehlgeschlagen.",
+};
+
+function caldavErrorText(code: string): string {
+  if (CALDAV_ERROR_KEYS[code]) return CALDAV_ERROR_KEYS[code];
+  if (code.startsWith("caldav_unreachable"))
+    return "Server nicht erreichbar — Adresse, Port und HTTPS prüfen.";
+  if (code.startsWith("caldav_http_"))
+    return `Der Server antwortete mit HTTP ${code.replace("caldav_http_", "")}.`;
+  return code;
+}
+
+/**
+ * CalDAV braucht keinen OAuth-Redirect: Adresse + Benutzer + (App-)Passwort
+ * reichen. Gespeichert wird erst, wenn der Server die Daten akzeptiert —
+ * die Antwort sagt gleich, wie viele Kalender gefunden wurden.
+ */
+function CaldavConnectForm({ onSaved }: { onSaved: () => void }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [serverUrl, setServerUrl] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [reveal, setReveal] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; message: string } | null>(null);
+
+  const fieldCls =
+    "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-xs rounded-md px-2 h-9 focus:outline-none focus:border-purple-500";
+
+  async function connect(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await fetch("/api/auth/calendar/caldav", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serverUrl, username, password, accountName }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(caldavErrorText(String(d.error ?? "caldav_failed")));
+      const count = Array.isArray(d.calendars) ? d.calendars.length : 0;
+      setMsg({
+        kind: "ok",
+        message: `${t("CalDAV-Konto verbunden.")} ${count} ${t("Kalender gefunden.")}`,
+      });
+      setPassword("");
+      onSaved();
+    } catch (err: any) {
+      setMsg({ kind: "err", message: t(err.message) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <details
+      className="mt-4 group"
+      open={open}
+      onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
+    >
+      <summary className="cursor-pointer select-none flex items-center gap-2 text-sm text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)]">
+        <Server size={14} className="text-purple-300" />
+        {t("CalDAV-Server verbinden (Nextcloud, Baïkal, Radicale, Synology, iCloud …)")}
+        <ChevronDown size={14} className="text-[var(--mf-fg)]/40 transition-transform group-open:rotate-180" />
+      </summary>
+
+      <div className="mt-3 bg-[var(--mf-ovl)]/30 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-xl p-4 space-y-4">
+        <p className="text-[11px] text-[var(--mf-fg)]/50 leading-relaxed">
+          {t("Die Adresse, die auch dein Handy nutzt — Server-Basis reicht, der Rest wird automatisch gefunden (z.B. https://cloud.example.com/remote.php/dav für Nextcloud). Nutze möglichst ein App-Passwort statt deines Konto-Passworts; bei aktiver Zwei-Faktor-Anmeldung ist es Pflicht.")}
+        </p>
+
+        <form onSubmit={connect} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label className="md:col-span-2 block">
+            <span className="text-[11px] font-medium text-[var(--mf-fg)]/60 block mb-1">
+              {t("Server-Adresse")}
+            </span>
+            <input
+              className={fieldCls}
+              value={serverUrl}
+              onChange={(e) => setServerUrl(e.target.value)}
+              placeholder="https://cloud.example.com/remote.php/dav"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[11px] font-medium text-[var(--mf-fg)]/60 block mb-1">
+              {t("Benutzername")}
+            </span>
+            <input
+              className={fieldCls}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="off"
+              placeholder="anna"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[11px] font-medium text-[var(--mf-fg)]/60 block mb-1">
+              {t("App-Passwort")}
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                className={fieldCls}
+                type={reveal ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                placeholder="••••••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setReveal((v) => !v)}
+                className="text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)]/70 px-1"
+                tabIndex={-1}
+              >
+                {reveal ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </label>
+          <label className="md:col-span-2 block">
+            <span className="text-[11px] font-medium text-[var(--mf-fg)]/60 block mb-1">
+              {t("Anzeigename (optional)")}
+            </span>
+            <input
+              className={fieldCls}
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              placeholder={t("z.B. Nextcloud privat")}
+            />
+          </label>
+
+          {msg && (
+            <div className="md:col-span-2">
+              <div
+                className={`flex items-start gap-2 text-xs rounded-md border px-3 py-2 ${
+                  msg.kind === "ok"
+                    ? "bg-green-600/10 border-green-500/40 text-green-200"
+                    : "bg-red-600/10 border-red-500/40 text-red-200"
+                }`}
+              >
+                {msg.kind === "ok" ? <Check size={14} className="mt-0.5 shrink-0" /> : <AlertTriangle size={14} className="mt-0.5 shrink-0" />}
+                <span>{msg.message}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="md:col-span-2 flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={busy || !serverUrl.trim() || !username.trim() || !password}
+              className="flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white disabled:opacity-40"
+            >
+              {busy ? <RefreshCw size={14} className="animate-spin" /> : <Plug size={14} />}
+              {busy ? t("Verbinde…") : t("Verbinden")}
+            </button>
+            <span className="text-[11px] text-[var(--mf-fg)]/30">
+              {t("Wird erst gespeichert, wenn der Server die Zugangsdaten akzeptiert.")}
+            </span>
+          </div>
+        </form>
+      </div>
+    </details>
   );
 }
 

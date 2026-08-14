@@ -325,9 +325,10 @@ The providers are described in [Weather providers](weather-providers.md).
 GET /api/weather?lat=52.52&lon=13.40&provider=open-meteo
 ```
 
-`GET /api/calendar` takes `feeds` — a JSON array of feed definitions — plus
-`limit` and `days`, and returns the merged appointments. A single iCal address
-can be passed as `url` instead. See [Calendars](calendars.md).
+`GET /api/calendar` takes `feeds` — a JSON array of feed definitions, iCal,
+Google, Microsoft, CalDAV or Home Assistant — plus `limit` and `days`, and
+returns the merged appointments. A single iCal address can be passed as `url`
+instead. See [Calendars](calendars.md).
 
 ## Live events
 

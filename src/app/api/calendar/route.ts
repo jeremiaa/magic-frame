@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import ICAL from "ical.js";
 import { getSession } from "@/lib/auth/session";
 import {
   fetchGoogleEvents,
   fetchMicrosoftEvents,
   fetchHomeAssistantEvents,
-  plainText,
-  floatingAllDay,
 } from "@/lib/calendar-auth/providers";
+import { expandIcsEvents } from "@/lib/calendar-auth/ics";
+import { fetchCaldavEvents } from "@/lib/calendar-auth/caldav";
+import { getCaldavCredentials } from "@/lib/calendar-auth/store";
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10 * 60 * 1000;
@@ -16,7 +16,7 @@ type FeedInput = {
   id?: string;
   label?: string;
   color?: string;
-  type?: "ical" | "google" | "microsoft" | "homeassistant";
+  type?: "ical" | "google" | "microsoft" | "homeassistant" | "caldav";
   url?: string;
   accountId?: string;
   calendarId?: string;
@@ -66,140 +66,10 @@ async function fetchIcal(
   }
 
   const unparsedData = await res.text();
-  const jcalData = ICAL.parse(unparsedData);
-  const comp = new ICAL.Component(jcalData);
-  const vevents = comp.getAllSubcomponents("vevent");
-
-  // BUG FIX 1: a recurring series that's had one occurrence edited/moved in
-  // the source calendar (Google/iCloud/etc.) isn't stored as a single
-  // VEVENT — it's a "master" VEVENT (the RRULE) plus a separate override
-  // VEVENT sharing the same UID but carrying a RECURRENCE-ID, holding the
-  // edited date/title. The code below previously treated every VEVENT as
-  // independent, so the master's plain iterator had no idea an override
-  // existed and still generated the original, now-stale occurrence — while
-  // the override VEVENT was *also* added as its own event, producing two
-  // visible entries for what is really one edited event.
-  //
-  // ical.js resolves this correctly via relateException() — but that state
-  // lives on the specific Event *instance* you call it on, so the exact
-  // same instance must be the one used later for expansion.
-  const masters = new Map<string, ICAL.Event>();
-  const exceptionsByUid = new Map<string, ICAL.Component[]>();
-  const singles: ICAL.Component[] = [];
-
-  for (const vevent of vevents) {
-    try {
-      const ev = new ICAL.Event(vevent);
-      if (ev.isRecurrenceException()) {
-        const list = exceptionsByUid.get(ev.uid) ?? [];
-        list.push(vevent);
-        exceptionsByUid.set(ev.uid, list);
-      } else if (ev.isRecurring()) {
-        masters.set(ev.uid, ev);
-      } else {
-        singles.push(vevent);
-      }
-    } catch (err) {
-      // BUG FIX 3: a single malformed/unusual VEVENT (common in large,
-      // years-old calendars) must not take down parsing for the entire
-      // feed — skip just this one entry and keep going.
-      console.error("Skipped malformed calendar event during classification", err);
-    }
-  }
-
-  // Relate each exception to its master (same instance stored above, so the
-  // relation actually sticks for later expansion). If a master can't be
-  // found in this feed (edge case — e.g. the series master got deleted but
-  // an override survived), fall back to treating it as its own standalone
-  // event using its own edited date, rather than silently dropping it.
-  const orphanExceptions: ICAL.Component[] = [];
-  for (const [uid, list] of exceptionsByUid) {
-    const master = masters.get(uid);
-    if (master) {
-      for (const exVevent of list) master.relateException(exVevent);
-    } else {
-      orphanExceptions.push(...list);
-    }
-  }
-
-  const events: any[] = [];
-  const windowStartIcal = ICAL.Time.fromJSDate(windowStart);
-  const windowEndIcal = ICAL.Time.fromJSDate(windowEnd);
-
-  // #70: Bei DATE-Werten (ganztägig) NICHT über toJSDate()/toISOString gehen —
-  // das bindet den Tag an die Server-Zeitzone. Die Y-M-D-Felder der ICAL.Time
-  // sind bereits der gemeinte Kalendertag.
-  const stamp = (t: any): string => {
-    if (t?.isDate) {
-      const p = (n: number) => String(n).padStart(2, "0");
-      return `${t.year}-${p(t.month)}-${p(t.day)}T00:00:00`;
-    }
-    return t.toJSDate().toISOString();
-  };
-
-  const pushStandalone = (event: ICAL.Event) => {
-    try {
-      const startJS = event.startDate.toJSDate();
-      const endJS = event.endDate.toJSDate();
-      if (endJS >= windowStart && startJS <= windowEnd) {
-        events.push({
-          id: event.uid || Math.random().toString(),
-          title: event.summary,
-          start: stamp(event.startDate),
-          end: stamp(event.endDate),
-          isAllDay: event.startDate.isDate,
-          description: plainText(event.description),
-          location: plainText(event.location, 120),
-        });
-      }
-    } catch (err) {
-      console.error("Skipped malformed calendar event", err);
-    }
-  };
-
-  // Recurring series — exceptions (if any) are already related on these
-  // exact instances, so getOccurrenceDetails() below transparently returns
-  // the edited data for an overridden date instead of the stale original,
-  // with no separate entry needed for the override itself.
-  for (const event of masters.values()) {
-    try {
-      const expand = event.iterator();
-      let next;
-      let iterations = 0;
-      while ((next = expand.next()) && iterations < limitPerFeed + 10) {
-        iterations++;
-        if (next.compare(windowStartIcal) < 0) continue;
-        if (next.compare(windowEndIcal) > 0) break;
-
-        const occurrence = event.getOccurrenceDetails(next);
-        events.push({
-          id: `${event.uid}-${next.toUnixTime()}`,
-          title: occurrence.item.summary,
-          start: stamp(occurrence.startDate),
-          end: stamp(occurrence.endDate),
-          isAllDay: occurrence.startDate.isDate,
-          description: plainText(occurrence.item.description),
-          location: plainText(occurrence.item.location, 120),
-        });
-      }
-    } catch (err) {
-      console.error("Skipped malformed calendar event", err);
-    }
-  }
-
-  // Plain one-off events (never recurring, never an exception).
-  for (const vevent of singles) {
-    pushStandalone(new ICAL.Event(vevent));
-  }
-
-  // Orphaned exceptions — no master found in this feed, so show the edited
-  // occurrence on its own rather than dropping it.
-  for (const vevent of orphanExceptions) {
-    pushStandalone(new ICAL.Event(vevent));
-  }
-
-  events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-  const sliced = events.slice(0, limitPerFeed);
+  // Parsing, recurrence expansion and all-day handling live in
+  // lib/calendar-auth/ics.ts — CalDAV feeds run the exact same code over the
+  // ICS documents a REPORT hands back.
+  const sliced = expandIcsEvents(unparsedData, windowStart, windowEnd, limitPerFeed);
   cache.set(cacheKey, { data: sliced, timestamp: now });
   return sliced;
 }
@@ -250,7 +120,9 @@ export async function GET(request: NextRequest) {
   const windowEnd = new Date(windowStart);
   windowEnd.setDate(windowEnd.getDate() + days);
 
-  const needsAuth = feeds.some((f) => f.type === "google" || f.type === "microsoft");
+  const needsAuth = feeds.some(
+    (f) => f.type === "google" || f.type === "microsoft" || f.type === "caldav",
+  );
   let userId: string | null = null;
   if (needsAuth) {
     const session = await getSession();
@@ -287,6 +159,21 @@ export async function GET(request: NextRequest) {
               userId,
               accountId: feed.accountId,
               calendarId: feed.calendarId || "",
+              windowStart,
+              windowEnd,
+              limit: perFeedLimit,
+            });
+          } else if (type === "caldav") {
+            // Wie Google/MS hängen die Zugangsdaten an der accountId, nicht an
+            // der Viewer-Session — sonst blieben CalDAV-Feeds auf der
+            // öffentlichen /view leer (#43). calendarId hält die Collection-URL;
+            // leer = erster Kalender des Kontos.
+            if (!feed.accountId) throw new Error("missing_accountId");
+            const creds = await getCaldavCredentials(feed.accountId, userId);
+            if (!creds) throw new Error("caldav_account_missing");
+            events = await fetchCaldavEvents({
+              creds,
+              calendarUrl: feed.calendarId || "",
               windowStart,
               windowEnd,
               limit: perFeedLimit,

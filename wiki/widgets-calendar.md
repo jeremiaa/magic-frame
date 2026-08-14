@@ -2,8 +2,8 @@
 
 One widget, `CalendarWidget.tsx`, that puts your appointments on the wall. It
 reads any number of **feeds** — a feed is one calendar, from an iCal address,
-from a Google or Microsoft account, or from a calendar your Home Assistant
-already knows — merges them, and draws them in one of three views.
+from a Google, Microsoft or CalDAV account, or from a calendar your Home
+Assistant already knows — merges them, and draws them in one of three views.
 
 Like every widget it also has the shared settings — font, colour, shadow,
 hiding rules — described once in [Widgets](widgets.md). This page covers only
@@ -14,15 +14,15 @@ what is specific to the calendar.
 ## Setting it up
 
 1. In the editor, add a **Calendar** (`Kalender`) widget to the view.
-2. Under **Calendar sources** (`Kalender-Quellen`), click one of the four add
-   buttons: **+ iCal**, **+ Google**, **+ Microsoft** or **+ Home Assistant**. A
-   feed card appears.
+2. Under **Calendar sources** (`Kalender-Quellen`), click one of the five add
+   buttons: **+ iCal**, **+ Google**, **+ Microsoft**, **+ CalDAV** or
+   **+ Home Assistant**. A feed card appears.
 3. Give the feed a name in the left-hand field — *School*, *Work*, *Bins*. The
    name is not drawn on the display; it tells the two of you apart in the
    editor.
 4. Click the colour square next to the name and pick a colour. Every event from
    this feed is marked in it.
-5. Fill in the feed itself. What that means depends on the type, and the four
+5. Fill in the feed itself. What that means depends on the type, and the five
    types are described below.
 6. Choose the view under **View** (`Ansicht`) — the three buttons are **list**,
    **Agenda** and **Month**.
@@ -171,6 +171,15 @@ integrations page instead of the dropdown.
 The same two steps: connect the account under `Editor → Integrations`, then
 choose the account and one of its calendars. Leaving the calendar on **Default
 calendar** uses the account's main one.
+
+### CalDAV
+
+For Nextcloud, Baïkal, Radicale, Synology, mailbox.org or iCloud. Connect the
+server once under `Editor → Integrations` — address, username and an app
+password, no OAuth app to register — then add a **+ CalDAV** feed, pick the
+account and one of its calendars. The calendar list is discovered on the server
+itself; leaving it empty uses the account's first calendar, the way **Primary**
+does for Google. The full setup is on [Calendars](calendars.md).
 
 ### Home Assistant
 
