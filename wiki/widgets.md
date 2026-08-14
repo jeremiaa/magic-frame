@@ -122,6 +122,8 @@ judge the layout. Those examples exist only in the editor and never on a display
 
 ## Labelling a view
 
+![The Text widget labelling a view: a heading with an icon, a divider under it, and a smaller second line.](img/text-widget-heading.png)
+
 The **Text** widget (`TextWidget.tsx`) is the odd one out: it fetches nothing
 and shows nothing but the words you type. It exists because a view can become
 ambiguous — two calendars next to each other, one holding this week's meals and

@@ -26,7 +26,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "2fd269874ac2",
+        "src/app/view/[id]/page.tsx": "6ed5537a05f0",
         "src/components/WallpaperEngine.tsx": "a491a40ed524"
       }
     },
@@ -245,7 +245,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/HomeAssistantWidget.tsx": "40132c701781"
+        "src/components/widgets/HomeAssistantWidget.tsx": "b4baf50b38ee"
       }
     },
     {
@@ -269,7 +269,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/HANotificationWidget.tsx": "ef815b693ba2"
+        "src/components/widgets/HANotificationWidget.tsx": "4fec749fff87"
       }
     },
     {
@@ -293,7 +293,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/CameraWidget.tsx": "f104cd0d3d37"
+        "src/components/widgets/CameraWidget.tsx": "dad1be8d497b"
       }
     },
     {
@@ -508,7 +508,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "2fd269874ac2",
+        "src/app/view/[id]/page.tsx": "6ed5537a05f0",
         "src/components/WallpaperEngine.tsx": "a491a40ed524"
       }
     },
@@ -532,7 +532,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "2fd269874ac2"
+        "src/app/view/[id]/page.tsx": "6ed5537a05f0"
       }
     },
     {
@@ -554,7 +554,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "7a6b806c1075"
+        "src/app/editor/(app)/page.tsx": "88b05b2dee81"
       }
     },
     {
@@ -576,7 +576,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "7a6b806c1075"
+        "src/app/editor/(app)/page.tsx": "88b05b2dee81"
       }
     },
     {
@@ -598,7 +598,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
       }
     },
     {
@@ -621,8 +621,8 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/_components/AddWidgetModal.tsx": "976ccb0cfce8",
-        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+        "src/app/editor/_components/AddWidgetModal.tsx": "1f09b0ab6467",
+        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
       }
     },
     {
@@ -1038,7 +1038,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/modules/page.tsx": "7926cc13c688"
+        "src/app/editor/(app)/modules/page.tsx": "00e4f3b4b4f7"
       },
       "element": "div.rounded-2xl:has(h2:text-is(\"Custom modules\")), div.rounded-2xl:has(h2:text-is(\"Custom-Module\"))"
     },
@@ -1101,7 +1101,7 @@
       ],
       "takenAt": {
         "src/components/WallpaperEngine.tsx": "a491a40ed524",
-        "src/app/view/[id]/page.tsx": "2fd269874ac2"
+        "src/app/view/[id]/page.tsx": "6ed5537a05f0"
       }
     },
     {
@@ -1126,7 +1126,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
       }
     },
     {
@@ -1151,7 +1151,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "7ec94a9a505d"
+        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
       }
     },
     {
@@ -1296,6 +1296,30 @@
       ],
       "takenAt": {
         "src/components/widgets/MediaPlayerWidget.tsx": "a34599efc76c"
+      }
+    },
+    {
+      "id": "text-widget-heading",
+      "page": "widgets.md",
+      "caption": "The Text widget labelling a view: a heading with an icon, a divider under it, and a smaller second line.",
+      "shows": [
+        "src/components/widgets/TextWidget.tsx"
+      ],
+      "needsLogin": false,
+      "element": ".react-grid-item",
+      "steps": [
+        {
+          "goto": "/view/w-text"
+        },
+        {
+          "waitFor": ".react-grid-item"
+        },
+        {
+          "wait": 2000
+        }
+      ],
+      "takenAt": {
+        "src/components/widgets/TextWidget.tsx": "659968c74b18"
       }
     }
   ]
