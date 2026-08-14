@@ -51,7 +51,7 @@
         }
       ],
       "takenAt": {
-        "src/components/widgets/ClockWidget.tsx": "9125c83ce561"
+        "src/components/widgets/ClockWidget.tsx": "5c38c7768a9b"
       }
     },
     {
@@ -125,7 +125,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/CalendarWidget.tsx": "4f0cfb5cda90"
+        "src/components/widgets/CalendarWidget.tsx": "14b886315dc0"
       }
     },
     {
@@ -647,7 +647,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"Home Assistant\"))"
     },
@@ -673,7 +673,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"Immich (global)\"))"
     },
@@ -699,7 +699,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"Home Assistant lists\"))"
     },
@@ -726,8 +726,8 @@
         }
       ],
       "takenAt": {
-        "src/lib/calendar-auth/store.ts": "b188bc8b7cc3",
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/lib/calendar-auth/store.ts": "4b1a62a72ce2",
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"Calendar accounts\"))"
     },
@@ -756,7 +756,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"Calendar accounts\"))"
     },
@@ -782,7 +782,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"OpenWeatherMap\"))"
     },
@@ -808,7 +808,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "83531404d774"
+        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
       },
       "element": "section:has(h2:text-is(\"Todoist\"))"
     },
