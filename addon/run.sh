@@ -79,6 +79,8 @@ if [ -f /data/options.json ]; then
   [ -n "${ADMIN_PASSWORD}" ] && export ADMIN_PASSWORD
   [ -n "${TZ_OPT}" ] && export TZ="${TZ_OPT}"
   [ "${HA_UNRESTRICTED}" = "1" ] && export MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1
+  HA_AUTOLOGIN_OFF="$(grep -o '"ha_auto_login"[^,}]*' /data/options.json | grep -c false || true)"
+  [ "${HA_AUTOLOGIN_OFF}" = "1" ] && export MAGIC_FRAME_HA_AUTO_LOGIN=0
 fi
 
 export DATABASE_URL="postgresql://${PGUSER}@localhost/${DB_NAME}?host=/tmp&schema=public"
@@ -86,6 +88,19 @@ export NODE_ENV=production
 # Der Erkennungsmarker der App ist /data/options.json (immer vorhanden), aber
 # wir setzen es zusätzlich ausdrücklich — dann steht es auch im Log richtig.
 export MAGIC_FRAME_ADDON=1
+
+# ── Seitenleisten-Eingang (Ingress) ─────────────────────────────────────────
+# Der Listener in server-ingress.js startet nur, wenn dieser Port gesetzt ist.
+# 8099 ist der ingress_port aus config.yaml; er steht nicht unter `ports:` und
+# wird darum nie auf dem Host veröffentlicht — nur HAs Ingress-Gateway kommt
+# hin. Die Startseite braucht ausserdem den VERÖFFENTLICHTEN Port der App,
+# denn dorthin schickt sie den Browser weiter. Der Nutzer kann 8098 im
+# Netzwerk-Teil der Add-on-Einstellungen umlegen, deshalb fragen wir den
+# Supervisor statt die Zahl fest zu verdrahten.
+export MAGIC_FRAME_INGRESS_PORT=8099
+PUBLIC_PORT="$(curl -sf -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" http://supervisor/addons/self/info \
+  | grep -o '"3000/tcp"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || true)"
+export MAGIC_FRAME_PUBLIC_PORT="${PUBLIC_PORT:-8098}"
 
 # ── App ─────────────────────────────────────────────────────────────────────
 cd /app

@@ -41,9 +41,12 @@ Views are reachable at `http://<your-home-assistant-ip>:8098/view/<id>` and
 need no login — that is what they are for. A wall tablet simply opens that
 address.
 
-That is also why the add-on uses a fixed port rather than the sidebar: the
-Home Assistant ingress path changes and requires a signed-in session, and a
-wall tablet has neither.
+Magic Frame also sits in the sidebar: the entry opens a small page whose one
+button signs you in and opens the editor — only for Home Assistant admins,
+verified against Home Assistant itself. The `ha_auto_login` option turns that
+button off. Displays never use the sidebar: the ingress path changes and
+requires a signed-in session, and a wall tablet has neither — which is why
+views stay on the fixed port.
 
 **Want it in the sidebar anyway?** Add a dashboard of type *Webpage* pointing
 at `http://<your-home-assistant-ip>:8098` — Settings → Dashboards → Add

@@ -11,9 +11,22 @@ arch:
   - amd64
   - aarch64
 init: false
-# Kein Ingress: Wandtablets rufen /view/<id> ohne Anmeldung auf, und hinter
-# Ingress ginge das nicht — der Pfad wechselt pro Sitzung und HA verlangt
-# eine angemeldete Sitzung. Stattdessen ein fester Port.
+# Ingress trägt Magic Frame in die Seitenleiste ein — aber nur als Startseite
+# mit Ein-Klick-Anmeldung, nicht als eingebettete App: Next.js betoniert
+# seinen Basis-Pfad beim Bauen ein, der Ingress-Pfad steht aber erst nach der
+# Installation fest. Der Editor öffnet deshalb als eigene Seite auf dem
+# direkten Port. Wandtablets rufen /view/<id> weiterhin dort auf — hinter
+# Ingress ginge das nie, der Pfad verlangt eine angemeldete HA-Sitzung.
+# Ein-/Ausblenden des Eintrags: der "In Seitenleiste anzeigen"-Schalter auf
+# der Add-on-Seite von Home Assistant selbst.
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:image-frame
+panel_title: Magic Frame
+# Versteckt den Eintrag vor Nicht-Admins. Das ist NUR Sichtbarkeit — den
+# eigentlichen Schutz macht server-ingress.js, indem es den anfragenden
+# HA-Nutzer gegen die Admin-Liste von Home Assistant prüft.
+panel_admin: true
 ports:
   3000/tcp: 8098
 ports_description:
@@ -31,6 +44,7 @@ options:
   admin_password: ""
   timezone: ""
   ha_action_unrestricted: false
+  ha_auto_login: true
 schema:
   admin_email: str?
   admin_password: password?
@@ -39,6 +53,9 @@ schema:
   # Diese Option hebt das auf. Nur einschalten, wenn etwas anderes (ein eigenes
   # Modul, ein Skript) Entitäten anspricht, die nirgends platziert sind.
   ha_action_unrestricted: bool?
+  # Der Seitenleisten-Klick meldet HA-Admins ohne Passwort an. Aus = die
+  # Startseite verlinkt nur noch auf die normale Anmeldung.
+  ha_auto_login: bool?
 # Kein `image:` — der Supervisor baut aus dem Dockerfile. Ein leeres oder
 # null-Feld liest er als "Image erwartet" und bricht mit einer irreführenden
 # Meldung ab.
