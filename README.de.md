@@ -52,7 +52,11 @@ curl -fsSL https://raw.githubusercontent.com/jeremiaa/magic-frame/main/deploy/in
 
 Das Install-Script zieht die fertig gebauten Multi-Arch-Images und startet den Stack — auf einem Pi wird also nichts 20 Minuten lang kompiliert. Danach `http://<deine-ip>` öffnen, den ersten Admin anlegen, fertig. Alle Integrationen kommen später über die UI dazu.
 
-> **Home Assistant im Einsatz?** `https://github.com/jeremiaa/magic-frame` als Add-on-Repository hinzufügen und Magic Frame aus dem Add-on-Store installieren. Bringt seine eigene Datenbank mit und braucht keinen Zugriffstoken. Siehe [Das Home-Assistant-Add-on](wiki/home-assistant-addon.md).
+> **Home Assistant im Einsatz?** Dann Magic Frame aus dem Add-on-Store installieren — es bringt seine eigene Datenbank mit und braucht keinen Zugriffstoken. Ein Klick trägt das Repository in deine eigene Instanz ein:
+>
+> [![Öffnet deine Home-Assistant-Instanz und zeigt den Dialog zum Hinzufügen eines Add-on-Repositories.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fjeremiaa%2Fmagic-frame)
+>
+> Danach Magic Frame im Store suchen und installieren. Von Hand: `https://github.com/jeremiaa/magic-frame` unter Einstellungen → Add-ons → Add-on-Store → ⋮ → Repositories eintragen. Ausführlich: [Das Home-Assistant-Add-on](wiki/home-assistant-addon.md).
 >
 > **macOS / Windows?** Statt Schritt 1 [Docker Desktop](https://www.docker.com/products/docker-desktop/) installieren, dann Schritt 2 im Terminal ausführen.
 

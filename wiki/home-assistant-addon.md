@@ -27,6 +27,16 @@ is identical. The pages in this wiki apply unchanged.
 Adding a **repository** tells Home Assistant where to look for an add-on it does
 not know about yet. You do it once.
 
+If you are reading this on the machine that runs Home Assistant, this button
+opens the dialog with the address already filled in — then skip to step 5:
+
+[![Open your Home Assistant instance and show the dialog for adding a new add-on repository.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fjeremiaa%2Fmagic-frame)
+
+The button goes through `my.home-assistant.io`, a redirector run by the Home
+Assistant project. It holds no data about your instance: your browser stores
+which address your Home Assistant has, and the redirect happens locally. If it
+does nothing, you have not set that address yet — use the manual steps.
+
 1. In Home Assistant, open **Settings → Add-ons**.
 2. Click **Add-on Store**, bottom right.
 3. Click the **⋮** menu in the top right, then **Repositories**.
