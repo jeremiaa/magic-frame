@@ -3,6 +3,7 @@ const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
 const { Server } = require('socket.io');
+const { startIngressListener } = require('./server-ingress');
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -11,6 +12,10 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
+  // Seitenleisten-Eingang fürs HA-Add-on. Ausserhalb des Add-ons ein No-Op —
+  // die Umgebungsvariable setzt nur addon/run.sh. Siehe server-ingress.js.
+  startIngressListener();
+
   const httpServer = createServer((req, res) => {
     // Real-Client-IP als x-real-ip an Next.js durchreichen.
     // Next.js 15 entfernt `request.ip`; ohne diesen Header sieht der Lockout-

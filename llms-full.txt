@@ -925,9 +925,40 @@ What that means in practice:
   Assistant than the one it runs inside — and the only reason to touch the
   fields at all.
 
-## The address, and why there is no sidebar entry
+## The sidebar entry, and the address for displays
 
-The add-on is reachable on a **fixed port, 8098**:
+Magic Frame appears in the Home Assistant **sidebar**. Clicking it shows a
+small start page with one button: **Open Magic Frame**. That button signs you
+in and opens the editor as its own page — no password prompt, because Home
+Assistant has already checked who you are.
+
+Two rules govern that button:
+
+- **Only Home Assistant admins get the automatic sign-in.** The add-on asks
+  Home Assistant itself whether the clicking account is an administrator
+  there. A restricted account — a child's, a guest's — sees the start page
+  but is sent to the normal login instead. This is deliberate: hiding the
+  sidebar entry from non-admins is a display setting in Home Assistant, not a
+  lock, so the add-on checks the person rather than trusting the menu.
+- The account it signs you into is the **oldest admin account** of your Magic
+  Frame installation. Two-factor is not asked again — Home Assistant's own
+  login already stood in front of this click.
+
+To turn the automatic sign-in off, set the add-on option `ha_auto_login` to
+`false`; the sidebar page then only links to the normal login. To remove the
+sidebar entry entirely, use the **Show in sidebar** toggle on the add-on's own
+page in Home Assistant.
+
+The editor opens as a full page rather than embedded in the Home Assistant
+frame. That is a consequence of how the app is built: the framework fixes its
+base path when the app is compiled, and the address ingress serves an add-on
+under is only known after installation. The one-click hand-off keeps every
+part of the app working exactly as on any other install.
+
+### The address for displays
+
+Displays never go through the sidebar. The add-on stays reachable on a
+**fixed port, 8098**:
 
 | What | Address |
 | --- | --- |
@@ -936,29 +967,15 @@ The add-on is reachable on a **fixed port, 8098**:
 
 — with your Home Assistant machine's own address in place of `192.0.2.10`.
 
-Most add-ons appear in the Home Assistant sidebar. This one does not, on
-purpose. Sidebar entries go through Home Assistant's **ingress**, and ingress
-does two things that break a wall panel: the address it serves the add-on under
-changes from session to session, and it requires a signed-in Home Assistant
-session to load at all.
+A tablet screwed to the kitchen wall cannot type a password, and it needs one
+fixed address it can be pointed at once and left alone. A view deliberately
+needs no login — see [Views and displays](views-and-displays.md) — and behind
+ingress that would stop being true, because ingress requires a signed-in Home
+Assistant session. So displays keep the plain port, always.
 
-A tablet screwed to the kitchen wall has neither. It cannot type a password, and
-it needs one fixed address it can be pointed at once and left alone. A view
-deliberately needs no login — see [Views and displays](views-and-displays.md) —
-and behind ingress that would stop being true. So the add-on takes a fixed port
-instead.
-
-### Getting a sidebar entry anyway
-
-You can have one, as a Home Assistant dashboard that simply shows the page:
-
-1. In Home Assistant, open **Settings → Dashboards**.
-2. Click **Add dashboard**.
-3. Choose **Webpage**.
-4. Enter `http://192.0.2.10:8098` — your Home Assistant machine's address and
-   port 8098.
-5. Save it. Magic Frame now has a sidebar entry, and your wall tablets keep
-   using the plain `:8098/view/<id>` address.
+Note for the automatic sign-in: it works when you reach Home Assistant on your
+own network. Opened remotely (Nabu Casa, a tunnel), the button would point at a
+port your remote connection cannot reach — use the normal login there.
 
 ## HTTPS and outside access
 
