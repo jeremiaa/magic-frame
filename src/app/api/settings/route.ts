@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings, updateAppSettings } from "@/lib/settings/store";
+import { supervisorHaCredentials } from "@/lib/runtime/addon";
 import {
   verifySession,
   UnauthorizedError,
@@ -17,6 +18,15 @@ export async function GET() {
     } catch {
       // nicht eingeloggt -> nur leerer shell
       return NextResponse.json({ haUrl: "", haToken: "", immichUrl: "", immichApiKey: "" });
+    }
+    // Im Add-on kommt Home Assistant über den Supervisor-Proxy, ohne Token.
+    // Ohne dieses Signal sieht die Oberfläche leere Felder und der Nutzer
+    // schliesst daraus "nicht verbunden" — genau der Eindruck, der beim ersten
+    // echten Add-on-Test entstanden ist. Der Token wird dabei NICHT
+    // mitgeschickt: er ist der Supervisor-Token dieses Containers, gehört
+    // niemandem in ein Formularfeld und wird beim Speichern ohnehin ignoriert.
+    if (supervisorHaCredentials()) {
+      return NextResponse.json({ ...s, haToken: "", haManagedBy: "supervisor" });
     }
     return NextResponse.json(s);
   } catch (err) {

@@ -52,7 +52,8 @@ does nothing, you have not set that address yet — use the manual steps.
 7. Wait. The Supervisor is not compiling the application — it downloads the
    published Magic Frame image and only adds Postgres on top, which takes
    seconds rather than the twenty minutes a full build would need on a Pi.
-8. Open the **Configuration** tab and set the four options below.
+8. Open the **Configuration** tab. You can leave everything as it is — the
+   options below are all optional.
 9. Go back to the **Info** tab and click **Start**.
 10. Click **Open Web UI**.
 
@@ -67,18 +68,18 @@ The add-on is published for **amd64** and **aarch64** only. 32-bit ARM
 left out, because the application image is not built for it and the Supervisor
 would otherwise fail the install with an unhelpful message about a manifest.
 
-## The four options
+## The options
 
-Set these on the add-on's **Configuration** tab. The add-on ships no translated
-labels, so Home Assistant shows the option keys exactly as written here. All
-four may be left as they are.
+Set these on the add-on's **Configuration** tab. Every one of them carries a
+name and a line of explanation there — all of them may be left as they are.
 
 | Option | What it does |
 | --- | --- |
 | `admin_email` | The login name for the first account. **Leave it empty** to create the account in the browser on first visit instead. |
 | `admin_password` | The password for that account. Clear it again after the first start — otherwise it stays readable in the add-on configuration. |
-| `timezone` | An IANA time zone such as `Europe/Berlin`. Empty means the system's own. Getting this right matters: calendar entries appear at the wrong hour otherwise. |
+| `timezone` | Leave it empty. The add-on then takes the time zone Home Assistant already has, which is what you want. Fill it in only to override that, with an IANA name such as `Europe/Berlin`. Getting it wrong shows calendar entries at the wrong hour. |
 | `ha_action_unrestricted` | Off by default. A display may normally only operate entities that are actually placed on one of your views. Turning this on removes that limit for the whole installation. |
+| `ha_auto_login` | On by default. Home Assistant administrators open Magic Frame from the sidebar without typing a password; everyone else gets the normal sign-in page. |
 
 Leave `ha_action_unrestricted` off unless something breaks because of it — a
 custom module with a hard-coded entity, or a script of your own, addressing
@@ -106,20 +107,31 @@ What that means in practice:
 
 - Home Assistant widgets work right after the first start, with nothing
   configured. See [Home Assistant](home-assistant.md) for what they can do.
-- The Home Assistant card under `Editor → Integrations` shows the Supervisor
-  connection — the address reads `http://supervisor/core` rather than an address
-  of yours. **Leave it as it is.**
-- Anything *you* type into those fields takes priority over the Supervisor
-  connection. That is the way to point the frame at a **different** Home
-  Assistant than the one it runs inside — and the only reason to touch the
-  fields at all.
+- The Home Assistant card under `Editor → Integrations` says it is connected
+  and offers no fields. There is nothing to fill in and nothing to leave alone.
+- **The Supervisor connection always wins**, and a saved address or token is
+  ignored while the add-on runs. This is deliberate: an old token from before
+  the add-on would otherwise displace a working connection, and nothing on
+  screen would tell you why the entities went away.
+- It follows that an add-on install can only talk to the Home Assistant it
+  lives in. To point Magic Frame at a **different** instance, install it with
+  Docker instead and enter an address and token there.
+
+> Up to 1.5.0 this was the other way round in the code — a saved token beat the
+> Supervisor — while the add-on's own documentation said the opposite. If you
+> had ever typed anything into those fields, the add-on never used the
+> Supervisor connection at all. Fixed in 1.6.0.
 
 ## The sidebar entry, and the address for displays
 
 Magic Frame appears in the Home Assistant **sidebar**. Clicking it shows a
 small start page with one button: **Open Magic Frame**. That button signs you
-in and opens the editor as its own page — no password prompt, because Home
-Assistant has already checked who you are.
+in and opens the editor **in a new tab** — no password prompt, because Home
+Assistant has already checked who you are, and Home Assistant itself stays open
+where it was.
+
+The same page also shows the address your displays use, so you never have to
+work it out.
 
 Two rules govern that button:
 

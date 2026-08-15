@@ -485,6 +485,15 @@ export const EN: Record<string, string> = {
   "Status (leer = sobald aktiv / an)": "State (empty = whenever active / on)",
   "Auto-ausblenden nach Sek. (0 = solange aktiv)": "Auto-hide after sec. (0 = while active)",
   "Beim Auslösen sofort im Vollbild öffnen": "Open fullscreen when triggered",
+
+  // Add-on: Home Assistant kommt über den Supervisor, ohne Token
+  "Läuft als Add-on — die Verbindung steht bereits.":
+    "Running as an add-on — the connection is already there.",
+  "Mit deinem Home Assistant verbunden": "Connected to your Home Assistant",
+  "Als Add-on läuft die Verbindung über Home Assistant selbst. Du brauchst weder Adresse noch Zugriffstoken — deine Entitäten stehen sofort zur Verfügung, überall wo ein Widget nach einer Entity fragt.":
+    "As an add-on, the connection runs through Home Assistant itself. You need neither an address nor an access token — your entities are available straight away, everywhere a widget asks for one.",
+  "Eine andere Home-Assistant-Instanz lässt sich im Add-on nicht eintragen — dafür Magic Frame per Docker installieren.":
+    "The add-on cannot point at a different Home Assistant — install Magic Frame with Docker for that.",
   "Öffnet das Vollbild von selbst, sobald der Sichtbarkeits-Trigger auslöst — Türklingel klingelt, Kamera füllt den Schirm.":
     "Opens fullscreen by itself the moment the visibility trigger fires — doorbell rings, camera fills the screen.",
   "Braucht einen Trigger: im Reiter „Layout“ unter „Sichtbarkeit“ eine HA-Entity setzen (z.B. die Türklingel), dann wird der Schalter frei.":

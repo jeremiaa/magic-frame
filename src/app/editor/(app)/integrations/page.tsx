@@ -19,6 +19,9 @@ export default function IntegrationsPage() {
   const [haUrl, setHaUrl] = useState("");
   const [haToken, setHaToken] = useState("");
   const [haLoading, setHaLoading] = useState(true);
+  // "supervisor" = wir laufen als HA-Add-on und sind bereits verbunden, ohne
+  // dass jemand etwas eintragen muss.
+  const [haManagedBy, setHaManagedBy] = useState<string | null>(null);
   const [haSaveStatus, setHaSaveStatus] = useState<null | "saving" | "saved" | "error">(null);
   const [immichUrl, setImmichUrl] = useState("");
   const [immichApiKey, setImmichApiKey] = useState("");
@@ -30,6 +33,7 @@ export default function IntegrationsPage() {
       .then((d) => {
         setHaUrl(d.haUrl ?? "");
         setHaToken(d.haToken ?? "");
+        setHaManagedBy(d.haManagedBy ?? null);
         setImmichUrl(d.immichUrl ?? "");
         setImmichApiKey(d.immichApiKey ?? "");
       })
@@ -94,11 +98,34 @@ export default function IntegrationsPage() {
             <div className="flex-1">
               <h2 className="font-semibold text-lg">{t("Home Assistant")}</h2>
               <p className="text-sm text-[var(--mf-fg)]/50">
-                {t("URL + Long-Lived Access Token. Gilt global. Token-Generator: HA-UI → Profil (unten links) → Long-Lived Access Tokens.")}
+                {haManagedBy === "supervisor"
+                  ? t("Läuft als Add-on — die Verbindung steht bereits.")
+                  : t("URL + Long-Lived Access Token. Gilt global. Token-Generator: HA-UI → Profil (unten links) → Long-Lived Access Tokens.")}
               </p>
             </div>
           </div>
 
+          {/* Im Add-on gibt es nichts einzutragen: der Supervisor reicht Home
+              Assistant durch, ohne Token. Vorher standen hier zwei leere
+              Felder, und jeder schloss daraus, es sei nichts verbunden. */}
+          {haManagedBy === "supervisor" ? (
+            <div className="rounded-xl border border-green-500/25 bg-green-500/[0.06] p-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-300 text-xs shrink-0">✓</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-green-200">
+                    {t("Mit deinem Home Assistant verbunden")}
+                  </p>
+                  <p className="text-[13px] text-[var(--mf-fg)]/55 mt-1 leading-relaxed">
+                    {t("Als Add-on läuft die Verbindung über Home Assistant selbst. Du brauchst weder Adresse noch Zugriffstoken — deine Entitäten stehen sofort zur Verfügung, überall wo ein Widget nach einer Entity fragt.")}
+                  </p>
+                  <p className="text-[11px] text-[var(--mf-fg)]/35 mt-2">
+                    {t("Eine andere Home-Assistant-Instanz lässt sich im Add-on nicht eintragen — dafür Magic Frame per Docker installieren.")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={saveHa} className="space-y-4">
             <label className="block">
               <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-1.5">
@@ -155,6 +182,7 @@ export default function IntegrationsPage() {
               </button>
             </div>
           </form>
+          )}
         </section>
 
         <section className="mb-10 bg-[var(--mf-surface-2)]/60 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-2xl p-6">

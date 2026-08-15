@@ -20,16 +20,20 @@ The database is created on first start, which takes a moment.
 |---|---|
 | `admin_email` | Login name for the first account. Leave empty to create it in the browser on first visit. |
 | `admin_password` | Password for it. Clear it again after the first start — otherwise it stays in the add-on configuration. |
-| `timezone` | Time zone, e.g. `Europe/Berlin`. Empty = the system's. |
+| `timezone` | Leave empty — the add-on takes the time zone from Home Assistant. Only fill this in to override it, with an IANA name like `Europe/Berlin`. It decides what the clock and calendar show on your displays. |
+| `ha_auto_login` | On by default. Home Assistant admins open Magic Frame from the sidebar without typing a password. Everyone else gets the normal sign-in page. |
 | `ha_action_unrestricted` | Off by default. A display may only operate entities that are placed on one of your views. Turn this on only if something addresses an entity that sits on no view — a custom module with a hard-coded entity, or a script of your own. |
 
 ## Connecting Home Assistant
 
-**No access token needed.** Running as an add-on, Magic Frame talks to Home
-Assistant through the Supervisor and authenticates itself. The URL and token
-fields under `Integrations → Home Assistant` stay empty, and anything you type
-there is ignored for as long as the add-on is running — the Supervisor
-connection always wins.
+**Nothing to set up — it is already connected.** Running as an add-on, Magic
+Frame reaches Home Assistant through the Supervisor and authenticates itself.
+Your entities are available the moment the add-on starts: every field that asks
+for an entity offers them, and the Home Assistant widgets work straight away.
+
+`Integrations → Home Assistant` says so rather than showing you empty fields,
+and there is nothing to fill in. The Supervisor connection always wins over
+anything stored.
 
 That also means an add-on install can only talk to the Home Assistant it is
 installed in. If you need to point Magic Frame at a *different* instance, run
@@ -37,9 +41,20 @@ it with Docker Compose instead and enter the URL and a long-lived token there.
 
 ## Displays
 
-Views are reachable at `http://<your-home-assistant-ip>:8098/view/<id>` and
-need no login — that is what they are for. A wall tablet simply opens that
-address.
+### Where do I point my tablet?
+
+1. Open Magic Frame from the sidebar and go to **Views**.
+2. Every view card shows its own address, in the form
+   `http://<your-home-assistant-ip>:8098/view/<name>`. The name is the one you
+   gave the view; a fresh install has `/view/1`.
+3. Type that address into the tablet's browser. That is all — **a view needs no
+   login**, which is the whole point: a wall display cannot sign in.
+
+`<your-home-assistant-ip>` is the same address you use to reach Home Assistant
+itself, with `:8098` instead of `:8123`. If you changed the port under the
+add-on's **Network** section, use the one you set there.
+
+The add-on's own page shows both addresses too, right under the button.
 
 Magic Frame also sits in the sidebar: the entry opens a small page whose one
 button signs you in and opens the editor — only for Home Assistant admins,

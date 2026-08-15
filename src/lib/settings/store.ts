@@ -42,21 +42,30 @@ function immichFromExtra(extra: any): { immichUrl: string; immichApiKey: string 
 export async function getAppSettings(): Promise<AppSettingsShape> {
   const row = await prisma.appSettings.findUnique({ where: { id: "global" } });
   const immich = immichFromExtra(row?.extra);
-  if (row && (row.haUrl || row.haToken)) {
-    return { haUrl: row.haUrl, haToken: row.haToken, ...immich };
-  }
+
   // Als HA-Add-on über den Supervisor-Proxy verbinden. Damit muss niemand mehr
   // einen langlebigen Token anlegen — die Integration funktioniert direkt nach
   // der Installation.
   //
-  // Wichtig, weil hier vorher das Gegenteil stand: der Proxy gewinnt IMMER,
-  // eigene Eingaben werden im Add-on-Betrieb nicht gelesen. Auf eine andere
-  // Home-Assistant-Instanz als die eigene zu zeigen, geht als Add-on also
-  // nicht. Das ist bewusst so gelassen: ein alter, längst abgelaufener Token
-  // aus der Zeit vor dem Add-on würde sonst den funktionierenden Proxy
-  // verdrängen, und der Fehler wäre für den Nutzer nicht zu erkennen.
+  // Der Proxy gewinnt IMMER, gespeicherte Eingaben werden im Add-on-Betrieb
+  // nicht gelesen. Auf eine andere Home-Assistant-Instanz als die eigene zu
+  // zeigen, geht als Add-on also nicht — bewusst: ein alter, längst
+  // abgelaufener Token aus der Zeit vor dem Add-on würde sonst den
+  // funktionierenden Proxy verdrängen, und der Fehler wäre für den Nutzer
+  // nicht zu erkennen.
+  //
+  // Diese Abfrage stand bis 1.5.0 UNTER der Datenbank-Zeile — der Kommentar
+  // beschrieb also das Gegenteil dessen, was der Code tat. Wer je etwas in die
+  // HA-Felder getippt hatte, bekam den Proxy nie zu sehen, und niemand konnte
+  // erkennen warum. Gefunden, als Jeremia fragte, ob das Add-on nicht von
+  // selbst an die Entitäten kommt — es sollte, und tat es je nach Vorgeschichte
+  // eben nicht.
   const sup = supervisorHaCredentials();
   if (sup) return { ...sup, ...immich };
+
+  if (row && (row.haUrl || row.haToken)) {
+    return { haUrl: row.haUrl, haToken: row.haToken, ...immich };
+  }
   const legacy = await legacyFromDashboardOne();
   if (row) {
     return {
