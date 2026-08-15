@@ -486,6 +486,13 @@ export const EN: Record<string, string> = {
   "Auto-ausblenden nach Sek. (0 = solange aktiv)": "Auto-hide after sec. (0 = while active)",
   "Beim Auslösen sofort im Vollbild öffnen": "Open fullscreen when triggered",
 
+  // Ansicht gibt es nicht (Live-View)
+  "Diese Ansicht gibt es nicht": "This view does not exist",
+  "Unter dieser Adresse ist keine Ansicht gespeichert:":
+    "No view is stored at this address:",
+  "Vertippt, oder die Ansicht wurde umbenannt oder gelöscht. Die richtige Adresse steht im Editor unter „Views“ — jede Karte zeigt ihre eigene.":
+    "A typo, or the view was renamed or deleted. The right address is in the editor under “Views” — every card shows its own.",
+
   // Add-on: Home Assistant kommt über den Supervisor, ohne Token
   "Läuft als Add-on — die Verbindung steht bereits.":
     "Running as an add-on — the connection is already there.",

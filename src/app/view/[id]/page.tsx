@@ -13,14 +13,48 @@ import { ViewThemeScope } from "@/lib/ui/view-theme";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
 import ActionRefusedToast from "@/components/ActionRefusedToast";
+import { useT } from "@/lib/i18n/LocaleProvider";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
+
+/**
+ * "Diese Ansicht gibt es nicht."
+ *
+ * Bewusst ruhig gehalten — das hängt an einer Wand, nicht auf einem
+ * Schreibtisch — aber unmissverständlich. Bis 1.5.0 stand hier ein fest
+ * eingebautes Uhr-Kalender-Wetter, für einen Tippfehler genauso wie für eine
+ * gelöschte Ansicht. Das sah vollständig aus, also fiel der Fehler erst auf,
+ * wenn Änderungen aus dem Editor tagelang nicht ankamen.
+ *
+ * Eigene Komponente, weil sie INNERHALB des LocaleProvider stehen muss: die
+ * Seite selbst rendert den Provider erst und kann useT() darum nicht rufen.
+ */
+function MissingViewNotice({ viewId }: { viewId: string }) {
+  const t = useT();
+  return (
+    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-8">
+      <div className="max-w-md text-center">
+        <p className="text-white/40 text-xs uppercase tracking-[0.2em] mb-3">Magic Frame</p>
+        <h1 className="text-2xl font-semibold mb-3">{t("Diese Ansicht gibt es nicht")}</h1>
+        <p className="text-white/60 text-sm leading-relaxed">
+          {t("Unter dieser Adresse ist keine Ansicht gespeichert:")}{" "}
+          <code className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[0.9em]">/view/{viewId}</code>
+        </p>
+        <p className="text-white/35 text-[13px] leading-relaxed mt-4">
+          {t("Vertippt, oder die Ansicht wurde umbenannt oder gelöscht. Die richtige Adresse steht im Editor unter „Views“ — jede Karte zeigt ihre eigene.")}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardView({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const dashboardId = unwrappedParams.id;
   
   const [layout, setLayout] = useState<any[]>([]);
+  // null = noch nichts geladen, true = diese Ansicht gibt es nicht.
+  const [viewMissing, setViewMissing] = useState(false);
   // Use the last-known wallpaper config from localStorage as the initial state
   // so a reload starts the right wallpaper source immediately, without the
   // ~200 ms window where the Engine used to fall through to a generic
@@ -339,6 +373,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
       // zurückholen (#27). Nur null (Dashboard existiert nicht) löst den
       // Fallback unten aus.
       if (Array.isArray(data.layout)) {
+        setViewMissing(false);
         setLayout((prev: any[]) => objectsEqual(prev, data.layout) ? prev : data.layout);
         
         setUserHiddenWidgets(prev => {
@@ -373,12 +408,14 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
           setViewSettings((prev: any) => (objectsEqual(prev, data.settings) ? prev : data.settings));
         }
       } else {
-         // Fallback if empty database
-         setLayout([
-           { i: 'clk', x: 0, y: 0, w: 6, h: 4, type: 'ClockWidget.tsx', bgOpacity: 20 },
-           { i: 'cal', x: 0, y: 4, w: 6, h: 6, type: 'CalendarWidget.tsx', bgOpacity: 20 },
-           { i: 'wth', x: 0, y: 10, w: 12, h: 6, type: 'WeatherWidget.tsx', bgOpacity: 50 },
-         ]);
+         // Die API unterscheidet: [] ist eine bewusst geleerte Ansicht (#27),
+         // null heisst "gibt es nicht". Hier stand bis 1.5.0 ein fest
+         // eingebautes Uhr-Kalender-Wetter für BEIDE Fälle — wer sich am
+         // Tablet vertippte, sah ein vollständig aussehendes Dashboard und
+         // hielt es für seins. Der Irrtum fiel erst auf, wenn Änderungen aus
+         // dem Editor nie ankamen. Lieber ehrlich leer als falsch voll.
+         setLayout([]);
+         setViewMissing(true);
       }
     } catch(err) {
       console.error(err);
@@ -485,6 +522,12 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     <div className="relative w-screen h-screen overflow-hidden text-white font-sans bg-black">
       <WallpaperEngine dashboardId={dashboardId} config={wallpaperConfig} />
       <ActionRefusedToast />
+
+      {/* Diese Ansicht gibt es nicht. Bewusst ruhig gehalten — das hier haengt
+          an einer Wand, nicht auf einem Schreibtisch — aber unmissverstaendlich:
+          vorher stand hier ein fertig aussehendes Dashboard, und der Tippfehler
+          fiel tagelang niemandem auf. */}
+      {viewMissing && <MissingViewNotice viewId={dashboardId} />}
 
       <div
         className={`absolute inset-x-0 top-0 z-20 dashboard-static-grid ${edgeToEdge ? "p-0" : "p-4 md:px-8 md:pt-8"}`}
