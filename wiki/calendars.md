@@ -186,6 +186,8 @@ iCloud speak. There is no OAuth app to register and no developer console: the
 server address, a username and a password are the whole setup, and Magic Frame
 discovers the calendars behind them itself.
 
+*(Contributed by @chimmidev in [#79](https://github.com/jeremiaa/magic-frame/pull/79).)*
+
 1. Open `Editor → Integrations` and find **Connect a CalDAV server**.
 2. **Server address** — the same address your phone uses. The server base is
    enough; `https://cloud.example.com/remote.php/dav` for Nextcloud, or just

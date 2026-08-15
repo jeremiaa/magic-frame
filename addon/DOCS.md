@@ -81,6 +81,22 @@ accounts and settings.
   Assistant. The log says why.
 - **Page does not load** — on the very first start, creating the database
   takes a while. Check the log before restarting.
+- **The add-on will not start after a power cut** — it recovers by itself now.
+  A database folder without `global/pg_control` is incomplete, whatever else is
+  in it. It is moved aside to `/data/postgres.unfertig.<date-time>` and a fresh
+  one is created; the log says where. Nothing is deleted and an older rescue is
+  never overwritten, so if the folder did hold real data it is still there.
+  Restore a backup to get it back into service.
+- **"This database was last used by version X"** — you started an older
+  version against a newer database. Nothing was changed. Start the newer
+  version again, or restore a backup from the older one's time first. See
+  [Updating and backups](https://magicframe.dev/docs/updating-and-backups/).
+- **Your admin password is not accepted** — up to 1.5.0 a password containing
+  a quote, a backslash or an umlaut was mangled while being read from the
+  add-on options, so the account was created with something other than what
+  you typed. Fixed in 1.6.0; if you are locked out from before, clear both
+  option fields, delete the account in the database, and create it in the
+  browser instead.
 
 ## What this add-on does not include
 
