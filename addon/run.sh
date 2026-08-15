@@ -120,7 +120,11 @@ export MAGIC_FRAME_PUBLIC_PORT="${PUBLIC_PORT:-8098}"
 # ── App ─────────────────────────────────────────────────────────────────────
 cd /app
 log "Schema wird abgeglichen…"
+# Siehe scripts/schema-guard.mjs: bricht ab, wenn die Datenbank von einer
+# neueren Version stammt, statt beim Rückschritt stillschweigend zu löschen.
+node scripts/schema-guard.mjs check
 npx prisma db push --accept-data-loss
+node scripts/schema-guard.mjs stamp
 node scripts/bootstrap.mjs
 
 log "Magic Frame läuft auf Port 3000 (von aussen ${MAGIC_FRAME_PUBLIC_PORT})."

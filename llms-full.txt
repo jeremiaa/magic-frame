@@ -3295,13 +3295,20 @@ image tag, so pinning is a one-line change.
 Remove the line again (or set it back to `latest`) when you want to follow
 releases again.
 
-> **Read this before going backwards.** The application brings the database
-> schema in line with its own expectations every time the container starts, and
-> it is allowed to drop things to do so. Moving *forward* is what that is
-> designed for. Moving *back* across a release that changed the schema can
-> therefore lose the data belonging to whatever was added in between. Take a
-> database dump first, every time, and prefer reporting the problem to living on
-> an old version.
+> **Going backwards is caught for you now.** The application brings the
+> database schema in line with its own expectations every time the container
+> starts, and it is allowed to drop things to do so. Moving *forward* is what
+> that is designed for; moving *back* across a release that changed the schema
+> would lose whatever was added in between.
+>
+> Since 1.6.0 that no longer happens silently. Each successful start records
+> the version that ran, and a start of an older version stops with a message
+> naming both versions and leaving the database untouched. Restore a backup
+> from that older version's time and it starts cleanly. If you genuinely want
+> the loss, `MAGIC_FRAME_ALLOW_SCHEMA_DOWNGRADE=1` says so out loud.
+>
+> Take a database dump before rolling back anyway, and prefer reporting the
+> problem to living on an old version.
 
 Rolling back an *add-on* install works the same way in Home Assistant's own
 add-on page, with the same warning.

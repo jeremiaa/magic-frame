@@ -42,4 +42,8 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/scripts ./scripts
 
 # Schema push, Admin-Seed (wenn ENV gesetzt), dann Start.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node scripts/bootstrap.mjs && node server.js"]
+# schema-guard läuft VOR dem Push: `--accept-data-loss` würde beim Zurückgehen
+# auf ein älteres Abbild alles entfernen, was die ältere Version nicht kennt.
+# Der Wächter bricht in dem Fall ab, statt zu löschen; nach erfolgreichem Push
+# vermerkt `stamp` die Version, gegen die beim nächsten Start verglichen wird.
+CMD ["sh", "-c", "node scripts/schema-guard.mjs check && npx prisma db push --accept-data-loss && node scripts/schema-guard.mjs stamp && node scripts/bootstrap.mjs && node server.js"]
