@@ -128,6 +128,21 @@ async function isHaAdmin(userId) {
 //     "Seite neu laden" statt still zu sterben.
 //   - Der Fallback-Link zur normalen Anmeldung ist IMMER sichtbar. In den
 //     WebViews der Companion-Apps ist der Link der verlässliche Weg.
+//
+// UND die Lektion aus dem ersten echten Test — beide Punkte hängen zusammen:
+//
+//   1. Der Knopf holte erst den Token und sprang DANN per window.open(…,
+//      '_top') weiter. Eine Seite in einem fremden Rahmen darf das
+//      Hauptfenster aber nur mit einer FRISCHEN Nutzeraktion umlenken, und
+//      die verbraucht der Netzaufruf dazwischen. Der Sprung wurde blockiert,
+//      und in der HA-App blieb "Verbindung wurde getrennt" stehen. Deshalb
+//      ist der Knopf jetzt ein echter Link, dessen Ziel VOR dem Klick
+//      feststeht: Klick = Navigation, nichts dazwischen. Der Token wird beim
+//      Laden geholt und alle 40 s erneuert, damit er nie abgelaufen ist.
+//
+//   2. '_top' war ohnehin falsch gedacht. Es reisst Home Assistant aus dem
+//      Fenster — Seitenleiste weg, in der Companion-App die Verbindung tot.
+//      Ein neuer Tab lässt HA genau so stehen, wie es war.
 function landingPage(publicPort, autoLoginEnabled) {
   return `<!doctype html>
 <html lang="en">
@@ -139,42 +154,77 @@ function landingPage(publicPort, autoLoginEnabled) {
   :root { color-scheme: dark; }
   body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
          background:#0b0d12; color:#e8eaf0; font:16px/1.5 system-ui, sans-serif; }
-  .card { max-width:22rem; padding:2.5rem 2rem; text-align:center; }
+  .card { max-width:26rem; padding:2.5rem 2rem; text-align:center; }
   h1 { font-size:1.4rem; margin:0 0 .4rem; }
   p { color:#9aa1b0; font-size:.92rem; margin:.4rem 0 1.4rem; }
-  button { width:100%; padding:.85rem 1rem; border:0; border-radius:.8rem; cursor:pointer;
-           background:#7c5cff; color:#fff; font-size:1rem; font-weight:600; }
-  button:disabled { opacity:.55; cursor:default; }
-  a { color:#8b93a7; font-size:.85rem; display:inline-block; margin-top:1.1rem; }
+  .go { display:block; width:100%; box-sizing:border-box; padding:.85rem 1rem; border:0;
+        border-radius:.8rem; cursor:pointer; background:#7c5cff; color:#fff; font-size:1rem;
+        font-weight:600; text-decoration:none; }
+  .go[aria-disabled="true"] { opacity:.55; cursor:default; pointer-events:none; }
+  a.quiet { color:#8b93a7; font-size:.85rem; display:inline-block; margin-top:1.1rem; }
   .err { color:#ff8f8f; font-size:.85rem; min-height:1.2em; margin-top:.8rem; }
+  .addr { margin-top:1.8rem; padding-top:1.4rem; border-top:1px solid #21242e; text-align:left; }
+  .addr h2 { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+             color:#6f7686; margin:0 0 .6rem; font-weight:600; }
+  .addr p { margin:.5rem 0 0; font-size:.84rem; }
+  code { background:#161923; border:1px solid #21242e; border-radius:.4rem;
+         padding:.15rem .4rem; font-size:.84rem; color:#cdd3e0; word-break:break-all; }
 </style>
 </head>
 <body>
 <div class="card">
   <h1>Magic Frame</h1>
-  <p>The editor opens as its own page on your network.</p>
-  <button id="go"${autoLoginEnabled ? '' : ' disabled'}>Open Magic Frame</button>
+  <p>Opens in a new tab — Home Assistant stays where it is.</p>
+  <a class="go" id="go" target="_blank" rel="noopener" aria-disabled="true">Open Magic Frame</a>
   <div class="err" id="err">${autoLoginEnabled ? '' : 'Auto sign-in is disabled in the add-on options.'}</div>
-  <a id="plain" href="#" target="_top">Open the sign-in page instead</a>
+  <a class="quiet" id="plain" href="#" target="_blank" rel="noopener">Open the sign-in page instead</a>
+
+  <div class="addr">
+    <h2>Addresses for your displays</h2>
+    <p>Magic Frame itself: <code id="addr">…</code></p>
+    <p>A display opens one view directly, and needs no login:<br>
+       <code id="addrview">…</code></p>
+    <p style="color:#6f7686">Each view's own address is listed under
+       <strong>Views</strong> in the editor — that is also where you name them.</p>
+  </div>
 </div>
 <script>
   var base = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
+  // location.hostname ist der Name, den der Nutzer für Home Assistant getippt
+  // hat — genau der, unter dem seine Tablets die App auch erreichen.
   var target = 'http://' + location.hostname + ':' + ${JSON.stringify(String(publicPort))};
+  var go = document.getElementById('go'), err = document.getElementById('err');
   document.getElementById('plain').href = target + '/login';
-  document.getElementById('go').addEventListener('click', function () {
-    var btn = this, err = document.getElementById('err');
-    btn.disabled = true; err.textContent = '';
+  document.getElementById('addr').textContent = target;
+  document.getElementById('addrview').textContent = target + '/view/<name>';
+
+  // Der Token wird VORAB geholt und in den Link geschrieben, damit der Klick
+  // selbst nichts mehr abwarten muss. Erneuerung deutlich vor Ablauf (60 s),
+  // sonst zeigt ein offen gelassenes Panel auf einen toten Token.
+  function refresh() {
+    if (!${autoLoginEnabled ? 'true' : 'false'}) return;
     fetch(base + 'mint', { method: 'POST' }).then(function (r) {
       if (!r.ok) throw new Error(String(r.status));
       return r.json();
     }).then(function (d) {
-      window.open(target + '/handoff?token=' + d.token, '_top');
+      go.href = target + '/handoff?token=' + d.token;
+      go.setAttribute('aria-disabled', 'false');
+      err.textContent = '';
     }).catch(function (e) {
-      btn.disabled = false;
+      go.setAttribute('aria-disabled', 'true');
       err.textContent = e.message === '401' || e.message === '403'
-        ? 'Not permitted for this Home Assistant account. Use the sign-in link below.'
-        : 'That did not work — reload this page and try again.';
+        ? 'Not permitted for this Home Assistant account — use the sign-in link below.'
+        : 'Could not prepare the one-click sign-in. Use the sign-in link below.';
     });
+  }
+  refresh();
+  setInterval(refresh, 40000);
+  // Der Token ist einmalig. Nach dem Klick ist er verbraucht, also sofort
+  // einen neuen holen — sonst zeigt der Knopf bis zur nächsten Runde auf
+  // einen toten Token, und ein zweiter Klick liefe ins Leere.
+  go.addEventListener('click', function () {
+    go.setAttribute('aria-disabled', 'true');
+    setTimeout(refresh, 500);
   });
 </script>
 </body>
@@ -245,4 +295,7 @@ function startIngressListener() {
   return server;
 }
 
-module.exports = { startIngressListener };
+// landingPage ist mit exportiert, damit die Seite prüfbar ist, ohne den
+// Listener zu starten — der nimmt nur Anfragen vom Ingress-Gateway an, und
+// das ist von einem Testlauf aus nicht nachstellbar.
+module.exports = { startIngressListener, landingPage };

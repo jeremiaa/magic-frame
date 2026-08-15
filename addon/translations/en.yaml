@@ -1,0 +1,43 @@
+# Ohne diese Datei zeigt Home Assistant in den Add-on-Optionen nur die nackten
+# Schlüsselnamen — "timezone", "ha_action_unrestricted" — und keine Zeile
+# darunter, die sagt, was hineingehört. Genau daran ist der erste echte Test
+# hängengeblieben: bei "timezone" weiss niemand auswendig, dass das IANA-Format
+# erwartet wird, und ein falscher Wert fällt erst auf, wenn die Uhr an der Wand
+# falsch geht.
+#
+# `name` ist die Beschriftung, `description` die graue Zeile darunter.
+configuration:
+  admin_email:
+    name: Admin e-mail
+    description: >-
+      Only used the very first time, to create the account you sign in with.
+      Leave both this and the password empty and the add-on will ask you to
+      create the account in the browser instead.
+  admin_password:
+    name: Admin password
+    description: >-
+      The password for that first account. Change it later under Settings →
+      Users in Magic Frame; changing it here afterwards has no effect.
+  timezone:
+    name: Time zone
+    description: >-
+      Leave empty to use the time zone Home Assistant already has — that is
+      almost always what you want. To override it, use an IANA name such as
+      Europe/Berlin or America/New_York. This decides what the clock and the
+      calendar show on your displays.
+  ha_action_unrestricted:
+    name: Allow displays to control any entity
+    description: >-
+      Off by default: a display may only switch entities that are actually
+      placed on one of your views. Turn this on only if something else — your
+      own module, a script — needs to reach entities that are on no view.
+  ha_auto_login:
+    name: One-click sign-in from the sidebar
+    description: >-
+      Lets Home Assistant administrators open Magic Frame from the sidebar
+      without typing a password. Everyone else gets the normal sign-in page.
+network:
+  3000/tcp: >-
+    The address your displays and your browser use, for example
+    http://homeassistant.local:8098. A wall display opens one view directly at
+    /view/<name> and needs no login.

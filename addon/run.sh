@@ -83,6 +83,31 @@ if [ -f /data/options.json ]; then
   [ "${HA_AUTOLOGIN_OFF}" = "1" ] && export MAGIC_FRAME_HA_AUTO_LOGIN=0
 fi
 
+# ── Zeitzone ────────────────────────────────────────────────────────────────
+# Leer gelassen? Dann fragen wir Home Assistant nach seiner eigenen. Niemand
+# weiss auswendig, dass hier das IANA-Format ("Europe/Berlin") erwartet wird,
+# und eine leere Option ergab bisher stillschweigend UTC — die Uhr an der Wand
+# ging dann zwei Stunden falsch, ohne dass irgendwo ein Hinweis stand. Home
+# Assistant kennt die Zeitzone längst, man gibt sie bei der Einrichtung an.
+#
+# Kein `[ … ] && …` als letzte Zeile eines Blocks: unter `set -e` ist ein
+# falsches Test-Ergebnis der Exit-Code des Skripts, und der Start bräche ab.
+if [ -z "${TZ:-}" ]; then
+  if [ -n "${SUPERVISOR_TOKEN:-}" ]; then
+    TZ_HA="$(curl -fsS -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+              http://supervisor/core/info 2>/dev/null \
+              | sed -n 's/.*"timezone"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+              || true)"
+    if [ -n "${TZ_HA}" ]; then
+      export TZ="${TZ_HA}"
+      echo "[addon] timezone taken from Home Assistant: ${TZ}"
+    fi
+  fi
+  if [ -z "${TZ:-}" ]; then
+    echo "[addon] no timezone configured and Home Assistant reported none — using UTC"
+  fi
+fi
+
 export DATABASE_URL="postgresql://${PGUSER}@localhost/${DB_NAME}?host=/tmp&schema=public"
 export NODE_ENV=production
 # Der Erkennungsmarker der App ist /data/options.json (immer vorhanden), aber
