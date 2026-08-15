@@ -21,9 +21,9 @@ configuration:
   timezone:
     name: Time zone
     description: >-
-      Leave empty to use the time zone Home Assistant already has — that is
-      almost always what you want. To override it, use an IANA name such as
-      Europe/Berlin or America/New_York. This decides what the clock and the
+      Leave empty — the add-on already runs in Home Assistant's own time zone.
+      Fill this in only to override it, with an IANA name such as
+      Europe/Berlin or America/New_York. It decides what the clock and the
       calendar show on your displays.
   ha_action_unrestricted:
     name: Allow displays to control any entity

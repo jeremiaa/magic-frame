@@ -20,7 +20,7 @@ The database is created on first start, which takes a moment.
 |---|---|
 | `admin_email` | Login name for the first account. Leave empty to create it in the browser on first visit. |
 | `admin_password` | Password for it. Clear it again after the first start — otherwise it stays in the add-on configuration. |
-| `timezone` | Leave empty — the add-on takes the time zone from Home Assistant. Only fill this in to override it, with an IANA name like `Europe/Berlin`. It decides what the clock and calendar show on your displays. |
+| `timezone` | Leave empty — the add-on already runs in Home Assistant's own time zone. Only fill this in to override it, with an IANA name like `Europe/Berlin`. It decides what the clock and calendar show on your displays. |
 | `ha_auto_login` | On by default. Home Assistant admins open Magic Frame from the sidebar without typing a password. Everyone else gets the normal sign-in page. |
 | `ha_action_unrestricted` | Off by default. A display may only operate entities that are placed on one of your views. Turn this on only if something addresses an entity that sits on no view — a custom module with a hard-coded entity, or a script of your own. |
 

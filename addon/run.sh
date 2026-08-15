@@ -84,28 +84,18 @@ if [ -f /data/options.json ]; then
 fi
 
 # ── Zeitzone ────────────────────────────────────────────────────────────────
-# Leer gelassen? Dann fragen wir Home Assistant nach seiner eigenen. Niemand
-# weiss auswendig, dass hier das IANA-Format ("Europe/Berlin") erwartet wird,
-# und eine leere Option ergab bisher stillschweigend UTC — die Uhr an der Wand
-# ging dann zwei Stunden falsch, ohne dass irgendwo ein Hinweis stand. Home
-# Assistant kennt die Zeitzone längst, man gibt sie bei der Einrichtung an.
+# Der Supervisor setzt TZ in JEDEM Add-on-Container bereits auf die Zeitzone
+# von Home Assistant (supervisor/docker/app.py, ENV_TIME). Hier ist also nichts
+# zu holen — die Option daneben ueberschreibt sie, mehr braucht es nicht.
 #
-# Kein `[ … ] && …` als letzte Zeile eines Blocks: unter `set -e` ist ein
-# falsches Test-Ergebnis der Exit-Code des Skripts, und der Start bräche ab.
-if [ -z "${TZ:-}" ]; then
-  if [ -n "${SUPERVISOR_TOKEN:-}" ]; then
-    TZ_HA="$(curl -fsS -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
-              http://supervisor/core/info 2>/dev/null \
-              | sed -n 's/.*"timezone"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-              || true)"
-    if [ -n "${TZ_HA}" ]; then
-      export TZ="${TZ_HA}"
-      echo "[addon] timezone taken from Home Assistant: ${TZ}"
-    fi
-  fi
-  if [ -z "${TZ:-}" ]; then
-    echo "[addon] no timezone configured and Home Assistant reported none — using UTC"
-  fi
+# Der erste Versuch fragte http://supervisor/core/info ab. Das war gleich
+# doppelt falsch: die Route verlangt hassio_api, wir haben nur
+# homeassistant_api — und curl fehlte im Abbild, der Aufruf waere ohnehin nie
+# gelaufen. Beides faellt still aus, weshalb es aufgefallen waere: gar nicht.
+if [ -n "${TZ:-}" ]; then
+  log "Zeitzone: ${TZ}"
+else
+  log "Zeitzone: keine gesetzt — es gilt UTC. Ueber die Add-on-Option aenderbar."
 fi
 
 export DATABASE_URL="postgresql://${PGUSER}@localhost/${DB_NAME}?host=/tmp&schema=public"
@@ -133,7 +123,7 @@ log "Schema wird abgeglichen…"
 npx prisma db push --accept-data-loss
 node scripts/bootstrap.mjs
 
-log "Magic Frame läuft auf Port 3000 (von aussen 8098)."
+log "Magic Frame läuft auf Port 3000 (von aussen ${MAGIC_FRAME_PUBLIC_PORT})."
 node server.js &
 APP_PID=$!
 wait "${APP_PID}"

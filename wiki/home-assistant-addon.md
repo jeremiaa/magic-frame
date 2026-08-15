@@ -77,7 +77,7 @@ name and a line of explanation there — all of them may be left as they are.
 | --- | --- |
 | `admin_email` | The login name for the first account. **Leave it empty** to create the account in the browser on first visit instead. |
 | `admin_password` | The password for that account. Clear it again after the first start — otherwise it stays readable in the add-on configuration. |
-| `timezone` | Leave it empty. The add-on then takes the time zone Home Assistant already has, which is what you want. Fill it in only to override that, with an IANA name such as `Europe/Berlin`. Getting it wrong shows calendar entries at the wrong hour. |
+| `timezone` | Leave it empty. The add-on already runs in Home Assistant's own time zone — the Supervisor hands it to every add-on. Fill it in only to override that, with an IANA name such as `Europe/Berlin`. Getting it wrong shows calendar entries at the wrong hour. |
 | `ha_action_unrestricted` | Off by default. A display may normally only operate entities that are actually placed on one of your views. Turning this on removes that limit for the whole installation. |
 | `ha_auto_login` | On by default. Home Assistant administrators open Magic Frame from the sidebar without typing a password; everyone else gets the normal sign-in page. |
 
