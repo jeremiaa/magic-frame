@@ -5,10 +5,70 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity, Leaf, Type as TypeIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { viewUrl } from "@/lib/base-path";
 
 type Orientation = "portrait" | "landscape";
 type LayoutItem = { i: string; type: string; x: number; y: number; w: number; h: number };
 type Dashboard = { id: string; name: string; orientation?: Orientation; layout?: LayoutItem[] };
+
+/**
+ * Die Adresse einer Ansicht, zum Abtippen ins Tablet.
+ *
+ * Erst nach dem Einhängen gefüllt: die Adresse steht im Fenster, und beim
+ * Rendern auf dem Server gibt es keines. Bis dahin der Pfad — kein Springen
+ * des Layouts, nur ein kurz unvollständiger Text.
+ */
+function ViewAddress({ viewId }: { viewId: string }) {
+  const t = useT();
+  const [url, setUrl] = useState("");
+  const [kopiert, setKopiert] = useState(false);
+  useEffect(() => setUrl(viewUrl(viewId)), [viewId]);
+
+  const anzeige = url || `/view/${viewId}`;
+  return (
+    <button
+      type="button"
+      title={t("Adresse kopieren")}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!url) return;
+        navigator.clipboard?.writeText(url).then(
+          () => { setKopiert(true); setTimeout(() => setKopiert(false), 1500); },
+          () => {},
+        );
+      }}
+      className="text-xs text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)]/70 mt-1 font-mono text-left break-all transition-colors flex items-start gap-1.5 group/addr"
+    >
+      <span>{anzeige}</span>
+      {url && (
+        <Copy
+          size={11}
+          className={`shrink-0 mt-0.5 transition-opacity ${kopiert ? "opacity-100 text-green-400" : "opacity-0 group-hover/addr:opacity-60"}`}
+        />
+      )}
+    </button>
+  );
+}
+
+function AddressHint() {
+  const t = useT();
+  const [host, setHost] = useState("");
+  useEffect(() => {
+    const port = (window as any).__MF_DIRECT_PORT__;
+    if ((window as any).__MF_BASE__ && port) {
+      setHost(`${window.location.protocol}//${window.location.hostname}:${port}`);
+    }
+  }, []);
+  if (!host) return null;
+  return (
+    <p className="text-[13px] text-[var(--mf-fg)]/45 mt-3 max-w-xl leading-relaxed">
+      {t("Deine Displays erreichen die Ansichten nicht über Home Assistant, sondern direkt unter")}{" "}
+      <code className="px-1.5 py-0.5 rounded bg-[var(--mf-elev)]/10 font-mono text-[0.92em]">{host}</code>{" "}
+      {t("— die Adresse unter jeder Karte ist die fertige zum Abtippen. Ohne Anmeldung, dafür sind sie da.")}
+    </p>
+  );
+}
 
 const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "ClockWidget.tsx":           { color: "rgba(59,130,246,0.55)",  Icon: ClockIcon },      // blue
@@ -205,6 +265,10 @@ export default function ViewsListPage() {
             <p className="text-[var(--mf-fg)]/50 mt-2 max-w-xl text-sm">
               {t("Ein View = was auf einem Display gerendert wird. Du kannst beliebig viele anlegen und pro Display eine eigene Layout-URL ansteuern.")}
             </p>
+            {/* Im HA-Rahmen ist die Adresse im Browser die von Home Assistant —
+                dorthin kommt ein Wandtablet nicht. Dann muss dastehen, wo die
+                Ansichten wirklich liegen; sonst sucht man den Port. */}
+            <AddressHint />
           </div>
           <button
             onClick={openNewModal}
@@ -255,9 +319,12 @@ export default function ViewsListPage() {
                       className="text-[var(--mf-fg)]/30 group-hover:text-[var(--mf-fg)]/80 transition-colors shrink-0"
                    />
                 </div>
-                <div className="text-xs text-[var(--mf-fg)]/40 mt-1 font-mono">
-                  /view/{d.id}
-                </div>
+                {/* Die VOLLE Adresse, nicht nur der Pfad. "/view/tablet" sagt
+                    einem, der sein Wandtablet einrichten will, nichts — er
+                    braucht Host und Port. Im HA-Add-on ist das ausserdem
+                    nicht die Adresse, unter der er gerade den Editor sieht:
+                    der läuft im HA-Rahmen, die Ansicht am eigenen Port. */}
+                <ViewAddress viewId={d.id} />
                 <div className="flex items-center gap-3 mt-auto pt-4 border-t border-[var(--mf-bdr)]/5">
                   <a
                     href={`/view/${encodeURIComponent(d.id)}`}

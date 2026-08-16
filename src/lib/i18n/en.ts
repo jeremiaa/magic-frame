@@ -488,6 +488,11 @@ export const EN: Record<string, string> = {
 
   // Ansicht gibt es nicht (Live-View)
   "Diese Ansicht gibt es nicht": "This view does not exist",
+  "Adresse kopieren": "Copy address",
+  "Deine Displays erreichen die Ansichten nicht über Home Assistant, sondern direkt unter":
+    "Your displays do not reach the views through Home Assistant, but directly at",
+  "— die Adresse unter jeder Karte ist die fertige zum Abtippen. Ohne Anmeldung, dafür sind sie da.":
+    "— the address under each card is the finished one to type in. No login; that is what they are for.",
   "Unter dieser Adresse ist keine Ansicht gespeichert:":
     "No view is stored at this address:",
   "Vertippt, oder die Ansicht wurde umbenannt oder gelöscht. Die richtige Adresse steht im Editor unter „Views“ — jede Karte zeigt ihre eigene.":

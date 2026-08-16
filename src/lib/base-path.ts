@@ -34,3 +34,31 @@ export function withBase(path: string): string {
   if (path === base || path.startsWith(base + "/") || path.startsWith(base + "?")) return path;
   return base + path;
 }
+
+/**
+ * Die vollständige Adresse, die ein Wandtablet für eine Ansicht braucht.
+ *
+ * Zwei Fälle, und der zweite ist der Grund, warum es diese Funktion gibt:
+ *
+ *  - Normale Installation: die Adresse im Browser IST die richtige. Wer den
+ *    Editor unter http://192.0.2.10 offen hat, gibt seinem Tablet
+ *    http://192.0.2.10/view/kueche.
+ *
+ *  - Home-Assistant-Add-on: der Editor läuft im Rahmen von Home Assistant,
+ *    also unter dessen Adresse und Port (8123). Ein Tablet kommt dort NICHT
+ *    hin — Ingress verlangt eine angemeldete HA-Sitzung, und die hat ein
+ *    Kiosk-Browser nicht. Die Ansicht liegt am eigenen Port des Add-ons.
+ *    Denselben Rechner, anderer Port.
+ *
+ * Ohne Fenster (serverseitig gerendert) kommt "" zurück; die Aufrufstelle
+ * zeigt dann nur den Pfad, bis der Browser übernimmt.
+ */
+export function viewUrl(viewId: string): string {
+  if (typeof window === "undefined") return "";
+  const path = `/view/${encodeURIComponent(viewId)}`;
+  const directPort = (window as any).__MF_DIRECT_PORT__;
+  if (getBasePath() && directPort) {
+    return `${window.location.protocol}//${window.location.hostname}:${directPort}${path}`;
+  }
+  return `${window.location.origin}${path}`;
+}

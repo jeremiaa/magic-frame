@@ -59,6 +59,9 @@ function basePathBootstrap(base: string): string {
 (function () {
   var B = ${JSON.stringify(base)};
   window.__MF_BASE__ = B;
+  // Der Port, unter dem die Wandtablets die Ansichten erreichen. Im Rahmen
+  // ist window.location der von Home Assistant — der hilft einem Tablet nicht.
+  window.__MF_DIRECT_PORT__ = ${JSON.stringify(process.env.MAGIC_FRAME_PUBLIC_PORT || "8098")};
   function withBase(u) {
     if (typeof u !== "string") return u;
     if (u.charAt(0) !== "/" || u.charAt(1) === "/") return u;
