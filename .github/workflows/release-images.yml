@@ -39,6 +39,15 @@ jobs:
         include:
           - image: magic-frame-app
             context: .
+          # Dasselbe Abbild, aber mit dem Ingress-Platzhalter gebaut — nur das
+          # Add-on benutzt es. Bewusst ein ZWEITES statt eines gemeinsamen:
+          # sonst bekämen alle Compose- und Kubernetes-Nutzer ein .next, das
+          # beim Start noch umgeschrieben werden muss, und das Add-on-Risiko
+          # liefe im Hauptprodukt mit.
+          - image: magic-frame-app-ha
+            context: .
+            build_args: |
+              MF_BASE_PATH=/__MF_INGRESS_BASE_PATH_PLACEHOLDER__
           - image: magic-frame-caddy
             context: ./caddy
 
@@ -102,6 +111,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          # Leer für alle bis auf magic-frame-app-ha — siehe Matrix oben.
+          build-args: ${{ matrix.build_args }}
           # Getrennter Cache pro Image, sonst überschreiben sich app + caddy.
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}

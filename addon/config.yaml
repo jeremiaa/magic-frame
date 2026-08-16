@@ -45,6 +45,7 @@ options:
   timezone: ""
   ha_action_unrestricted: false
   ha_auto_login: true
+  sidebar_mode: embedded
 schema:
   admin_email: str?
   admin_password: password?
@@ -56,6 +57,9 @@ schema:
   # Der Seitenleisten-Klick meldet HA-Admins ohne Passwort an. Aus = die
   # Startseite verlinkt nur noch auf die normale Anmeldung.
   ha_auto_login: bool?
+  # embedded = Magic Frame läuft IM Rahmen, die HA-Seitenleiste bleibt stehen.
+  # launcher = Startseite mit einem Knopf, der einen neuen Tab öffnet.
+  sidebar_mode: list(embedded|launcher)?
 # Kein `image:` — der Supervisor baut aus dem Dockerfile. Ein leeres oder
 # null-Feld liest er als "Image erwartet" und bricht mit einer irreführenden
 # Meldung ab.

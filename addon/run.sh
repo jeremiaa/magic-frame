@@ -143,6 +143,7 @@ if [ -f /data/options.json ]; then
     str("timezone", "OPT_TZ");
     out.push("OPT_HA_UNRESTRICTED=" + (o.ha_action_unrestricted === true ? "1" : "0"));
     out.push("OPT_HA_AUTOLOGIN=" + (o.ha_auto_login === false ? "0" : "1"));
+    out.push("OPT_SIDEBAR_MODE=" + (o.sidebar_mode === "launcher" ? "launcher" : "embedded"));
     fs.writeFileSync(target, out.join("\n") + "\n", { mode: 0o600 });
   ' "${OPTS_ENV}" || log "Optionen konnten nicht gelesen werden — es gelten die Vorgaben."
 
@@ -157,6 +158,7 @@ if [ -f /data/options.json ]; then
   [ -n "${OPT_TZ:-}" ] && export TZ="${OPT_TZ}"
   [ "${OPT_HA_UNRESTRICTED:-0}" = "1" ] && export MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1
   [ "${OPT_HA_AUTOLOGIN:-1}" = "0" ] && export MAGIC_FRAME_HA_AUTO_LOGIN=0
+  export MAGIC_FRAME_SIDEBAR_MODE="${OPT_SIDEBAR_MODE:-embedded}"
   true
 fi
 

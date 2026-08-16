@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use, useRef } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -451,7 +451,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     };
     window.addEventListener('WIDGET_ACTION', handleWidgetAction);
 
-    const socket = io();
+    const socket = connectLiveSync();
     socket.on('connect', () => {
        console.log('Connected to socket', socket.id);
        // Auto-Reload nach Server-Update: Ein Reconnect passiert genau dann,

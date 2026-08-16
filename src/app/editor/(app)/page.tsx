@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import {
   Layers,
   Plus,
@@ -233,7 +233,7 @@ export default function EditorHome() {
     }
     loadStatus();
 
-    const s = io();
+    const s = connectLiveSync();
     s.on("connect", () => setWsConnected(true));
     s.on("disconnect", () => setWsConnected(false));
     setTimeout(() => {

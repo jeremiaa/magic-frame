@@ -9,6 +9,11 @@ RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
+# Leer für das normale Abbild. Nur das Add-on-Abbild wird mit dem Platzhalter
+# gebaut, den scripts/mf-basepath.mjs beim Containerstart durch den echten
+# Ingress-Pfad ersetzt. Siehe next.config.ts.
+ARG MF_BASE_PATH=""
+ENV MF_BASE_PATH=$MF_BASE_PATH
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

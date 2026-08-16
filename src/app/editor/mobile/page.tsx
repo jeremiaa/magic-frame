@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import {
   Plus,
   Save,
@@ -81,7 +81,7 @@ function MobileEditorInner() {
   const [saveStatus, setSaveStatus] = useState<null | "saving" | "saved" | "error">(null);
 
   useEffect(() => {
-    const s = io();
+    const s = connectLiveSync();
     setSocket(s);
     return () => {
       s.disconnect();

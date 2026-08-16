@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import { ClipboardList, Plus } from "lucide-react";
 import { format, isPast, isToday, isTomorrow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
@@ -24,7 +24,7 @@ export default function TodosWidget({ config }: { config?: any }) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const assigneeFilter: string | undefined = config?.assignee || undefined;
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const socketRef = useRef<ReturnType<typeof connectLiveSync> | null>(null);
 
   const useHa = config?.listSource === "ha" && !!config?.haListEntity;
   const haEntity: string = config?.haListEntity ?? "";
@@ -91,7 +91,7 @@ export default function TodosWidget({ config }: { config?: any }) {
       const id = setInterval(reload, 10_000);
       return () => clearInterval(id);
     }
-    const socket = io();
+    const socket = connectLiveSync();
     socketRef.current = socket;
     socket.on("TODOS_UPDATED", () => reload());
     return () => { socket.disconnect(); };

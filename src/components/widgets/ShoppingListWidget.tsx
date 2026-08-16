@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import { ShoppingCart, Plus, Trash2 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { renderInlineMarkdown } from "@/lib/inline-markdown";
@@ -19,7 +19,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
   const t = useT();
   const [items, setItems] = useState<Item[]>([]);
   const [newText, setNewText] = useState("");
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const socketRef = useRef<ReturnType<typeof connectLiveSync> | null>(null);
 
   const useHa = config?.listSource === "ha" && !!config?.haListEntity;
   const haEntity: string = config?.haListEntity ?? "";
@@ -70,7 +70,7 @@ export default function ShoppingListWidget({ config }: { config?: any }) {
       const id = setInterval(reload, 10_000);
       return () => clearInterval(id);
     }
-    const socket = io();
+    const socket = connectLiveSync();
     socketRef.current = socket;
     socket.on("SHOPPING_UPDATED", () => reload());
     return () => { socket.disconnect(); };

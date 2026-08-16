@@ -69,14 +69,25 @@ export default async function proxy(req: NextRequest) {
     getSessionOptions(),
   );
 
+  // Der Unterpfad muss hier von Hand davor: NextResponse.redirect nimmt eine
+  // fertige Adresse und weiss nichts von basePath. Im HA-Rahmen landete man
+  // sonst auf <ha-host>/login — ausserhalb des Ingress-Pfades, also im Nichts.
+  //
+  // Die Quelle ist bewusst request.nextUrl.basePath und NICHT die Umgebung:
+  // Next kennt den Wert hier von sich aus und reicht ihn an der Anfrage mit,
+  // während process.env in der Middleware-Laufzeit nicht verlässlich zur
+  // Verfügung steht. Ohne Add-on ist basePath "" und beide Zeilen ergeben
+  // wörtlich das, was vorher dastand.
+  const bp = req.nextUrl.basePath || "";
+
   if (needsAuth && !session.userId) {
-    const loginUrl = new URL("/login", url);
-    loginUrl.searchParams.set("next", path + url.search);
+    const loginUrl = new URL(bp + "/login", url);
+    loginUrl.searchParams.set("next", bp + path + url.search);
     return NextResponse.redirect(loginUrl);
   }
 
   if (isLogin && session.userId) {
-    return NextResponse.redirect(new URL("/editor", url));
+    return NextResponse.redirect(new URL(bp + "/editor", url));
   }
 
   return NextResponse.next();

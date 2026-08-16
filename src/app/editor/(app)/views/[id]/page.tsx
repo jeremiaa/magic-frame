@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, use } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import {
   Monitor,
   Smartphone,
@@ -563,7 +563,7 @@ export default function ViewEditor({
   }, [rowHeight, orientation, editorGap]);
 
   useEffect(() => {
-    const s = io();
+    const s = connectLiveSync();
     setSocket(s);
     return () => {
       s.disconnect();

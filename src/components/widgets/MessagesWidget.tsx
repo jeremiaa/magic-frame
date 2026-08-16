@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import { MessageSquare, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
@@ -26,7 +26,7 @@ export default function MessagesWidget({
 }) {
   const { locale, t } = useLocale();
   const [messages, setMessages] = useState<Message[]>([]);
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const socketRef = useRef<ReturnType<typeof connectLiveSync> | null>(null);
 
   useEffect(() => {
     const qs = new URLSearchParams();
@@ -36,7 +36,7 @@ export default function MessagesWidget({
       .then((d) => setMessages(d.messages ?? []))
       .catch(() => {});
 
-    const socket = io();
+    const socket = connectLiveSync();
     socketRef.current = socket;
     socket.on("MESSAGE_POSTED", (m: Message) => {
       if (m.targetDashboardId && dashboardId && m.targetDashboardId !== dashboardId) return;

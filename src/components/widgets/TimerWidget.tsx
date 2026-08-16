@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 import { Timer as TimerIcon, X } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { writeAndReport } from "@/lib/ha/action-client";
@@ -26,7 +26,7 @@ export default function TimerWidget({
   const t = useT();
   const [timers, setTimers] = useState<Timer[]>([]);
   const [now, setNow] = useState(() => Date.now());
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const socketRef = useRef<ReturnType<typeof connectLiveSync> | null>(null);
 
   // Tick jede Sekunde für Countdown
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function TimerWidget({
       .then((d) => setTimers(d.timers ?? []))
       .catch(() => {});
 
-    const socket = io();
+    const socket = connectLiveSync();
     socketRef.current = socket;
     socket.on("TIMER_STARTED", (t: Timer) => {
       if (t.targetDashboardId && dashboardId && t.targetDashboardId !== dashboardId) return;

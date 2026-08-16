@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import { connectLiveSync } from "@/lib/live-socket";
 
 export type DockedTimer = {
   id: string;
@@ -20,7 +20,7 @@ export type DockedTimer = {
  */
 export function useDockedTimers(dashboardId?: string, enabled: boolean = true) {
   const [timers, setTimers] = useState<DockedTimer[]>([]);
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const socketRef = useRef<ReturnType<typeof connectLiveSync> | null>(null);
 
   useEffect(() => {
     if (!enabled) {
@@ -34,7 +34,7 @@ export function useDockedTimers(dashboardId?: string, enabled: boolean = true) {
       .then((d) => setTimers(d.timers ?? []))
       .catch(() => {});
 
-    const socket = io();
+    const socket = connectLiveSync();
     socketRef.current = socket;
     socket.on("TIMER_STARTED", (t: DockedTimer) => {
       if (t.targetDashboardId && dashboardId && t.targetDashboardId !== dashboardId) return;
