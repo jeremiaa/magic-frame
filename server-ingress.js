@@ -32,6 +32,7 @@
 // Übergabe läuft über globalThis, dasselbe Muster wie LIVE_SYNC_IO.
 
 const { createServer } = require('http');
+const { parse } = require('url');
 const crypto = require('crypto');
 
 const INGRESS_GATEWAY = process.env.MAGIC_FRAME_INGRESS_ALLOW_FROM || '172.30.32.2';
@@ -40,6 +41,20 @@ const ADMIN_CACHE_MS = 5 * 60_000;
 
 // Token-Ablage, geteilt mit der Redeem-Route im Next-Prozess.
 const handoffTokens = new Map();
+
+/**
+ * Trägt diese Anfrage schon eine Magic-Frame-Sitzung?
+ *
+ * Nur dafür da, den Ein-Klick-Weg NICHT bei jedem Seitenleisten-Klick erneut
+ * zu gehen: wer angemeldet ist, soll auf der Seite landen, die er zuletzt
+ * hatte, statt über /handoff geschickt zu werden. Bewusst nur ein Blick auf
+ * das Vorhandensein des Cookies — geprüft wird die Sitzung ohnehin von der
+ * App selbst, hier ist es reine Wegewahl.
+ */
+function hasSession(req) {
+  const c = req.headers.cookie || '';
+  return /(?:^|;\s*)magic_session=/.test(c);
+}
 globalThis.__MF_HANDOFF_TOKENS = handoffTokens;
 
 // HA-Admin-Abfragen sind einen WebSocket-Roundtrip teuer — kurz gecacht.
@@ -235,13 +250,39 @@ function landingPage(publicPort, autoLoginEnabled) {
  * Startet den Ingress-Listener. Kein-Op ausserhalb des Add-ons: ohne
  * MAGIC_FRAME_INGRESS_PORT (setzt nur addon/run.sh) passiert hier nichts,
  * Compose- und Kubernetes-Installationen bleiben exakt wie sie sind.
+ *
+ * Zwei Betriebsarten, umschaltbar über die Add-on-Option `sidebar_mode`:
+ *
+ *   embedded (Vorgabe) — Magic Frame läuft IM Rahmen von Home Assistant, die
+ *     Seitenleiste bleibt stehen. So kennen es Leute von zigbee2mqtt. Der
+ *     Lauscher reicht die Anfragen an dieselbe Next-Instanz weiter wie der
+ *     öffentliche Port; nur der Unterpfad kommt davor, weil HAs Ingress ihn
+ *     abschneidet, bevor er hier ankommt.
+ *
+ *   launcher — die alte Startseite mit einem Knopf, der Magic Frame in einem
+ *     neuen Tab öffnet. Für alle, die den Editor lieber in voller Breite haben.
+ *
+ * Eingebettet geht nur mit Unterpfad. Fehlt er (ein Abbild ohne Platzhalter),
+ * fällt der Lauscher auf die Startseite zurück statt eine kaputte Seite
+ * auszuliefern — sichtbar im Protokoll.
  */
-function startIngressListener() {
+function startIngressListener(opts = {}) {
   const port = Number(process.env.MAGIC_FRAME_INGRESS_PORT || 0);
   if (!port) return null;
 
   const publicPort = process.env.MAGIC_FRAME_PUBLIC_PORT || '8098';
   const autoLogin = process.env.MAGIC_FRAME_HA_AUTO_LOGIN !== '0';
+  const basePath = (opts.basePath || '').replace(/\/$/, '');
+  const handle = opts.handle;
+
+  let embedded = (process.env.MAGIC_FRAME_SIDEBAR_MODE || 'embedded') !== 'launcher';
+  if (embedded && (!basePath || !handle)) {
+    console.warn(
+      '[ingress] embedded mode was asked for, but this image carries no ingress base path — ' +
+        'falling back to the launcher page. The add-on image is built with one; a plain app image is not.',
+    );
+    embedded = false;
+  }
 
   const server = createServer(async (req, res) => {
     const ip = clientIp(req);
@@ -254,6 +295,44 @@ function startIngressListener() {
     }
 
     const path = (req.url || '/').split('?')[0];
+
+    // ── Eingebettet: die Anfrage geht an dieselbe Next-Instanz ───────────────
+    if (embedded) {
+      // Die Wurzel des Ingress-Pfades ist der Moment, in dem jemand in der
+      // Seitenleiste klickt. Genau hier — und NUR hier — melden wir HA-Admins
+      // ohne Passwort an, über denselben geprüften Weg wie bisher: Admin-Liste
+      // bei Home Assistant erfragen, Einmal-Token, /handoff. Danach trägt der
+      // Browser eine normale Sitzung und alle weiteren Anfragen laufen durch.
+      if (autoLogin && (path === '/' || path === '') && !hasSession(req)) {
+        const haUserId = req.headers['x-remote-user-id'];
+        const haUserName =
+          req.headers['x-remote-user-display-name'] || req.headers['x-remote-user-name'] || 'unknown';
+        if (haUserId && typeof haUserId === 'string' && (await isHaAdmin(haUserId))) {
+          const token = crypto.randomBytes(32).toString('hex');
+          handoffTokens.set(token, {
+            haUserName: String(haUserName).slice(0, 80),
+            exp: Date.now() + TOKEN_TTL_MS,
+          });
+          for (const [t, v] of handoffTokens) if (v.exp < Date.now()) handoffTokens.delete(t);
+          res.writeHead(302, { Location: `${basePath}/handoff?token=${token}` }).end();
+          return;
+        }
+        // Kein Admin oder HA antwortet gerade nicht: nicht abweisen, sondern
+        // die normale Anmeldeseite zeigen. Ein leerer Rahmen mit 403 wäre für
+        // den Nutzer nicht von einem kaputten Add-on zu unterscheiden.
+      }
+
+      // HAs Ingress schneidet seinen Präfix ab, bevor die Anfrage hier
+      // ankommt — Next erwartet ihn aber, weil es mit basePath läuft. Also
+      // wieder davor. Socket.IO bleibt unangetastet, das hängt an seinem
+      // eigenen Pfad neben Next.
+      const u = req.url || '/';
+      if (!u.startsWith('/socket.io')) {
+        req.url = u === '/' ? basePath : basePath + u;
+      }
+      handle(req, res, parse(req.url, true));
+      return;
+    }
 
     if (req.method === 'POST' && path === '/mint') {
       if (!autoLogin) {
@@ -290,7 +369,10 @@ function startIngressListener() {
   });
 
   server.listen(port, () => {
-    console.log(`[ingress] sidebar listener on :${port} (auto sign-in ${autoLogin ? 'on' : 'off'})`);
+    console.log(
+      `[ingress] sidebar listener on :${port} — ${embedded ? 'embedded in the Home Assistant frame' : 'launcher page'}` +
+        `, auto sign-in ${autoLogin ? 'on' : 'off'}`,
+    );
   });
   return server;
 }
