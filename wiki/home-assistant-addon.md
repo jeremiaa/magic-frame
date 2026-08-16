@@ -120,7 +120,7 @@ What that means in practice:
 > Up to 1.5.0 this was the other way round in the code — a saved token beat the
 > Supervisor — while the add-on's own documentation said the opposite. If you
 > had ever typed anything into those fields, the add-on never used the
-> Supervisor connection at all. Fixed in 1.6.0.
+> Supervisor connection at all. Fixed in 1.5.1.
 
 ## The sidebar entry, and the address for displays
 

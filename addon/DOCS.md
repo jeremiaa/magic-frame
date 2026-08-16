@@ -94,7 +94,7 @@ accounts and settings.
 - **Your admin password is not accepted** — up to 1.5.0 a password containing
   a quote, a backslash or an umlaut was mangled while being read from the
   add-on options, so the account was created with something other than what
-  you typed. Fixed in 1.6.0; if you are locked out from before, clear both
+  you typed. Fixed in 1.5.1; if you are locked out from before, clear both
   option fields, delete the account in the database, and create it in the
   browser instead.
 

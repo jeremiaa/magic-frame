@@ -318,7 +318,7 @@ releases again.
 > that is designed for; moving *back* across a release that changed the schema
 > would lose whatever was added in between.
 >
-> Since 1.6.0 that no longer happens silently. Each successful start records
+> Since 1.5.1 that no longer happens silently. Each successful start records
 > the version that ran, and a start of an older version stops with a message
 > naming both versions and leaving the database untouched. Restore a backup
 > from that older version's time and it starts cleanly. If you genuinely want

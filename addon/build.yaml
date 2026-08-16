@@ -13,5 +13,5 @@
 # ersetzt. Ein Compose-Nutzer bekäme davon ein .next, das erst umgeschrieben
 # werden muss — das Add-on-Risiko liefe im Hauptprodukt mit.
 build_from:
-  amd64: ghcr.io/jeremiaa/magic-frame-app-ha:1.6.0
-  aarch64: ghcr.io/jeremiaa/magic-frame-app-ha:1.6.0
+  amd64: ghcr.io/jeremiaa/magic-frame-app-ha:1.5.1
+  aarch64: ghcr.io/jeremiaa/magic-frame-app-ha:1.5.1
