@@ -34,11 +34,14 @@ configuration:
   sidebar_mode:
     name: What the sidebar entry opens
     description: >-
-      "embedded" runs Magic Frame inside the Home Assistant frame, with the
-      sidebar still beside it — the way most add-ons behave. "launcher" shows
-      a small page with a button that opens Magic Frame in a new tab instead,
-      which gives the editor the full window. Your displays are unaffected
-      either way; they always use the address with the port.
+      Leave this on "launcher". It shows a small page with a button that opens
+      Magic Frame in a new tab, which also gives the editor the full window.
+      "embedded" — Magic Frame inside the Home Assistant frame — is not
+      finished: it needs the app to run under the ingress path, and the step
+      that sets that path does not exist yet. Choosing it changes nothing; the
+      add-on falls back to the launcher page and says so in its log. Your
+      displays are unaffected either way, they always use the address with the
+      port.
   ha_auto_login:
     name: One-click sign-in from the sidebar
     description: >-

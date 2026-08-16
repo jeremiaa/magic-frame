@@ -3,8 +3,37 @@ import { prisma } from "@/lib/companion/prisma";
 import { getSession } from "@/lib/auth/session";
 import { recordAttempt } from "@/lib/auth/lockout";
 import { clientIp } from "@/lib/auth/ip";
+import { getBasePath } from "@/lib/base-path";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Weiterleitung OHNE Herkunft — und das ist hier der ganze Punkt.
+ *
+ * `NextResponse.redirect()` verlangt eine vollständige Adresse, und die einzige
+ * verfügbare Quelle dafür war `req.url`. Deren Herkunft stammt aber nicht vom
+ * `Host`-Kopf, sondern aus `next({ hostname, port })` in server.js — dort steht
+ * `localhost`. Also ging ein `Location: http://localhost:3000/editor` an den
+ * Browser, und wer den Ein-Klick-Weg benutzte, landete auf seinem EIGENEN
+ * Rechner. Next korrigiert diese Herkunft nur bei Middleware-Antworten, nicht
+ * bei Route-Handlern — deshalb kam es genau so heraus, wie es dastand.
+ *
+ * Ein reiner Pfad hat dieses Problem nicht: den löst der Browser gegen die
+ * Adresse auf, die er selbst aufgerufen hat. Das ist in JEDER Installation
+ * richtig — hinter einem Reverse Proxy, unter einer eigenen Domain, im Add-on.
+ * Derselbe Fehler hatte uns schon bei #31 getroffen (Kalender-OAuth hinter
+ * Reverse Proxy); diese Route hatte die Behandlung nie bekommen.
+ *
+ * Der Basispfad kommt davor, weil ein Pfad mit Schrägstrich am Anfang gegen die
+ * HERKUNFT auflöst und nicht gegen das Verzeichnis. Ohne Add-on ist er leer und
+ * es steht wörtlich das da, was gemeint ist.
+ */
+function redirectTo(path: string): NextResponse {
+  return new NextResponse(null, {
+    status: 302,
+    headers: { Location: getBasePath() + path },
+  });
+}
 
 /**
  * Löst ein Einmal-Token vom Seitenleisten-Eingang des HA-Add-ons ein.
@@ -32,9 +61,8 @@ export const dynamic = "force-dynamic";
  * dieser Route nichts.
  */
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const token = url.searchParams.get("token") || "";
-  const loginFallback = NextResponse.redirect(new URL("/login?handoff=expired", url), 302);
+  const token = new URL(req.url).searchParams.get("token") || "";
+  const loginFallback = redirectTo("/login?handoff=expired");
 
   const store = (globalThis as Record<string, unknown>).__MF_HANDOFF_TOKENS as
     | Map<string, { haUserName: string; exp: number }>
@@ -51,7 +79,7 @@ export async function GET(req: NextRequest) {
     select: { id: true, email: true, role: true },
   });
   // Frische Installation ohne Admin: die Einrichtung übernimmt /login sowieso.
-  if (!admin) return NextResponse.redirect(new URL("/login", url), 302);
+  if (!admin) return redirectTo("/login");
 
   const session = await getSession();
   session.userId = admin.id;
@@ -71,5 +99,5 @@ export async function GET(req: NextRequest) {
     reason: `via HA ingress: ${entry.haUserName}`,
   });
 
-  return NextResponse.redirect(new URL("/editor", url), 302);
+  return redirectTo("/editor");
 }

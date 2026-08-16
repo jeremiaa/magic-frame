@@ -56,12 +56,23 @@ add-on's **Network** section, use the one you set there.
 
 The add-on's own page shows both addresses too, right under the button.
 
-Magic Frame also sits in the sidebar: the entry opens a small page whose one
-button signs you in and opens the editor — only for Home Assistant admins,
-verified against Home Assistant itself. The `ha_auto_login` option turns that
-button off. Displays never use the sidebar: the ingress path changes and
-requires a signed-in session, and a wall tablet has neither — which is why
-views stay on the fixed port.
+Magic Frame also sits in the sidebar. The entry opens a small page whose one
+button signs you in and opens the editor **in a new tab** — only for Home
+Assistant admins, verified against Home Assistant itself. The `ha_auto_login`
+option turns that button off. Displays never use the sidebar: the ingress path
+changes and requires a signed-in session, and a wall tablet has neither — which
+is why views stay on the fixed port.
+
+The sidebar is a launcher, not the app. Running Magic Frame *inside* the Home
+Assistant frame is not finished — it needs the whole app served under the
+ingress path, which changes per installation. Version 1.5.1 shipped a
+half-built version of that and was broken both in the frame and on the direct
+port; 1.5.2 removes it. The `sidebar_mode` option still lists `embedded`, but
+choosing it falls back to the launcher and notes it in the log.
+
+If your Home Assistant is reached over HTTPS, the sidebar button cannot open
+`http://<host>:8098` — browsers block that as mixed content. Type the address
+in a new tab instead.
 
 **Want it in the sidebar anyway?** Add a dashboard of type *Webpage* pointing
 at `http://<your-home-assistant-ip>:8098` — Settings → Dashboards → Add

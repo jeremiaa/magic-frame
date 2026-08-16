@@ -1,5 +1,5 @@
 name: Magic Frame
-version: "1.5.1"
+version: "1.5.2"
 slug: magic_frame
 description: Dashboard for tablets, monitors, wall panels and picture frames
 url: https://github.com/jeremiaa/magic-frame
@@ -45,7 +45,7 @@ options:
   timezone: ""
   ha_action_unrestricted: false
   ha_auto_login: true
-  sidebar_mode: embedded
+  sidebar_mode: launcher
 schema:
   admin_email: str?
   admin_password: password?
@@ -57,8 +57,12 @@ schema:
   # Der Seitenleisten-Klick meldet HA-Admins ohne Passwort an. Aus = die
   # Startseite verlinkt nur noch auf die normale Anmeldung.
   ha_auto_login: bool?
-  # embedded = Magic Frame läuft IM Rahmen, die HA-Seitenleiste bleibt stehen.
-  # launcher = Startseite mit einem Knopf, der einen neuen Tab öffnet.
+  # launcher = Startseite mit einem Knopf, der einen neuen Tab öffnet. Das ist
+  #   derzeit der einzige Modus, der wirklich funktioniert.
+  # embedded = im HA-Rahmen. NOCH NICHT FERTIG: dafuer muesste die App unter dem
+  #   Ingress-Pfad laufen, und der Schritt, der ihn setzt, fehlt (siehe
+  #   build.yaml). Wer es waehlt, bekommt automatisch wieder die Startseite,
+  #   mit einer Zeile im Protokoll. Kaputt geht dabei nichts.
   sidebar_mode: list(embedded|launcher)?
 # Kein `image:` — der Supervisor baut aus dem Dockerfile. Ein leeres oder
 # null-Feld liest er als "Image erwartet" und bricht mit einer irreführenden

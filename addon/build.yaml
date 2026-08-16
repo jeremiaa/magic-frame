@@ -8,10 +8,20 @@
 # Beim Anheben auf eine neue Version muss auch `version` in config.yaml mit,
 # sonst bietet Home Assistant kein Update an.
 #
-# Bewusst -ha und nicht das normale Abbild: dieses hier ist mit dem
-# Ingress-Platzhalter gebaut, den run.sh beim Start durch den echten Pfad
-# ersetzt. Ein Compose-Nutzer bekäme davon ein .next, das erst umgeschrieben
-# werden muss — das Add-on-Risiko liefe im Hauptprodukt mit.
+# Bewusst das NORMALE Abbild, nicht -ha.
+#
+# Das -ha-Abbild wird mit einem Ingress-Platzhalter als basePath gebaut. Der
+# Schritt, der ihn beim Start durch den echten Pfad ersetzt, existiert nicht:
+# run.sh fragt den Supervisor nie nach ingress_entry, ruft scripts/mf-basepath.mjs
+# nie auf und exportiert MF_BASE_PATH nie. Ausserdem steht ENV MF_BASE_PATH nur
+# in der builder-Stufe des Dockerfiles, nicht in der runner-Stufe.
+#
+# Folge in 1.5.1: die Client-Bundles trugen den Platzhalter einbetoniert, der
+# Server lief auf "/". Das war nicht nur im HA-Rahmen kaputt, sondern auch am
+# direkten Port — jeder router.push zielte ins Leere.
+#
+# Bis die Einbettung wirklich gebaut ist, gehoert hier das Abbild hin, das auch
+# die Compose-Nutzer fahren. Kein Platzhalter, kein Sonderweg.
 build_from:
-  amd64: ghcr.io/jeremiaa/magic-frame-app-ha:1.5.1
-  aarch64: ghcr.io/jeremiaa/magic-frame-app-ha:1.5.1
+  amd64: ghcr.io/jeremiaa/magic-frame-app:1.5.2
+  aarch64: ghcr.io/jeremiaa/magic-frame-app:1.5.2
