@@ -38,7 +38,10 @@ function ViewAddress({ viewId }: { viewId: string }) {
           () => {},
         );
       }}
-      className="text-xs text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)]/70 mt-1 font-mono text-left break-all transition-colors flex items-start gap-1.5 group/addr"
+      // mb-3: die Aktionszeile darunter trägt ihren Innenabstand UNTER der
+      // Trennlinie (mt-auto pt-4 border-t) — über der Linie bleibt nichts.
+      // Auf einer vollen Karte klebte die Adresse deshalb direkt daran.
+      className="text-xs text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)]/70 mt-1 mb-3 font-mono text-left break-all transition-colors flex items-start gap-1.5 group/addr"
     >
       <span>{anzeige}</span>
       {url && (
