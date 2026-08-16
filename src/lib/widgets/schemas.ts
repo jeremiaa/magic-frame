@@ -345,6 +345,17 @@ const cameraConfig = baseConfig
     // direkt ins Vollbild — die Türklingel-Kamera soll ohne Antippen gross sein.
     // Ohne Trigger wirkungslos.
     triggerFullscreen: z.boolean().optional(),
+    // Derselbe Schalter unter dem Namen aus PR #83 (@chimmidev). Wird nur noch
+    // gelesen, nie geschrieben — siehe src/lib/widgets/camera-fullscreen.ts.
+    // Muss deklariert sein, sonst wirft ihn der Layout-Abgleich weg.
+    fullscreenOnTrigger: z.boolean().optional(),
+    // Eigene Auslöser-Entity statt der Sichtbarkeitsregel: für Kameras, die
+    // dauerhaft auf dem Display liegen und nur ins Vollbild springen sollen.
+    fullscreenTriggerEntity: z.string().optional(),
+    fullscreenTriggerState: z.string().optional(),
+    // Sekunden im Vollbild. Leer = Haltezeit der Sichtbarkeitsregel erben,
+    // 0 = Vollbild bleibt, solange der Auslöser aktiv ist.
+    fullscreenSeconds: z.number().optional(),
     caption: z.string().optional(),
   })
   .passthrough();

@@ -30,15 +30,18 @@ export type RenderWidgetOpts = {
   dashboardId?: string;
   onVisibilityChange?: (isVisible: boolean) => void;
   /**
-   * #41: der Live-View meldet hier, dass dieses Widget gerade DURCH einen
-   * HA-Trigger sichtbar ist. Nur die Kamera wertet es aus (Vollbild ohne
-   * Antippen); der Editor gibt es nie mit, seine Vorschau bleibt in der Kachel.
+   * #41: der Live-View meldet hier, dass diese Kamera ins Vollbild soll. Er
+   * rechnet den Auslöser vollständig aus (eigene Entity oder Sichtbarkeits-
+   * regel, Haltezeit, Puls) — siehe src/lib/widgets/camera-fullscreen.ts.
+   * Der Editor gibt es nie mit, seine Vorschau bleibt in der Kachel.
    */
-  shownByTrigger?: boolean;
+  openFullscreen?: boolean;
+  /** Laufende Nummer des Vollbild-Befehls — siehe CameraWidget. */
+  fullscreenSeq?: number;
 };
 
 export function renderWidget(type: string, config: any, opts: RenderWidgetOpts = {}): React.ReactNode {
-  const { dashboardId, onVisibilityChange, shownByTrigger } = opts;
+  const { dashboardId, onVisibilityChange, openFullscreen, fullscreenSeq } = opts;
   if (type === "ClockWidget.tsx") return <ClockWidget config={config} />;
   if (type === "ButtonWidget.tsx") return <ButtonWidget config={config} />;
   if (type === "TimerWidget.tsx") return <TimerWidget config={config} dashboardId={dashboardId} />;
@@ -52,7 +55,8 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
     return (
       <CameraWidget
         config={config}
-        openFullscreen={config?.triggerFullscreen === true && shownByTrigger === true}
+        openFullscreen={openFullscreen === true}
+        fullscreenSeq={fullscreenSeq}
       />
     );
   if (type === "RssWidget.tsx") return <RssWidget config={config} />;

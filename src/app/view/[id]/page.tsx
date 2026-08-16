@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use, useRef } from "react";
+import { useEffect, useState, use, useRef, useCallback } from "react";
 import { connectLiveSync } from "@/lib/live-socket";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
@@ -12,6 +12,7 @@ import { renderWidget } from "@/components/widgets/renderWidget";
 import { ViewThemeScope } from "@/lib/ui/view-theme";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { calendarOwnSurface } from "@/lib/widgets/calendar-surface";
+import { cameraFullscreenTriggers, cameraTriggerMatches } from "@/lib/widgets/camera-fullscreen";
 import ActionRefusedToast from "@/components/ActionRefusedToast";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
@@ -78,6 +79,13 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
   // We listen via the SSE bridge (same broadcaster the HA widget uses) → instant,
   // no polling. autoHideSeconds turns it into a pulse (show on trigger, hide after N s).
   const [triggerHiddenWidgets, setTriggerHiddenWidgets] = useState<Record<string, boolean>>({});
+  // #41: welche Kamera gerade im Vollbild stehen soll. Eigener Zustand statt
+  // aus der Sichtbarkeit abgeleitet — eine dauerhaft sichtbare Kamera kann so
+  // auf eine eigene Entity hin aufpoppen. `seq` zählt die Befehle, damit ein
+  // zweites Klingeln auch nach einem Schliessen von Hand wieder ankommt.
+  const [cameraFullscreen, setCameraFullscreen] = useState<
+    Record<string, { open: boolean; seq: number }>
+  >({});
   // Per-view settings (orientation, autoRefreshHours, …) from /api/layout/get.
   const [viewSettings, setViewSettings] = useState<any>(null);
 
@@ -110,10 +118,16 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
       };
     });
 
+  // #41: Kameras, die auf einen HA-Auslöser hin ins VOLLBILD springen sollen
+  // statt nur in Kachelgrösse zu erscheinen. Die Ableitung (eigene Entity oder
+  // Sichtbarkeitsregel, Haltezeit, Altlast-Schlüssel) steht in camera-fullscreen.ts.
+  const camFsTriggers = cameraFullscreenTriggers(layout);
+
   const triggerEntityIds = Array.from(
     new Set([
       ...triggerConfigs.map((tg: any) => tg.ent),
       ...buttonTriggers.map((b: any) => b.ent),
+      ...camFsTriggers.map((c) => c.ent),
     ]),
   );
 
@@ -257,13 +271,98 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     }
   }, [liveTriggerStates, layout]);
 
+  // #41: Vollbild auf Auslöser. Die Flankenerkennung spiegelt die
+  // Sichtbarkeits-Logik oben — sie reagiert auf den WECHSEL, nicht auf den
+  // Zustand. Sonst risse ein von Hand geschlossenes Vollbild sofort wieder auf,
+  // solange die Klingel noch „an" meldet.
+  //
+  // Aus PR #83 von @chimmidev übernommen, inklusive der beiden Fälle, die die
+  // erste Fassung nicht konnte: Puls-Auslöser (Klingel ist nur einen Moment
+  // „an", das Vollbild bleibt trotzdem die Haltezeit stehen) und zweimal
+  // klingeln (die Haltezeit beginnt neu, statt dass sich Timer stapeln).
+  const camFsMatchRef = useRef<Record<string, boolean>>({});
+  const camFsTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  /** Was zuletzt befohlen wurde — damit „zu" nicht sinnlos wiederholt wird. */
+  const camFsOpenRef = useRef<Record<string, boolean>>({});
+
+  const commandFullscreen = useCallback((id: string, open: boolean) => {
+    // Ein „zu" an eine schon geschlossene Kamera wäre ein Befehl ohne Wirkung
+    // und würde nur Render auslösen. Ein „auf" geht IMMER durch — genau das
+    // macht das zweite Klingeln nach einem Schliessen von Hand wieder sichtbar.
+    if (!open && camFsOpenRef.current[id] !== true) return;
+    camFsOpenRef.current[id] = open;
+    setCameraFullscreen((prev) => ({
+      ...prev,
+      [id]: { open, seq: (prev[id]?.seq ?? 0) + 1 },
+    }));
+  }, []);
+
+  const clearCamFsTimer = (id: string) => {
+    if (!camFsTimersRef.current[id]) return;
+    clearTimeout(camFsTimersRef.current[id]);
+    delete camFsTimersRef.current[id];
+  };
+
+  useEffect(() => {
+    // 1) Kameras, die keinen Auslöser mehr haben — Schalter aus, Entity
+    //    gelöscht, Kachel entfernt. Ohne diesen Durchgang bliebe ein gerade
+    //    offenes Vollbild für immer stehen: die Schleife unten sieht die
+    //    Kamera nicht mehr, also käme nie ein „zu". Ausgerechnet der Handgriff,
+    //    mit dem man ein hängendes Vollbild loswerden will, machte es
+    //    unlösbar. Die Sichtbarkeits-Logik weiter oben räumt genauso auf.
+    const live = new Set(camFsTriggers.map((c) => c.i));
+    for (const id of Object.keys(camFsMatchRef.current)) {
+      if (live.has(id)) continue;
+      delete camFsMatchRef.current[id];
+      clearCamFsTimer(id);
+      commandFullscreen(id, false);
+    }
+
+    for (const cam of camFsTriggers) {
+      const match = cameraTriggerMatches(liveTriggerStates[cam.ent]?.state, cam.st);
+      const prevMatch = camFsMatchRef.current[cam.i] ?? false;
+      // Die Flanke wird IMMER mitgeführt, auch wenn unten nichts passiert —
+      // sonst poppt eine versteckte Kamera nach dem Einblenden verspätet auf.
+      camFsMatchRef.current[cam.i] = match;
+
+      // Wer die Kamera von Hand weggeschaltet hat (Knopf-Widget), will sie
+      // nicht beim nächsten Klingeln bildschirmfüllend zurückbekommen. Das
+      // war schon in v1.5.0 so und bleibt so.
+      if (userHiddenWidgets[cam.i] || autoHiddenWidgets[cam.i]) {
+        clearCamFsTimer(cam.i);
+        commandFullscreen(cam.i, false);
+        continue;
+      }
+
+      if (match && !prevMatch) {
+        commandFullscreen(cam.i, true);
+        // Zweimal klingeln: die Haltezeit beginnt neu, statt dass sich Timer stapeln.
+        clearCamFsTimer(cam.i);
+        if (cam.hold > 0) {
+          camFsTimersRef.current[cam.i] = setTimeout(() => {
+            delete camFsTimersRef.current[cam.i];
+            commandFullscreen(cam.i, false);
+          }, cam.hold * 1000);
+        }
+      } else if (!match && prevMatch && !camFsTimersRef.current[cam.i]) {
+        // Kein Puls läuft, also folgt das Vollbild der Entity und geht zu.
+        // Absichtlich am laufenden Timer festgemacht und nicht an `hold`: wird
+        // die Haltezeit im Editor geändert, während das Vollbild offen steht,
+        // passt die Bedingung sonst nicht mehr und es bliebe hängen.
+        commandFullscreen(cam.i, false);
+      }
+    }
+  }, [liveTriggerStates, layout, userHiddenWidgets, autoHiddenWidgets, commandFullscreen]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Clear pending auto-hide timers on unmount (the ref objects are stable).
   useEffect(() => {
     const widgetTimers = autoHideTimersRef.current;
     const btnTimers = buttonAutoHideTimersRef.current;
+    const camTimers = camFsTimersRef.current;
     return () => {
       for (const id of Object.keys(widgetTimers)) clearTimeout(widgetTimers[id]);
       for (const id of Object.keys(btnTimers)) clearTimeout(btnTimers[id]);
+      for (const id of Object.keys(camTimers)) clearTimeout(camTimers[id]);
     };
   }, []);
 
@@ -505,13 +604,12 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
       dashboardId,
       onVisibilityChange: (isVisible) =>
         setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : { ...prev, [id]: !isVisible }),
-      // #41: sichtbar GEWORDEN durch einen HA-Trigger — nicht bloss sichtbar.
-      // Ein Widget ohne Trigger-Konfiguration meldet hier nie true, sonst
-      // stünde die Kamera dauerhaft im Vollbild.
-      shownByTrigger:
-        triggerHiddenWidgets[id] === false &&
-        !userHiddenWidgets[id] &&
-        !autoHiddenWidgets[id],
+      // #41: soll diese Kamera gerade im Vollbild stehen? Der View rechnet das
+      // vollständig aus (Auslöser, Haltezeit, Puls, absichtlich versteckt) —
+      // das Widget führt nur aus. Ohne Auslöser bleibt die Nummer bei 0 und im
+      // Widget passiert nie etwas; der Editor gibt beides gar nicht erst mit.
+      openFullscreen: cameraFullscreen[id]?.open === true,
+      fullscreenSeq: cameraFullscreen[id]?.seq,
     });
 
   return (

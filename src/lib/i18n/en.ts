@@ -485,6 +485,19 @@ export const EN: Record<string, string> = {
   "Status (leer = sobald aktiv / an)": "State (empty = whenever active / on)",
   "Auto-ausblenden nach Sek. (0 = solange aktiv)": "Auto-hide after sec. (0 = while active)",
   "Beim Auslösen sofort im Vollbild öffnen": "Open fullscreen when triggered",
+  // #41 — Vollbild auf Auslöser, ausgebaut aus PR #83 von @chimmidev
+  "Türklingel, Bewegung oder Personenerkennung poppen die Kamera von selbst über Wallpaper und Galerie — ohne Antippen. Danach geht das Display wieder in die ruhige Ansicht zurück.":
+    "A doorbell, motion or person detection pops the camera over wallpaper and gallery all by itself — no tap needed. Afterwards the display returns to the calm view.",
+  "Auslöser-Entity (leer = Sichtbarkeits-Trigger)": "Trigger entity (empty = visibility trigger)",
+  "Nutzt gerade den Sichtbarkeits-Trigger aus dem Reiter „Layout“:":
+    "Currently using the visibility trigger from the “Layout” tab:",
+  "Leer = die Kamera folgt ihrer Sichtbarkeitsregel im Reiter „Layout“. Eine eigene Entity ist für Kameras gedacht, die dauerhaft auf dem Display liegen und nur ins Vollbild springen sollen.":
+    "Empty = the camera follows its visibility rule in the “Layout” tab. Set an entity here for cameras that stay on the display permanently and should only jump to fullscreen.",
+  "Vollbild-Dauer in Sek. (0 = solange aktiv)": "Fullscreen duration in sec. (0 = while active)",
+  "Türklingeln sind oft nur einen Moment „an“ — mit einer Dauer bleibt das Vollbild trotzdem so lange stehen. 0 = Vollbild bleibt, solange die Entity aktiv ist. Antippen schliesst es jederzeit von Hand.":
+    "Doorbells are often “on” for a moment only — a duration keeps the fullscreen view up regardless. 0 = fullscreen stays as long as the entity is active. A tap closes it by hand at any time.",
+  "Noch kein Auslöser gesetzt: entweder hier eine Entity wählen oder im Reiter „Layout“ unter „Sichtbarkeit“ einen HA-Trigger hinterlegen.":
+    "No trigger set yet: either pick an entity here, or set an HA trigger under Visibility in the “Layout” tab.",
 
   // Ansicht gibt es nicht (Live-View)
   "Diese Ansicht gibt es nicht": "This view does not exist",
@@ -506,10 +519,6 @@ export const EN: Record<string, string> = {
     "As an add-on, the connection runs through Home Assistant itself. You need neither an address nor an access token — your entities are available straight away, everywhere a widget asks for one.",
   "Eine andere Home-Assistant-Instanz lässt sich im Add-on nicht eintragen — dafür Magic Frame per Docker installieren.":
     "The add-on cannot point at a different Home Assistant — install Magic Frame with Docker for that.",
-  "Öffnet das Vollbild von selbst, sobald der Sichtbarkeits-Trigger auslöst — Türklingel klingelt, Kamera füllt den Schirm.":
-    "Opens fullscreen by itself the moment the visibility trigger fires — doorbell rings, camera fills the screen.",
-  "Braucht einen Trigger: im Reiter „Layout“ unter „Sichtbarkeit“ eine HA-Entity setzen (z.B. die Türklingel), dann wird der Schalter frei.":
-    "Needs a trigger: set an HA entity under “Visibility” in the “Layout” tab (e.g. the doorbell), and this switch unlocks.",
   "Sichtbarkeit": "Visibility",
   "Automatisch über Home Assistant": "Automatic via Home Assistant",
   "Beim Laden versteckt (per Button einblendbar)": "Hidden on load (shown via a button)",

@@ -5,6 +5,7 @@ import { Copy, Trash2, X, LayoutGrid, Type, SlidersHorizontal } from "lucide-rea
 import type { WidgetLayoutItem } from "../_types";
 import { widgetTitle, isAutoDefaultLabel } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { cameraFullscreenEnabled, cameraFullscreenWrites } from "@/lib/widgets/camera-fullscreen";
 import CollapsibleSection from "./CollapsibleSection";
 import { accentFor, widgetIconFor } from "./widget-visuals";
 import WidgetPreview from "./WidgetPreview";
@@ -410,8 +411,12 @@ function LayoutTab({
                 {activeWidget.type === "CameraWidget.tsx" && (
                   <Toggle
                     label="Beim Auslösen sofort im Vollbild öffnen"
-                    checked={activeWidget.config?.triggerFullscreen ?? false}
-                    onChange={(v) => updateConfig(activeWidget.i, "triggerFullscreen", v)}
+                    checked={cameraFullscreenEnabled(activeWidget.config)}
+                    onChange={(v) =>
+                      cameraFullscreenWrites(activeWidget.config, v).forEach(([k, val]) =>
+                        updateConfig(activeWidget.i, k, val),
+                      )
+                    }
                     accent="purple"
                   />
                 )}

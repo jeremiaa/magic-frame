@@ -24,17 +24,26 @@ type CameraConfig = {
 };
 
 /**
- * `openFullscreen` is the live view's trigger signal (#41): the doorbell fires,
- * the tile becomes visible, and the camera is supposed to fill the screen
- * without anyone touching it. It is edge-detected below, not mirrored — a
- * viewer who closes the overlay while the trigger is still on stays closed.
+ * `openFullscreen` + `fullscreenSeq` are the live view's trigger signal (#41):
+ * the doorbell fires and the camera fills the screen without anyone touching it.
+ *
+ * Warum eine Nummer und nicht nur der Schalter: das hier ist ein BEFEHL, kein
+ * Zustand. Wer das Vollbild von Hand schliesst, während die Klingel noch „an"
+ * meldet, soll zu bleiben — beim NÄCHSTEN Klingeln aber wieder aufgehen. Mit
+ * einem blossen Ja/Nein wäre das zweite Klingeln kein Wechsel und würde still
+ * verschluckt. `fullscreenSeq` zählt jeden Befehl hoch, also kommt auch
+ * derselbe Befehl zweimal an.
+ *
+ * Ohne Nummer (Editor-Vorschau) passiert hier nie etwas.
  */
 export default function CameraWidget({
   config,
   openFullscreen,
+  fullscreenSeq,
 }: {
   config?: CameraConfig;
   openFullscreen?: boolean;
+  fullscreenSeq?: number;
 }) {
   const { t } = useLocale();
   const source: "ha" | "url" = config?.source === "url" ? "url" : "ha";
@@ -178,16 +187,19 @@ export default function CameraWidget({
     }
   }, [mediaStream, fullscreen]);
 
-  // #41: the trigger opens the overlay on its RISING edge and closes it when it
-  // clears. Only the edge — mirroring the signal would fight the close button
-  // and reopen the overlay on the next render for as long as the trigger holds.
-  const prevOpenRef = useRef(false);
+  // #41: jeder neue Befehl des Live-Views wird EINMAL ausgeführt — nicht der
+  // Schalter gespiegelt. Gespiegelt würde das Vollbild gegen den Schliessen-
+  // Knopf ankämpfen und sofort wieder aufgehen, solange der Auslöser hält.
+  //
+  // Die laufende Nummer ist der Wechsel, auf den es ankommt: zweimal klingeln
+  // heisst zweimal aufmachen, auch wenn dazwischen jemand von Hand zugemacht hat.
+  const prevSeqRef = useRef(0);
   useEffect(() => {
-    const want = openFullscreen === true;
-    if (want && !prevOpenRef.current) setFullscreen(true);
-    else if (!want && prevOpenRef.current) setFullscreen(false);
-    prevOpenRef.current = want;
-  }, [openFullscreen]);
+    const seq = fullscreenSeq ?? 0;
+    if (seq === 0 || seq === prevSeqRef.current) return;
+    prevSeqRef.current = seq;
+    setFullscreen(openFullscreen === true);
+  }, [fullscreenSeq, openFullscreen]);
 
   if (!configured) {
     return (

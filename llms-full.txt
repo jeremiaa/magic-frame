@@ -4033,8 +4033,39 @@ tap-for-fullscreen.
 | `refreshIntervalSec` | 5 | Snapshot mode only. |
 | `aspectRatio` | `auto` | `auto` lets the picture keep its own shape; `16:9`, `4:3` and `1:1` fill the tile and crop. |
 | `clickFullscreen` | on | Tapping anywhere in the tile opens the picture full screen. Tap again, or the ✕, to close. |
-| `triggerFullscreen` | off | With a visibility trigger set, the picture opens full screen by itself when the trigger fires. See [Stacking and visibility](stacking-and-visibility.md). |
+| `triggerFullscreen` | off | A Home Assistant entity pops the camera full screen by itself — see below. |
+| `fullscreenTriggerEntity` | — | The entity that does it. Empty = the widget's own visibility trigger. |
+| `fullscreenTriggerState` | — | The state that counts as "now". Empty = any active state. |
+| `fullscreenSeconds` | — | How long it stays up. `0` = as long as the trigger is active; empty = the auto-hide seconds from the Layout tab. |
 | `caption` | — | The corner chip. Empty = no chip. |
+
+### Full screen on a Home Assistant trigger
+
+The moment you most want to see the front door camera is the moment nobody is
+standing at the display. **Open fullscreen when triggered**
+(`triggerFullscreen`) does that: a doorbell, a motion sensor or a person
+detection pops the camera over wallpaper and gallery on its own, and the display
+returns to its calm view afterwards.
+
+1. Tick **Open fullscreen when triggered** on the camera widget.
+2. Leave **Trigger entity** empty to reuse the widget's own visibility trigger —
+   the one under `Layout → Visibility`. That is the doorbell case: one tick on
+   top of a setup that already works.
+3. Or name an entity of its own. That is for a camera that sits on the display
+   permanently and should only *jump* to full screen — it never disappears, it
+   just gets big. With an entity of its own you can also pin the exact **State**
+   that counts; empty means any active state.
+4. **Fullscreen duration in sec.** decides how long it stays. A doorbell is often
+   "on" for a moment only, so `0` — follow the entity — would flash the picture
+   and drop it again. Give it 20 or 30 seconds instead. Ring twice and the time
+   starts over rather than stacking.
+
+This is independent of `clickFullscreen`: a camera that must not react to taps at
+all can still be popped open by its trigger. A tap on the backdrop closes it by
+hand at any time, and it stays closed until the trigger fires again.
+
+> The trigger logic came from [@chimmidev](https://github.com/chimmidev) in
+> [PR #83](https://github.com/jeremiaa/magic-frame/pull/83).
 
 ### Which mode to pick
 

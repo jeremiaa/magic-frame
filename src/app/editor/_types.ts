@@ -224,6 +224,11 @@ export interface WidgetLayoutItem {
     autoHideSeconds?: number;
     // #41 Kamera: beim Trigger direkt ins Vollbild (nur CameraWidget)
     triggerFullscreen?: boolean;
+    /** Zweitname desselben Schalters aus PR #83 — wird nur gelesen. */
+    fullscreenOnTrigger?: boolean;
+    fullscreenTriggerEntity?: string;
+    fullscreenTriggerState?: string;
+    fullscreenSeconds?: number;
     // #69 Text-Widget: freie Überschrift/Beschriftung
     text?: string;
     subtext?: string;
