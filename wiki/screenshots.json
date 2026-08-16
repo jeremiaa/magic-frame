@@ -26,7 +26,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "6ed5537a05f0",
+        "src/app/view/[id]/page.tsx": "977b1b4519d5",
         "src/components/WallpaperEngine.tsx": "a491a40ed524"
       }
     },
@@ -149,7 +149,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/TimerWidget.tsx": "d866a9062e13"
+        "src/components/widgets/TimerWidget.tsx": "ce0300285557"
       }
     },
     {
@@ -173,7 +173,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/MessagesWidget.tsx": "3dd780f09c26"
+        "src/components/widgets/MessagesWidget.tsx": "aa9077e9e583"
       }
     },
     {
@@ -197,7 +197,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/ShoppingListWidget.tsx": "dcb33ad3c78f"
+        "src/components/widgets/ShoppingListWidget.tsx": "2dbff36d1b9b"
       }
     },
     {
@@ -221,7 +221,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/TodosWidget.tsx": "e67fcc0e7417"
+        "src/components/widgets/TodosWidget.tsx": "3fc02b5f84f4"
       }
     },
     {
@@ -293,7 +293,7 @@
       ],
       "element": ".react-grid-item",
       "takenAt": {
-        "src/components/widgets/CameraWidget.tsx": "dad1be8d497b"
+        "src/components/widgets/CameraWidget.tsx": "510ad1e4da02"
       }
     },
     {
@@ -508,7 +508,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "6ed5537a05f0",
+        "src/app/view/[id]/page.tsx": "977b1b4519d5",
         "src/components/WallpaperEngine.tsx": "a491a40ed524"
       }
     },
@@ -532,7 +532,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "6ed5537a05f0"
+        "src/app/view/[id]/page.tsx": "977b1b4519d5"
       }
     },
     {
@@ -554,7 +554,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "88b05b2dee81"
+        "src/app/editor/(app)/page.tsx": "4c14f6751fb1"
       }
     },
     {
@@ -576,7 +576,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "88b05b2dee81"
+        "src/app/editor/(app)/page.tsx": "4c14f6751fb1"
       }
     },
     {
@@ -598,7 +598,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
+        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
       }
     },
     {
@@ -622,7 +622,7 @@
       ],
       "takenAt": {
         "src/app/editor/_components/AddWidgetModal.tsx": "1f09b0ab6467",
-        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
+        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
       }
     },
     {
@@ -647,7 +647,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"Home Assistant\"))"
     },
@@ -673,7 +673,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"Immich (global)\"))"
     },
@@ -699,7 +699,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"Home Assistant lists\"))"
     },
@@ -727,7 +727,7 @@
       ],
       "takenAt": {
         "src/lib/calendar-auth/store.ts": "4b1a62a72ce2",
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"Calendar accounts\"))"
     },
@@ -756,7 +756,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"Calendar accounts\"))"
     },
@@ -782,7 +782,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"OpenWeatherMap\"))"
     },
@@ -808,7 +808,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/integrations/page.tsx": "3c598c63b0b2"
+        "src/app/editor/(app)/integrations/page.tsx": "7b6400ea30eb"
       },
       "element": "section:has(h2:text-is(\"Todoist\"))"
     },
@@ -1101,7 +1101,7 @@
       ],
       "takenAt": {
         "src/components/WallpaperEngine.tsx": "a491a40ed524",
-        "src/app/view/[id]/page.tsx": "6ed5537a05f0"
+        "src/app/view/[id]/page.tsx": "977b1b4519d5"
       }
     },
     {
@@ -1126,7 +1126,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
+        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
       }
     },
     {
@@ -1151,7 +1151,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "39ac050c7ebe"
+        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
       }
     },
     {
