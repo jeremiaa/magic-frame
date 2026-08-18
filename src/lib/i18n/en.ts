@@ -581,6 +581,8 @@ export const EN: Record<string, string> = {
   "Füllen schneidet Ränder ab. Einpassen zeigt das ganze Bild ohne Beschneiden — gut für Hochformat-Fotos.": "Fill crops the edges. Fit shows the whole image without cropping — good for portrait photos.",
   "Metadata/EXIF einblenden": "Show metadata / EXIF",
   "Ladekreis (Timer) anzeigen": "Show loading ring (timer)",
+  "Der Ring läuft stufenlos und hält den Browser dabei durchgehend am Zeichnen — auf einer sonst ruhigen Ansicht kostet das rund ein Drittel eines Prozessorkerns. Ausschalten spart das komplett. Auf Wandtablets, Pi-Displays und Fernsehern merkt man das an Wärme und Stromverbrauch.":
+    "The ring sweeps continuously, which keeps the browser drawing the whole time — on an otherwise idle view that costs about a third of a CPU core. Turning it off saves all of it. On wall tablets, Pi displays and TVs you notice it as heat and power draw.",
   "Bildwechsel Intervall (Sekunden)": "Image change interval (seconds)",
   "Schatten Oben": "Shadow top",
   "Schatten Unten": "Shadow bottom",

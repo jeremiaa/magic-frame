@@ -637,6 +637,16 @@ export default function WallpaperSettingsModal({
                    </div>
                    <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">{t("Ladekreis (Timer) anzeigen")}</span>
                 </label>
+                {/* Der Ring laeuft stufenlos ueber die ganze Intervall-Dauer.
+                    Das haelt den Browser durchgehend am Zeichnen — gemessen
+                    rund ein Drittel eines Prozessorkerns, dauerhaft, auf einer
+                    ansonsten voellig ruhigen Ansicht. Aus gemessen: ~5 %.
+                    Deshalb steht der Hinweis hier und nicht im Kleingedruckten:
+                    auf einem Wandtablet oder Pi ist das der Unterschied
+                    zwischen handwarm und heiss. */}
+                <p className="text-[11px] text-[var(--mf-fg)]/40 -mt-1 ml-14 leading-relaxed">
+                   {t("Der Ring läuft stufenlos und hält den Browser dabei durchgehend am Zeichnen — auf einer sonst ruhigen Ansicht kostet das rund ein Drittel eines Prozessorkerns. Ausschalten spart das komplett. Auf Wandtablets, Pi-Displays und Fernsehern merkt man das an Wärme und Stromverbrauch.")}
+                </p>
 
                 {/* ── Artwork bei Musik (#50, Phase 2) ── */}
                 <div className="mt-2 pt-4 border-t border-[var(--mf-bdr)]/10">

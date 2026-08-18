@@ -360,6 +360,31 @@ or turn the limit off with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env`
 
 ---
 
+## The fan spins up, or the display runs hot
+
+**Symptom:** a browser tab showing a Magic Frame view pushes the CPU hard even
+though nothing on the view is moving. Close the tab and the fan winds down;
+open it again and it winds back up. On a Raspberry Pi, an old tablet or a TV
+browser it shows up as heat, throttling and power draw rather than noise.
+
+**Cause, nine times out of ten:** the wallpaper timer ring. It is the small
+ring in the corner that empties as the current picture runs out. A smooth
+sweep means the browser keeps drawing frames for the entire interval — 45
+seconds of continuous drawing per picture, then again for the next one.
+
+Measured on a four-widget view, as the share of one CPU core: **37 % with the
+ring, 2 % without it.** A blank page is 2 %. Everything else on the view —
+frosted-glass tiles, the crossfade, the widgets themselves — fits inside that
+same 2 %.
+
+**Fix:** open the view in the editor, **Wallpaper → Anzeige**, and switch
+**Ladekreis (Timer) anzeigen** (Show loading ring) off. Nothing else changes;
+you lose only the countdown.
+
+If the display is still hot with the ring off, it is something else — a Camera
+widget streaming MJPEG or WebRTC is the next thing to look at, since that
+decodes video continuously by design.
+
 ## The photos and the layout are fine, but a display drifted out of step
 
 **Symptom.** One tablet shows an older version of the layout than the others.

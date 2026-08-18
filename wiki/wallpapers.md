@@ -253,6 +253,32 @@ it off. It is on unless you switch it off, and it appears only when there is
 something to count: more than one picture, an interval above zero, and split
 view off.
 
+### It is also the most expensive thing on the screen
+
+The ring sweeps smoothly, and a smooth sweep means the browser draws a new
+frame the whole time the picture is on screen — for a 45-second interval, that
+is 45 seconds of continuous drawing, then again for the next picture, forever.
+
+Measured on a view with four widgets, in a real browser, as the share of one
+CPU core:
+
+| | CPU |
+| --- | --- |
+| Blank page, for comparison | 2 % |
+| The view, ring on | **37 %** |
+| The view, ring off | **2 %** |
+
+Everything else on that view — the frosted-glass tiles, the crossfade, the
+widgets — is inside the remaining 2 %. If a display feels warm, if a fan spins
+up when the dashboard is open and stops when you close the tab, or if you are
+running on a Raspberry Pi or a TV browser, this switch is the first thing to
+try. It is one toggle and it costs you nothing but the countdown.
+
+The ring stays smooth on purpose for everyone who leaves it on — it is
+supposed to look that way. Making it tick in steps does not help, and we
+measured that too: nine steps and forty-five steps cost the same, because the
+cost is in *something animating at all*, not in how often it changes.
+
 ## Darkening and blurring the whole thing
 
 The **Overlays & Text** tab has four sliders that sit on top of the picture.

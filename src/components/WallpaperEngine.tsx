@@ -875,6 +875,39 @@ function SplitSlideshow({
   );
 }
 
+/**
+ * Der Fortschrittsring des Wallpapers — und die teuerste Zeile der ganzen App.
+ *
+ * GEMESSEN (Chromium 1280x800, Ansicht mit 4 Widgets, CPU des Browser-
+ * Prozessbaums ueber je 12 s):
+ *
+ *   leere Seite ............................  2,2 %
+ *   Ansicht mit Ring (dieser Stand) ........ 37,6 %
+ *   Ansicht, nur den Ring gestoppt .........  2,2 %
+ *
+ * `stroke-dashoffset` laesst sich nicht auf die Grafikkarte auslagern. Eine
+ * laufende Transition darauf haelt den Browser die gesamte Intervall-Dauer im
+ * Animationsmodus; er zeichnet durchgehend Bilder.
+ *
+ * DREI DINGE, DIE MAN HIER WISSEN MUSS, BEVOR MAN ES "OPTIMIERT":
+ *
+ *  1. Gröber stufen bringt NICHTS. Gemessen kosten `steps(9)` und `steps(45)`
+ *     beide ~8,8 %. Es zaehlt nicht, wie oft sich der Ring aendert, sondern
+ *     dass ueberhaupt etwas laeuft.
+ *  2. Der Blur der Kacheln ist NICHT die Ursache — alle 7 backdrop-filter
+ *     abzuschalten aenderte gar nichts (41,4 %, also eher schlechter).
+ *  3. Das hier ist der ZWEITE Anlauf. Vor dem ersten Release war der Ring ein
+ *     `motion.circle` von Framer Motion und trieb eine rAF-Schleife in JS
+ *     (Commit 9aac8d7). Die Umstellung auf diese CSS-Transition hat die Last
+ *     aus dem JavaScript in den Compositor VERSCHOBEN, nicht beseitigt —
+ *     seitdem sieht der JS-Profiler 97,9 % Leerlauf und die CPU brennt
+ *     trotzdem. Wer das nochmal anfasst: nachmessen, nicht profilen.
+ *
+ * Bewusst NICHT geaendert: der Ring bleibt stufenlos, weil er so aussehen
+ * soll. Wem die CPU wichtiger ist, der schaltet ihn ab —
+ * Wallpaper-Einstellungen -> "Ladekreis (Timer) anzeigen". Ausgeschaltet
+ * gemessen: ~2,2 %, also Nullwert.
+ */
 function ProgressRing({ durationMs }: { durationMs: number }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
