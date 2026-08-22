@@ -169,6 +169,7 @@ const ActionBtn = ({
     return (
         <div style={overrideStyle} className="flex items-center justify-center p-2 group">
             <div
+               data-mf-button
                className={`relative flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${shape !== 'subtle' ? 'shadow-lg' : 'group-hover:bg-white/5 rounded-xl'} ${isPressing ? 'scale-90 opacity-50 bg-white/30' : 'opacity-80'}`}
                style={{...bgStyle, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent'}}
 
@@ -309,8 +310,18 @@ export default function ButtonWidget({ config = {}, widgetId }: ButtonWidgetProp
   const designLayout = config.designLayout || 'auto';
   const bgOpacity = config.bgOpacity !== undefined ? Number(config.bgOpacity) : 5;
   const bgBlur = config.bgBlur !== undefined ? Number(config.bgBlur) : 10;
-  const bgRadius = config.bgRadius !== undefined ? Number(config.bgRadius) : 50; 
-  
+  const bgRadius = config.bgRadius !== undefined ? Number(config.bgRadius) : 50;
+
+  // Tap on the widget's own area but NOT on a button hides the whole widget —
+  // the "tap outside to dismiss" of a modal overlay. Buttons carry a
+  // data-mf-button marker, so a tap that lands on one is ignored here.
+  const hideOnOutsideTap = !!config.hideOnOutsideTap;
+  const handleBackdropTap = (e: React.MouseEvent) => {
+    if (!hideOnOutsideTap || !widgetId) return;
+    if ((e.target as HTMLElement).closest?.("[data-mf-button]")) return;
+    window.dispatchEvent(new CustomEvent("WIDGET_ACTION", { detail: { targets: [widgetId], actionType: "hide" } }));
+  };
+
   if (activeBtns.length === 0) {
       // Fallback for completely empty configuration
       return (
@@ -337,9 +348,10 @@ export default function ButtonWidget({ config = {}, widgetId }: ButtonWidgetProp
   }
 
   return (
-    <div 
+    <div
       className="relative w-full h-full p-2 lg:p-4"
       style={{ containerType: 'size' }}
+      onClick={handleBackdropTap}
     >
         <div className={gridStyle}>
             {activeBtns.map(btn => (

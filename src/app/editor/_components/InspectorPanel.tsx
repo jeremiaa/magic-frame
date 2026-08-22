@@ -423,6 +423,14 @@ function LayoutTab({
               </>
             )}
           </div>
+          {activeWidget.type === "ButtonWidget.tsx" && (
+            <Toggle
+              label="Tippen außerhalb der Buttons schließt das Widget"
+              checked={activeWidget.config?.hideOnOutsideTap ?? false}
+              onChange={(v) => updateConfig(activeWidget.i, "hideOnOutsideTap", v)}
+              accent="purple"
+            />
+          )}
         </div>
       </div>
     </div>
