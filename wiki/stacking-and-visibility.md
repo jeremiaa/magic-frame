@@ -223,36 +223,56 @@ Consequences that matter:
   underneath is visible instead.
 - **Taps pass straight through it.** A hidden widget no longer catches the tap,
   so whatever sits underneath — a button, a tile, anything — is fully clickable
-  through it, exactly as if the hidden widget were not there. This is what makes
-  real pop-ups possible (below).
+  through it, exactly as if the hidden widget were not there. This is what lets a
+  hidden overlay sit on top of a view without blocking it (see
+  [Pop-ups and modal overlays](#pop-ups-and-modal-overlays)).
 - **Showing and hiding fades over half a second.** There is no way to turn the
   fade off.
 - **Hidden is not remembered.** Visibility lives in the open page: reload the
   display and everything is back to how the layout says it starts.
 
-## Real pop-ups: a full-screen panel a hidden button reveals
+## Pop-ups and modal overlays
 
-Because a hidden widget lets taps fall through to whatever is underneath, you can
-stack a large — even full-view — widget on top of a button, start it hidden, and
-have the button bring it up on demand. While the panel is hidden the button
-underneath is live; tap it and the panel appears over everything.
+A **Buttons** widget can be laid over the rest of a view, kept hidden until
+something opens it, and used as a **pop-up / modal overlay** — a panel of buttons
+that appears on top of everything, does its job, and disappears again. Two
+behaviours make this practical:
 
-1. Place the widget you want as the pop-up — a **Kamera** (Camera), a big
-   **Home Assistant** panel, an **Image**, whatever — over the area it should
-   cover. Give it a high enough layer that it sits in front (drag it up the
-   layer list).
-2. Select it, open the inspector's **Layout** tab, and switch on **Beim Laden
-   versteckt** (Hidden on load). While hidden it is invisible *and* lets taps
-   through to whatever is below.
-3. Place a **Buttons** widget in the cells the pop-up covers — it stays reachable
-   through the hidden panel — and point one button at the pop-up with the
-   **show** or **toggle** action (see [above](#the-actions-a-button-can-run)).
-4. Press **Speichern** (Save).
+- A hidden widget lets taps fall through it (above), so the overlay sitting on
+  top of the view blocks nothing while it is closed.
+- A button can **hide its own widget after acting**, so a button inside the
+  overlay can close the overlay.
 
-Tapping the button now raises the pop-up. To dismiss it, give the pop-up its own
-close control — for example a small **Buttons** widget stacked *on top of* the
-pop-up (higher layer) running a **hide** action on it, so the ✕ stays tappable
-while the panel is up.
+### Building the overlay
+
+1. Add a **Buttons** widget and size it over the area the overlay should cover —
+   up to the whole screen. Drag it up the layer list so it sits in front of what
+   it overlaps.
+2. Fill in its buttons (up to four) with whatever the overlay should offer —
+   scenes, lights, a webhook, a page reload, or plain show/hide of other widgets.
+3. Select the widget, open the inspector's **Layout** tab, and switch on **Beim
+   Laden versteckt** (Hidden on load). The overlay now starts closed, and while
+   hidden it lets taps through to the view underneath.
+4. On any button that should dismiss the overlay, switch on **Dieses Widget nach
+   der Aktion ausblenden** (Hide this widget after action): the button runs its
+   action and then hides the whole overlay. An optional **Verzögerung** (delay,
+   in seconds) lets it wait first. Put this on a dedicated "close" button, or on
+   every button so the overlay closes itself once a choice is made.
+5. Press **Speichern** (Save).
+
+### Opening the overlay
+
+Since the overlay starts hidden, something has to show it. Anything that can run
+a **show** or **toggle** action works:
+
+- **A button on the view** — an always-visible button (say, a small menu icon)
+  with a **show** action pointed at the overlay.
+- **A Home Assistant entity** — via the Buttons widget's **Auto** tab, so an
+  entity opens the overlay on its own (see
+  [Letting Home Assistant press a button](#letting-home-assistant-press-a-button)).
+
+The trigger shows the overlay; a button inside it, with **Hide this widget after
+action**, closes it again.
 
 ## The three switches, and the trap
 

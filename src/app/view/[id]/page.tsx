@@ -602,6 +602,8 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
   const renderWidgetContent = (type: string, config: any, id: string) =>
     renderWidget(type, config, {
       dashboardId,
+      // Passed so a Buttons widget can hide itself after acting (pop-up close).
+      widgetId: id,
       onVisibilityChange: (isVisible) =>
         setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : { ...prev, [id]: !isVisible }),
       // #41: soll diese Kamera gerade im Vollbild stehen? Der View rechnet das
