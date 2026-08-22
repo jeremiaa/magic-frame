@@ -221,10 +221,38 @@ Consequences that matter:
   hiding a widget saves nothing on a slow display.
 - **It still occupies its cells**, but as it is transparent, whatever is
   underneath is visible instead.
+- **Taps pass straight through it.** A hidden widget no longer catches the tap,
+  so whatever sits underneath — a button, a tile, anything — is fully clickable
+  through it, exactly as if the hidden widget were not there. This is what makes
+  real pop-ups possible (below).
 - **Showing and hiding fades over half a second.** There is no way to turn the
   fade off.
 - **Hidden is not remembered.** Visibility lives in the open page: reload the
   display and everything is back to how the layout says it starts.
+
+## Real pop-ups: a full-screen panel a hidden button reveals
+
+Because a hidden widget lets taps fall through to whatever is underneath, you can
+stack a large — even full-view — widget on top of a button, start it hidden, and
+have the button bring it up on demand. While the panel is hidden the button
+underneath is live; tap it and the panel appears over everything.
+
+1. Place the widget you want as the pop-up — a **Kamera** (Camera), a big
+   **Home Assistant** panel, an **Image**, whatever — over the area it should
+   cover. Give it a high enough layer that it sits in front (drag it up the
+   layer list).
+2. Select it, open the inspector's **Layout** tab, and switch on **Beim Laden
+   versteckt** (Hidden on load). While hidden it is invisible *and* lets taps
+   through to whatever is below.
+3. Place a **Buttons** widget in the cells the pop-up covers — it stays reachable
+   through the hidden panel — and point one button at the pop-up with the
+   **show** or **toggle** action (see [above](#the-actions-a-button-can-run)).
+4. Press **Speichern** (Save).
+
+Tapping the button now raises the pop-up. To dismiss it, give the pop-up its own
+close control — for example a small **Buttons** widget stacked *on top of* the
+pop-up (higher layer) running a **hide** action on it, so the ✕ stays tappable
+while the panel is up.
 
 ## The three switches, and the trap
 
