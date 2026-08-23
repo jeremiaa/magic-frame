@@ -137,6 +137,68 @@ function waitForRegistration(type: string, timeoutMs = 5000): Promise<Registered
  * React-Wrapper für Custom-Module. Liegt im Live-View-Render an Stelle eines
  * bekannten Widgets — lädt Bundle + ruft `render(ctx)` des Moduls.
  */
+/**
+ * Ruft die render-Funktion eines Moduls auf — und zwar als EIGENE Komponente.
+ *
+ * Der Grund ist der ganze Witz an dieser Datei (#87, gemeldet und richtig
+ * diagnostiziert von @stephenneal):
+ *
+ * Vorher stand hier schlicht `{mod.render(ctx)}` mitten im Render-Körper von
+ * CustomWidget. Ruft ein Modul darin `ctx.useState` auf, dann ist das aus
+ * Reacts Sicht ein Hook VON CustomWidget. Und weil `mod` beim ersten Durchgang
+ * noch null ist (das Bundle laedt ja erst), wurde die Zeile beim ersten Render
+ * uebersprungen — die Modul-Hooks liefen also gar nicht. Sobald setMod() neu
+ * rendert, kommen sie ploetzlich dazu: mehr Hooks als beim vorigen Durchgang,
+ * und React wirft Fehler #310.
+ *
+ * Das traf JEDES Modul mit irgendeinem Hook — waehrend `ctx` useState,
+ * useEffect, useRef, useMemo und useCallback ausdruecklich anbietet. Wir haben
+ * also eine Faehigkeit beworben, die zuverlaessig abstuerzt.
+ *
+ * Als eigene Komponente hat das Modul seine eigene, stabile Hook-Liste. Ob es
+ * Hooks benutzt oder nicht, geht CustomWidget nichts mehr an.
+ */
+function ModuleRenderer({
+  render,
+  ctx,
+}: {
+  render: RegisteredModule["render"];
+  ctx: ModuleCtx;
+}) {
+  return <>{render(ctx)}</>;
+}
+
+/**
+ * Faengt Fehler aus dem Modul ab, ohne die ganze Ansicht mitzureissen.
+ *
+ * Muss eine Klasse sein: ein try/catch im Elternteil sieht nichts von dem, was
+ * beim Rendern eines KINDES geworfen wird. Genau das war der Preis dafuer, das
+ * Rendern eine Ebene tiefer zu legen — vorher lag der Aufruf im selben
+ * Render-Koerper und war von try/catch erreichbar.
+ */
+class ModuleErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { message: string | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { message: null };
+  }
+  static getDerivedStateFromError(e: any) {
+    return { message: e?.message ?? String(e) };
+  }
+  render() {
+    if (this.state.message) {
+      return (
+        <div className="w-full h-full flex items-center justify-center text-xs text-red-400 p-2 text-center">
+          ⚠ Render-Fehler: {this.state.message}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function CustomWidget({
   type,
   config,
@@ -194,13 +256,9 @@ export function CustomWidget({
       </div>
     );
   }
-  try {
-    return <>{mod.render(ctx)}</>;
-  } catch (e: any) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-xs text-red-400 p-2 text-center">
-        ⚠ Render-Fehler: {e?.message ?? String(e)}
-      </div>
-    );
-  }
+  return (
+    <ModuleErrorBoundary key={type}>
+      <ModuleRenderer render={mod.render} ctx={ctx} />
+    </ModuleErrorBoundary>
+  );
 }
