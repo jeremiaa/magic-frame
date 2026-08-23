@@ -602,6 +602,8 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
   const renderWidgetContent = (type: string, config: any, id: string) =>
     renderWidget(type, config, {
       dashboardId,
+      // Passed so a Buttons widget can hide itself after acting (pop-up close).
+      widgetId: id,
       onVisibilityChange: (isVisible) =>
         setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : { ...prev, [id]: !isVisible }),
       // #41: soll diese Kamera gerade im Vollbild stehen? Der View rechnet das
@@ -683,12 +685,20 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
              const floating = edgeToEdge && w.config?.floatingCard === true;
              const justifyClass = isCardBased ? 'justify-start' : 'justify-center';
 
+             // Hidden = fully transparent AND click-through. The
+             // pointer-events-none MUST also sit on the outer react-grid-item
+             // wrapper: it covers the cell absolutely and would otherwise catch
+             // every tap even though nothing is visible — exactly what blocked a
+             // button UNDER a hidden full-screen widget (the pop-up case).
+             const isHidden = userHiddenWidgets[w.i] || autoHiddenWidgets[w.i] || triggerHiddenWidgets[w.i];
+
               return (
                <div
                  key={w.i}
+                 className={isHidden ? 'pointer-events-none' : undefined}
                  style={{ zIndex: typeof w.config?.zIndex === "number" ? w.config.zIndex : index }}
                >
-                 <div className={`w-full h-full flex ${justifyClass} flex-col ${paddingClass} rounded-3xl overflow-hidden transition-opacity duration-500 ${(userHiddenWidgets[w.i] || autoHiddenWidgets[w.i] || triggerHiddenWidgets[w.i]) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                 <div className={`w-full h-full flex ${justifyClass} flex-col ${paddingClass} rounded-3xl overflow-hidden transition-opacity duration-500 ${isHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                       style={{
                         containerType: 'size',
                         // Randlos-Modus: eckige Kacheln (CSS-Var vom Canvas);

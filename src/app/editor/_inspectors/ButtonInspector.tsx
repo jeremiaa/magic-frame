@@ -280,6 +280,47 @@ function ActionEditor({
           />
         </div>
       )}
+
+      {/* Self-hide: after the action, hide this whole button widget. The
+          building block for closing a pop-up — a close button that hides the
+          panel (its main action) and then removes itself. */}
+      <div>
+        <label className="flex items-center justify-between gap-3 cursor-pointer group">
+          <span className="text-xs font-medium text-[var(--mf-fg)]/70">
+            {t("Dieses Widget nach der Aktion ausblenden")}
+          </span>
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={!!(activeWidget.config as any)?.[k("selfHide")]}
+              onChange={(e) => updateConfig(activeWidget.i, k("selfHide"), e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-9 h-5 bg-[var(--mf-elev)]/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-500"></div>
+          </div>
+        </label>
+        {!!(activeWidget.config as any)?.[k("selfHide")] && (
+          <div className="mt-3">
+            <div className="flex justify-between mb-2">
+              <label className="text-xs font-medium text-[var(--mf-fg)]/70">{t("Verzögerung vor dem Ausblenden")}</label>
+              <span className="text-xs text-indigo-400">
+                {((activeWidget.config as any)?.[k("selfHideDelay")] ?? 0) === 0
+                  ? t("Sofort")
+                  : `${(activeWidget.config as any)?.[k("selfHideDelay")]}s`}
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              step="0.5"
+              value={(activeWidget.config as any)?.[k("selfHideDelay")] ?? 0}
+              onChange={(e) => updateConfig(activeWidget.i, k("selfHideDelay"), parseFloat(e.target.value))}
+              className="w-full accent-indigo-500"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -19,6 +19,9 @@ export interface WidgetLayoutItem {
   responsiveText?: boolean;
   defaultHidden?: boolean;
   floatingCard?: boolean;
+  // Buttons widget as a modal overlay: a tap on the widget's area but outside
+  // any button hides the whole widget (backdrop-to-dismiss).
+  hideOnOutsideTap?: boolean;
   showHumidity?: boolean;
   showWind?: boolean;
   showUv?: boolean;

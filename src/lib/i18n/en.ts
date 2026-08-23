@@ -2157,4 +2157,8 @@ export const EN: Record<string, string> = {
   "Einige dieser Werte kann dieses Konto nicht abrufen — sie brauchen eine Administrator-Rolle. Was hier steht, ist deshalb unvollständig.":
     "Some of these cannot be read by this account — they need an administrator role, so what you see here is incomplete.",
   "Ein Kalender antwortet nicht": "A calendar is not answering",
+  "Dieses Widget nach der Aktion ausblenden": "Hide this widget after action",
+  "Tippen außerhalb der Buttons schließt das Widget": "Tap outside the buttons to close",
+  "Verzögerung vor dem Ausblenden": "Delay before hiding",
+  "Sofort": "Immediately",
 };

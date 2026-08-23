@@ -221,10 +221,68 @@ Consequences that matter:
   hiding a widget saves nothing on a slow display.
 - **It still occupies its cells**, but as it is transparent, whatever is
   underneath is visible instead.
+- **Taps pass straight through it.** A hidden widget no longer catches the tap,
+  so whatever sits underneath — a button, a tile, anything — is fully clickable
+  through it, exactly as if the hidden widget were not there. This is what lets a
+  hidden overlay sit on top of a view without blocking it (see
+  [Pop-ups and modal overlays](#pop-ups-and-modal-overlays)).
 - **Showing and hiding fades over half a second.** There is no way to turn the
   fade off.
 - **Hidden is not remembered.** Visibility lives in the open page: reload the
   display and everything is back to how the layout says it starts.
+
+## Pop-ups and modal overlays
+
+A **Buttons** widget can be laid over the rest of a view, kept hidden until
+something opens it, and used as a **pop-up / modal overlay** — a panel of buttons
+that appears on top of everything, does its job, and disappears again. Three
+behaviours make this practical:
+
+- A hidden widget lets taps fall through it (above), so the overlay sitting on
+  top of the view blocks nothing while it is closed.
+- A button can **hide its own widget after acting**, so a button inside the
+  overlay can close it once a choice is made.
+- The overlay can **close on a tap outside its buttons**, so it can be dismissed
+  without choosing anything — the escape hatch when it was opened by mistake.
+
+### Building the overlay
+
+1. Add a **Buttons** widget and size it over the area the overlay should cover —
+   up to the whole screen. Drag it up the layer list so it sits in front of what
+   it overlaps.
+2. Fill in its buttons (up to four) with whatever the overlay should offer —
+   scenes, lights, a webhook, a page reload, or plain show/hide of other widgets.
+3. Select the widget, open the inspector's **Layout** tab, and switch on **Beim
+   Laden versteckt** (Hidden on load). The overlay now starts closed, and while
+   hidden it lets taps through to the view underneath.
+4. Press **Speichern** (Save).
+
+### Opening the overlay
+
+Since the overlay starts hidden, something has to show it. Anything that can run
+a **show** or **toggle** action works:
+
+- **A button on the view** — an always-visible button (say, a small menu icon)
+  with a **show** action pointed at the overlay.
+- **A Home Assistant entity** — via the Buttons widget's **Auto** tab, so an
+  entity opens the overlay on its own (see
+  [Letting Home Assistant press a button](#letting-home-assistant-press-a-button)).
+
+### Closing the overlay
+
+Two ways to dismiss it — use either, or both:
+
+- **A button that closes after acting.** In a button's action settings (its
+  **Btn** tab), switch on **Dieses Widget nach der Aktion ausblenden** (Hide this
+  widget after action): the button runs its action and then hides the whole
+  overlay. An optional **Verzögerung** (delay, in seconds) lets it wait first. Put
+  it on a dedicated "close" button, or on every button so the overlay dismisses
+  itself once a choice is made. It works the same on a long press.
+- **A tap outside the buttons.** In the **Layout** tab, under **Sichtbarkeit**
+  (Visibility), switch on **Tippen außerhalb der Buttons schließt das Widget**
+  (Tap outside the buttons to close). Now a tap anywhere on the overlay that is
+  not a button closes it — the usual "tap the backdrop to dismiss" of a modal.
+  Size the widget to cover the whole view and this becomes a full-screen backdrop.
 
 ## The three switches, and the trap
 

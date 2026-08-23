@@ -7,18 +7,40 @@ import { haAction } from "@/lib/ha/action-client";
 
 interface ButtonWidgetProps {
   config?: any;
+  // Layout id of this button widget, so a slot can hide the widget itself
+  // after acting. Undefined in the editor preview (buttons don't fire there).
+  widgetId?: string;
 }
 
 const LONG_PRESS_MS = 500;
 
-async function runButtonAction(slot: any, longPress: boolean) {
+// Runs the slot's chosen action, then optionally hides THIS button widget so a
+// button can close what it opened — e.g. a close button laid over a pop-up that
+// hides the panel and then removes itself. Self-hide reuses the same
+// WIDGET_ACTION → hide path the view already handles; the target is the button's
+// own layout id (selfId), passed down from the view. Honours an optional delay
+// (seconds) so the button can linger briefly before it disappears.
+async function runButtonAction(slot: any, longPress: boolean, selfId?: string) {
+    const action = longPress ? (slot.longPressAction || "none") : (slot.actionType || "toggle");
+    await performButtonAction(slot, action, longPress);
+
+    const selfHide = longPress ? slot.longPressSelfHide : slot.selfHide;
+    if (selfHide && selfId) {
+        const delaySec = Math.max(0, Number(longPress ? slot.longPressSelfHideDelay : slot.selfHideDelay) || 0);
+        const hideSelf = () =>
+            window.dispatchEvent(new CustomEvent("WIDGET_ACTION", { detail: { targets: [selfId], actionType: "hide" } }));
+        if (delaySec > 0) setTimeout(hideSelf, delaySec * 1000);
+        else hideSelf();
+    }
+}
+
+async function performButtonAction(slot: any, action: string, longPress: boolean) {
     // actionType Varianten:
     //  'toggle' | 'show' | 'hide'  -> CustomEvent an Widget-Targets
     //  'ha_service'                -> HA-Service-Call (/api/ha/action)
     //  'ha_toggle'                 -> HA-toggle auf bestimmter Entity
     //  'webhook'                   -> fetch POST
     //  'none'                      -> nix
-    const action = longPress ? (slot.longPressAction || "none") : (slot.actionType || "toggle");
 
     if (action === "none") return;
 
@@ -84,7 +106,7 @@ async function runButtonAction(slot: any, longPress: boolean) {
 
 const ActionBtn = ({
     icon, label, slot, customColor, responsiveText, iconSize, fontSize,
-    bgOpacity, bgBlur, bgRadius, btnShape, iconScale = 100, btnScale = 100
+    bgOpacity, bgBlur, bgRadius, btnShape, iconScale = 100, btnScale = 100, widgetId
 }: any) => {
     // btnShape: "square" | "circle" | "subtle" | "fill"
     const shape = btnShape || 'square';
@@ -97,11 +119,13 @@ const ActionBtn = ({
 
     const startLongPressTimer = () => {
         longPressFired.current = false;
-        if (!slot?.longPressAction || slot.longPressAction === "none") return;
+        // Also arm the timer when the long press only self-hides (action "none"),
+        // otherwise a long-press-to-dismiss button would never fire.
+        if ((!slot?.longPressAction || slot.longPressAction === "none") && !slot?.longPressSelfHide) return;
         longPressTimer.current = setTimeout(() => {
             longPressFired.current = true;
             if (navigator.vibrate) navigator.vibrate(25);
-            runButtonAction(slot, true);
+            runButtonAction(slot, true, widgetId);
         }, LONG_PRESS_MS);
     };
     const cancelLongPressTimer = () => {
@@ -113,7 +137,7 @@ const ActionBtn = ({
 
     const handleClick = () => {
         if (longPressFired.current) return;
-        runButtonAction(slot, false);
+        runButtonAction(slot, false, widgetId);
     };
 
     const hasBox = bgOpacity > 0 || bgBlur > 0;
@@ -145,6 +169,7 @@ const ActionBtn = ({
     return (
         <div style={overrideStyle} className="flex items-center justify-center p-2 group">
             <div
+               data-mf-button
                className={`relative flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${shape !== 'subtle' ? 'shadow-lg' : 'group-hover:bg-white/5 rounded-xl'} ${isPressing ? 'scale-90 opacity-50 bg-white/30' : 'opacity-80'}`}
                style={{...bgStyle, touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent'}}
 
@@ -221,7 +246,7 @@ const ActionBtn = ({
     );
 };
 
-export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
+export default function ButtonWidget({ config = {}, widgetId }: ButtonWidgetProps) {
   const t = useT();
 
   // Extract up to 4 configured buttons.
@@ -268,6 +293,12 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
           longPressServiceData:
             config[`longPressHaServiceData${suffix}`] ?? config[`longPressServiceData${suffix}`],
           longPressWebhook: config[`longPressWebhook${suffix}`],
+          // "Hide this widget" — after the action, hide the whole button widget
+          // (the pop-up close helper). Separate flag + delay per press type.
+          selfHide: !!config[`selfHide${suffix}`],
+          selfHideDelay: config[`selfHideDelay${suffix}`],
+          longPressSelfHide: !!config[`longPressSelfHide${suffix}`],
+          longPressSelfHideDelay: config[`longPressSelfHideDelay${suffix}`],
           customColor: config[`color${suffix}`] || config.color
       };
   };
@@ -279,8 +310,18 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
   const designLayout = config.designLayout || 'auto';
   const bgOpacity = config.bgOpacity !== undefined ? Number(config.bgOpacity) : 5;
   const bgBlur = config.bgBlur !== undefined ? Number(config.bgBlur) : 10;
-  const bgRadius = config.bgRadius !== undefined ? Number(config.bgRadius) : 50; 
-  
+  const bgRadius = config.bgRadius !== undefined ? Number(config.bgRadius) : 50;
+
+  // Tap on the widget's own area but NOT on a button hides the whole widget —
+  // the "tap outside to dismiss" of a modal overlay. Buttons carry a
+  // data-mf-button marker, so a tap that lands on one is ignored here.
+  const hideOnOutsideTap = !!config.hideOnOutsideTap;
+  const handleBackdropTap = (e: React.MouseEvent) => {
+    if (!hideOnOutsideTap || !widgetId) return;
+    if ((e.target as HTMLElement).closest?.("[data-mf-button]")) return;
+    window.dispatchEvent(new CustomEvent("WIDGET_ACTION", { detail: { targets: [widgetId], actionType: "hide" } }));
+  };
+
   if (activeBtns.length === 0) {
       // Fallback for completely empty configuration
       return (
@@ -307,9 +348,10 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
   }
 
   return (
-    <div 
+    <div
       className="relative w-full h-full p-2 lg:p-4"
       style={{ containerType: 'size' }}
+      onClick={handleBackdropTap}
     >
         <div className={gridStyle}>
             {activeBtns.map(btn => (
@@ -328,6 +370,7 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
                   iconScale={config.iconScale}
                   btnScale={config.btnScale}
                   btnShape={config.btnShape}
+                  widgetId={widgetId}
                />
             ))}
         </div>

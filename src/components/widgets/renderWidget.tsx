@@ -38,12 +38,18 @@ export type RenderWidgetOpts = {
   openFullscreen?: boolean;
   /** Laufende Nummer des Vollbild-Befehls — siehe CameraWidget. */
   fullscreenSeq?: number;
+  /**
+   * The layout id (w.i) of the widget being rendered. Passed to widgets that
+   * need to act on themselves — the Buttons widget uses it to hide itself after
+   * running an action (the "close pop-up" building block).
+   */
+  widgetId?: string;
 };
 
 export function renderWidget(type: string, config: any, opts: RenderWidgetOpts = {}): React.ReactNode {
-  const { dashboardId, onVisibilityChange, openFullscreen, fullscreenSeq } = opts;
+  const { dashboardId, onVisibilityChange, openFullscreen, fullscreenSeq, widgetId } = opts;
   if (type === "ClockWidget.tsx") return <ClockWidget config={config} />;
-  if (type === "ButtonWidget.tsx") return <ButtonWidget config={config} />;
+  if (type === "ButtonWidget.tsx") return <ButtonWidget config={config} widgetId={widgetId} />;
   if (type === "TimerWidget.tsx") return <TimerWidget config={config} dashboardId={dashboardId} />;
   if (type === "MessagesWidget.tsx") return <MessagesWidget config={config} dashboardId={dashboardId} />;
   if (type === "ShoppingListWidget.tsx") return <ShoppingListWidget config={config} />;
