@@ -202,7 +202,14 @@ export default function EditorHome() {
           .catch(() => {}),
         readJson("/api/settings")
           .then((d) => {
-            out.haConnected = !!(d?.haUrl && d?.haToken);
+            // Im HA-Add-on gibt es weder Adresse noch Token: die Verbindung
+            // laeuft ueber den Supervisor, und /api/settings leert den Token
+            // dort sogar absichtlich. Wer nur auf Adresse+Token schaut, sieht
+            // also ausgerechnet bei der bequemsten Installationsart "aus" —
+            // waehrend die Integrationsseite daneben "verbunden" meldet und
+            // die Widgets laengst Entitaeten anzeigen.
+            out.haConnected =
+              d?.haManagedBy === "supervisor" || !!(d?.haUrl && d?.haToken);
           })
           .catch(() => {}),
         readJson("/api/admin/todoist")
