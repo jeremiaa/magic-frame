@@ -1493,7 +1493,7 @@ export const NN: Record<string, string> = {
 
   // Modul-/tryggingskopi-/visningssider
   "Diese Widget-Typen stehen dir zur Verfügung. Eigene Custom-Module kannst du unten direkt als JS-Bundle hochladen — Hot-Loading, kein Container-Restart nötig.":
-    "Desse widget-typane er tilgjengelege for deg. Du kan lasta opp dine eigne modular som ein JS-bunt nedanfor — hot-lasting, ingen container-restart naudsynt.",
+    "Desse widget-typane er tilgjengelege for deg. Du kan lasta opp dine eigne modular som ein JS-bunt nedanfor — hot-loading, ingen container-restart naudsynt.",
   "Custom-Module": "Eigendefinerte modular",
   "Hochgeladen + sofort aktiv im View-Editor. Build aus deinem Modul-Source mit":
     "Lasta opp og umiddelbart aktiv i visningseditoren. Bygg frå modulkjelda di med",
