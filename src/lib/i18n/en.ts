@@ -103,6 +103,8 @@ export const EN: Record<string, string> = {
     "UI language. Remembered per browser and saved as the default for all displays.",
   "Deutsch": "German",
   "Englisch": "English",
+  "Norwegisch (Bokmål)": "Norwegian (Bokmål)",
+  "Norwegisch (Nynorsk)": "Norwegian (Nynorsk)",
 
   // ── Modules ──
   "Installierte Module": "Installed modules",

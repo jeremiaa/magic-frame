@@ -241,7 +241,7 @@ function LanguageCard() {
   // server. Every other display that hasn't picked its own language yet
   // will inherit this on next load — that's how the kitchen monitor
   // catches up with what you set in the editor on your laptop.
-  const pick = (l: "de" | "en") => {
+  const pick = (l: "de" | "en" | "nb" | "nn") => {
     setLocale(l);
     fetch("/api/admin/locale-default", {
       method: "POST",
@@ -274,6 +274,22 @@ function LanguageCard() {
           }`}
         >
           {t("Englisch")}
+        </button>
+        <button
+          onClick={() => pick("nb")}
+          className={`px-4 h-9 rounded-md text-sm font-medium transition-colors ${
+            locale === "nb" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
+          }`}
+        >
+          {t("Norwegisch (Bokmål)")}
+        </button>
+        <button
+          onClick={() => pick("nn")}
+          className={`px-4 h-9 rounded-md text-sm font-medium transition-colors ${
+            locale === "nn" ? "bg-[var(--mf-elev)]/15 text-[var(--mf-fg)]" : "text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
+          }`}
+        >
+          {t("Norwegisch (Nynorsk)")}
         </button>
       </div>
     </Card>
