@@ -117,6 +117,7 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
 
   const provider: string = config?.provider || "open-meteo";
   const haEntity: string = config?.haEntity || "";
+  const wuStation: string = config?.wuStation || "";
   const needsLatLon = provider !== "home-assistant";
 
   useEffect(() => {
@@ -136,6 +137,7 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
         if (lat) qs.set("lat", String(lat));
         if (lon) qs.set("lon", String(lon));
         if (haEntity) qs.set("haEntity", haEntity);
+        if (wuStation) qs.set("wuStation", wuStation);
         const res = await fetch(`/api/weather?${qs.toString()}`, { signal: controller.signal });
         const result = await res.json();
         if (cancelled) return;
@@ -166,7 +168,7 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
       document.removeEventListener("visibilitychange", onWake);
       window.removeEventListener("focus", onWake);
     };
-  }, [lat, lon, unitTemp, unitWind, provider, haEntity, needsLatLon]);
+  }, [lat, lon, unitTemp, unitWind, provider, haEntity, wuStation, needsLatLon]);
 
   if (needsLatLon && (!lat || !lon)) {
      return <div className="text-white/50 text-sm text-center">{t("Wetter")}<br/>({t("Lat/Lon in Config eintragen")})</div>;

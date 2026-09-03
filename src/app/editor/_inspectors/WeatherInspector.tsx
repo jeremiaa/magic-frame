@@ -41,12 +41,14 @@ export default function WeatherInspector({
              <option value="dwd">{t("DWD ICON (Deutscher Wetterdienst, für DE am genauesten)")}</option>
              <option value="openweathermap">{t("OpenWeatherMap (braucht API-Key)")}</option>
              <option value="home-assistant">{t("Home Assistant (weather.* Entity)")}</option>
+             <option value="wunderground">{t("Weather Underground (TWC API Key)")}</option>
           </select>
           <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
              {provider === "open-meteo" && t("Globale Mix-Quelle. Default.")}
              {provider === "dwd" && t("DWD ICON-Modell über die Open-Meteo-Bridge — für Deutschland/Mitteleuropa meist näher an der tatsächlichen Wetterlage als globale Modelle.")}
              {provider === "openweathermap" && t("Benötigt OPENWEATHERMAP_API_KEY in der Server-Config. Kostenloses Tier: 1000 calls/Tag.")}
              {provider === "home-assistant" && t("Liest eine weather.*-Entity inkl. Vorhersage aus deinem HA-Server. Welches Modell dort reinkommt, hängt von deiner HA-Integration ab.")}
+             {provider === "wunderground" && t("The Weather Company API (Weather Underground). Requires a TWC API key — free for PWS owners. Optional station ID for hyper-local readings.")}
           </p>
        </div>
 
@@ -62,6 +64,22 @@ export default function WeatherInspector({
              />
              <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
                 {t("Beispiel:")} <code>weather.home</code>. {t("Die Forecast-Tage kommen aus")} <code>attributes.forecast</code>.
+             </p>
+          </div>
+       )}
+
+       {provider === "wunderground" && (
+          <div>
+             <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("PWS Station ID (optional)")}</label>
+             <input
+                type="text"
+                value={(activeWidget.config as any)?.wuStation || ""}
+                placeholder="KNYNEWYO789"
+                onChange={(e) => updateConfig(activeWidget.i, 'wuStation', e.target.value)}
+                className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-mono text-sm rounded-lg p-3 focus:outline-none focus:border-emerald-500"
+             />
+             <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
+                {t("Your Personal Weather Station ID for hyper-local temp/humidity/wind. Leave empty to use TWC data for your lat/lon.")}
              </p>
           </div>
        )}

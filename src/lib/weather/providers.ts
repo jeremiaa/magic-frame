@@ -340,6 +340,154 @@ function owmToWmo(id?: number): number {
   return 0;
 }
 
+// TWC/Weather Underground icon codes (0-47) → WMO-Codes
+function twcIconToWmo(icon?: number | null): number {
+  if (icon == null) return 0;
+  if (icon <= 4) return 95;   // tornado, tropical storm, hurricane, thunderstorms
+  if (icon <= 6) return 67;   // rain/snow, rain/sleet
+  if (icon === 7) return 77;  // snow/sleet
+  if (icon === 8) return 56;  // freezing drizzle
+  if (icon === 9) return 51;  // drizzle
+  if (icon === 10) return 66; // freezing rain
+  if (icon === 11) return 61; // showers
+  if (icon === 12) return 63; // rain
+  if (icon <= 14) return 71;  // flurries, snow showers
+  if (icon === 15) return 77; // blowing snow
+  if (icon === 16) return 73; // snow
+  if (icon === 17) return 77; // hail
+  if (icon === 18) return 67; // sleet
+  if (icon <= 22) return 45;  // dust, fog, haze, smoke
+  if (icon <= 25) return 0;   // breezy, windy, frigid
+  if (icon <= 28) return 3;   // cloudy, mostly cloudy (day/night)
+  if (icon <= 30) return 2;   // partly cloudy (night/day)
+  if (icon <= 32) return 0;   // clear night, sunny
+  if (icon <= 34) return 1;   // fair (night/day)
+  if (icon === 35) return 65; // mixed rain/hail
+  if (icon === 36) return 0;  // hot
+  if (icon <= 39) return 95;  // isolated/scattered thunderstorms, scattered showers → 95 for thunder
+  if (icon === 39 || icon === 45) return 61; // scattered showers
+  if (icon === 40) return 65; // heavy rain
+  if (icon === 41 || icon === 46) return 71; // scattered snow showers
+  if (icon === 42) return 75; // heavy snow
+  if (icon === 43) return 75; // blizzard
+  if (icon === 47) return 95; // scattered thunderstorms
+  return 0;
+}
+
+export async function fetchWeatherUnderground(
+  lat: string,
+  lon: string,
+  units: WeatherUnits,
+  stationId?: string,
+): Promise<NormalizedWeather> {
+  const { getWuKey } = await import("./wunderground-credentials");
+  const key = await getWuKey();
+  if (!key) throw new Error("wunderground_not_configured");
+
+  const wuUnits = units.tempUnit === "fahrenheit" ? "e" : "m";
+
+  const convertWind = (n: number | null | undefined): number | undefined => {
+    if (n == null) return undefined;
+    if (wuUnits === "m") {
+      // WU metric wind = km/h
+      if (units.windUnit === "kmh") return n;
+      if (units.windUnit === "mph") return n * 0.621371;
+      if (units.windUnit === "ms") return n / 3.6;
+      if (units.windUnit === "kn") return n * 0.539957;
+      return n;
+    }
+    // imperial wind = mph
+    if (units.windUnit === "mph") return n;
+    if (units.windUnit === "kmh") return n * 1.60934;
+    if (units.windUnit === "ms") return n * 0.44704;
+    if (units.windUnit === "kn") return n * 0.868976;
+    return n;
+  };
+
+  // Parallel fetches: TWC current (for conditions) + TWC forecast + optionally PWS
+  const geocode = `${lat},${lon}`;
+  const twcCurrentUrl = `https://api.weather.com/v3/wx/observations/current?geocode=${geocode}&format=json&units=${wuUnits}&language=en-US&apiKey=${key}`;
+  const twcForecastUrl = `https://api.weather.com/v3/wx/forecast/daily/5day?geocode=${geocode}&format=json&units=${wuUnits}&language=en-US&apiKey=${key}`;
+
+  const fetches: Promise<any>[] = [
+    fetch(twcCurrentUrl, { next: { revalidate: 60 * 15 } }).then((r) => {
+      if (!r.ok) throw new Error(`wunderground current ${r.status}`);
+      return r.json();
+    }),
+    fetch(twcForecastUrl, { next: { revalidate: 60 * 15 } }).then((r) => {
+      if (!r.ok) throw new Error(`wunderground forecast ${r.status}`);
+      return r.json();
+    }),
+  ];
+
+  // PWS fetch (optional — supplements with hyper-local sensor data)
+  if (stationId) {
+    const pwsUrl = `https://api.weather.com/v2/pws/observations/current?stationId=${encodeURIComponent(stationId)}&format=json&units=${wuUnits}&apiKey=${key}`;
+    fetches.push(
+      fetch(pwsUrl, { next: { revalidate: 60 * 10 } })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    );
+  }
+
+  const [twcCurrent, twcForecast, pwsData] = await Promise.all(fetches);
+
+  // PWS sensor readings (if available)
+  const pws = pwsData?.observations?.[0];
+  const pwsMetrics = pws?.[wuUnits === "m" ? "metric" : "imperial"];
+
+  // Current conditions — merge PWS sensor readings with TWC condition data
+  const temp = pwsMetrics?.temp ?? twcCurrent?.temperature ?? 0;
+  const feelsLike =
+    pwsMetrics?.windChill ?? pwsMetrics?.heatIndex ?? twcCurrent?.temperatureFeelsLike ?? temp;
+  const humidity = pws?.humidity ?? twcCurrent?.relativeHumidity;
+  const windSpeed = convertWind(pwsMetrics?.windSpeed ?? twcCurrent?.windSpeed);
+  const uvIndex = typeof pws?.uv === "number" ? pws.uv : twcCurrent?.uvIndex;
+
+  const isDay =
+    twcCurrent?.dayOrNight === "D" ? 1 : twcCurrent?.dayOrNight === "N" ? 0 : undefined;
+
+  // Forecast — TWC 5-day format uses parallel arrays
+  const fc = twcForecast ?? {};
+  const dayCount = Math.min(Array.isArray(fc.temperatureMax) ? fc.temperatureMax.length : 0, 6);
+  const daypart = fc.daypart?.[0];
+
+  const toISODate = (s: string | undefined) => (s ? String(s).slice(0, 10) : "");
+
+  const dailyWeatherCodes: number[] = [];
+  const dailyUvMax: number[] = [];
+  for (let i = 0; i < dayCount; i++) {
+    // daypart alternates day(2i) / night(2i+1). Use daytime if available, else night.
+    const dpDay = daypart?.iconCode?.[i * 2];
+    const dpNight = daypart?.iconCode?.[i * 2 + 1];
+    dailyWeatherCodes.push(twcIconToWmo(dpDay ?? dpNight));
+    const uvDay = daypart?.uvIndex?.[i * 2];
+    dailyUvMax.push(typeof uvDay === "number" ? uvDay : 0);
+  }
+
+  return {
+    current: {
+      temperature_2m: temp,
+      apparent_temperature: feelsLike,
+      weather_code: twcIconToWmo(twcCurrent?.iconCode),
+      relative_humidity_2m: humidity,
+      wind_speed_10m: windSpeed,
+      is_day: isDay,
+      uv_index: typeof uvIndex === "number" ? uvIndex : undefined,
+    },
+    daily: {
+      time: Array.from({ length: dayCount }, (_, i) => toISODate(fc.validTimeLocal?.[i])),
+      weather_code: dailyWeatherCodes,
+      temperature_2m_max: Array.from({ length: dayCount }, (_, i) => fc.temperatureMax?.[i] ?? 0),
+      temperature_2m_min: Array.from({ length: dayCount }, (_, i) => fc.temperatureMin?.[i] ?? 0),
+      sunrise: Array.from({ length: dayCount }, (_, i) => fc.sunriseTimeLocal?.[i] ?? ""),
+      sunset: Array.from({ length: dayCount }, (_, i) => fc.sunsetTimeLocal?.[i] ?? ""),
+      uv_index_max: dailyUvMax,
+    },
+    _provider: "wunderground",
+  };
+}
+
 // HA-weather.* conditions → WMO-Codes
 function haConditionToWmo(c: string): number {
   switch (c) {
