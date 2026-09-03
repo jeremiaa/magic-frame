@@ -41,12 +41,14 @@ export default function WeatherInspector({
              <option value="dwd">{t("DWD ICON (Deutscher Wetterdienst, für DE am genauesten)")}</option>
              <option value="openweathermap">{t("OpenWeatherMap (braucht API-Key)")}</option>
              <option value="home-assistant">{t("Home Assistant (weather.* Entity)")}</option>
+             <option value="pirateweather">{t("Pirate Weather (Dark Sky replacement)")}</option>
           </select>
           <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
              {provider === "open-meteo" && t("Globale Mix-Quelle. Default.")}
              {provider === "dwd" && t("DWD ICON-Modell über die Open-Meteo-Bridge — für Deutschland/Mitteleuropa meist näher an der tatsächlichen Wetterlage als globale Modelle.")}
              {provider === "openweathermap" && t("Benötigt OPENWEATHERMAP_API_KEY in der Server-Config. Kostenloses Tier: 1000 calls/Tag.")}
              {provider === "home-assistant" && t("Liest eine weather.*-Entity inkl. Vorhersage aus deinem HA-Server. Welches Modell dort reinkommt, hängt von deiner HA-Integration ab.")}
+             {provider === "pirateweather" && t("Dark Sky-compatible API. Free tier: 10,000 calls/month. Get a key at pirateweather.net.")}
           </p>
        </div>
 
