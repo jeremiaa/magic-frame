@@ -197,6 +197,159 @@ export async function fetchOpenWeatherMap(
   };
 }
 
+// Pirate Weather (Dark Sky drop-in) icon strings → WMO codes
+function pirateIconToWmo(icon?: string | null): number {
+  if (!icon) return 0;
+  switch (icon) {
+    case "clear-day":
+    case "clear-night":
+      return 0;
+    case "mostly-clear-day":
+    case "mostly-clear-night":
+      return 1;
+    case "partly-cloudy-day":
+    case "partly-cloudy-night":
+      return 2;
+    case "mostly-cloudy-day":
+    case "mostly-cloudy-night":
+    case "cloudy":
+      return 3;
+    case "fog":
+    case "mist":
+    case "haze":
+      return 45;
+    case "smoke":
+      return 45;
+    case "drizzle":
+    case "light-rain":
+    case "possible-rain-day":
+    case "possible-rain-night":
+      return 51;
+    case "rain":
+      return 63;
+    case "heavy-rain":
+      return 65;
+    case "sleet":
+    case "light-sleet":
+    case "very-light-sleet":
+    case "possible-sleet-day":
+    case "possible-sleet-night":
+      return 66;
+    case "heavy-sleet":
+      return 67;
+    case "flurries":
+    case "light-snow":
+    case "possible-snow-day":
+    case "possible-snow-night":
+      return 71;
+    case "snow":
+      return 73;
+    case "heavy-snow":
+      return 75;
+    case "wind":
+    case "breezy":
+    case "dangerous-wind":
+      return 0;
+    case "thunderstorm":
+    case "possible-thunderstorm-day":
+    case "possible-thunderstorm-night":
+      return 95;
+    case "precipitation":
+    case "possible-precipitation-day":
+    case "possible-precipitation-night":
+    case "mixed":
+      return 61;
+    default:
+      return 0;
+  }
+}
+
+export async function fetchPirateWeather(
+  lat: string,
+  lon: string,
+  units: WeatherUnits,
+): Promise<NormalizedWeather> {
+  const { getPirateWeatherKey } = await import("./pirateweather-credentials");
+  const key = await getPirateWeatherKey();
+  if (!key) throw new Error("pirateweather_not_configured");
+
+  const pwUnits = units.tempUnit === "fahrenheit" ? "us" : "ca";
+
+  const convertWind = (n: number | null | undefined): number | undefined => {
+    if (n == null) return undefined;
+    if (pwUnits === "ca") {
+      // ca = km/h
+      if (units.windUnit === "kmh") return n;
+      if (units.windUnit === "mph") return n * 0.621371;
+      if (units.windUnit === "ms") return n / 3.6;
+      if (units.windUnit === "kn") return n * 0.539957;
+      return n;
+    }
+    // us = mph
+    if (units.windUnit === "mph") return n;
+    if (units.windUnit === "kmh") return n * 1.60934;
+    if (units.windUnit === "ms") return n * 0.44704;
+    if (units.windUnit === "kn") return n * 0.868976;
+    return n;
+  };
+
+  const url = `https://api.pirateweather.net/forecast/${key}/${lat},${lon}?units=${pwUnits}&exclude=minutely,alerts`;
+  const res = await fetch(url, { next: { revalidate: 60 * 15 } });
+  if (!res.ok) throw new Error(`pirateweather ${res.status}`);
+  const data = await res.json();
+
+  const cur = data.currently ?? {};
+  const daily = data.daily?.data ?? [];
+  const hourly = data.hourly?.data ?? [];
+
+  const toISO = (ts?: number) => (ts ? new Date(ts * 1000).toISOString() : "");
+  const toDateStr = (ts?: number) => (ts ? new Date(ts * 1000).toISOString().slice(0, 10) : "");
+
+  const isDay = (() => {
+    if (!daily[0]?.sunriseTime || !daily[0]?.sunsetTime) return undefined;
+    const now = cur.time ?? Math.floor(Date.now() / 1000);
+    return now >= daily[0].sunriseTime && now < daily[0].sunsetTime ? 1 : 0;
+  })();
+
+  return {
+    current: {
+      temperature_2m: cur.temperature ?? 0,
+      apparent_temperature: cur.apparentTemperature ?? cur.temperature ?? 0,
+      weather_code: pirateIconToWmo(cur.icon),
+      relative_humidity_2m: typeof cur.humidity === "number" ? Math.round(cur.humidity * 100) : undefined,
+      wind_speed_10m: convertWind(cur.windSpeed),
+      is_day: isDay,
+      uv_index: typeof cur.uvIndex === "number" ? cur.uvIndex : undefined,
+    },
+    daily: {
+      time: daily.slice(0, 6).map((d: any) => toDateStr(d.time)),
+      weather_code: daily.slice(0, 6).map((d: any) => pirateIconToWmo(d.icon)),
+      temperature_2m_max: daily.slice(0, 6).map((d: any) => d.temperatureHigh ?? 0),
+      temperature_2m_min: daily.slice(0, 6).map((d: any) => d.temperatureLow ?? 0),
+      sunrise: daily.slice(0, 6).map((d: any) => toISO(d.sunriseTime)),
+      sunset: daily.slice(0, 6).map((d: any) => toISO(d.sunsetTime)),
+      uv_index_max: daily.slice(0, 6).map((d: any) => d.uvIndex ?? 0),
+    },
+    hourly: hourly.length > 0
+      ? {
+          time: hourly.map((h: any) => toISO(h.time)),
+          temperature_2m: hourly.map((h: any) => h.temperature ?? 0),
+          weather_code: hourly.map((h: any) => pirateIconToWmo(h.icon)),
+          is_day: hourly.map((h: any) => {
+            const dayForHour = daily.find(
+              (d: any) => h.time >= d.sunriseTime && h.time < (d.sunsetTime ?? Infinity),
+            );
+            return dayForHour ? 1 : 0;
+          }),
+          precipitation_probability: hourly.map((h: any) =>
+            typeof h.precipProbability === "number" ? Math.round(h.precipProbability * 100) : 0,
+          ),
+        }
+      : undefined,
+    _provider: "pirateweather",
+  };
+}
+
 export async function fetchHomeAssistantWeather(
   entityId: string,
   _units: WeatherUnits,
