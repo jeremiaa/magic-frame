@@ -356,6 +356,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     const dateLabel = format(day, "d");
     const hideWeekday = (config as any)?.hideWeekday === true;
     const cardOpacity = config?.cardOpacity !== undefined ? config.cardOpacity : 40;
+    const cardBlur = config?.cardBlur ?? 12;
     const hasBg = cardOpacity > 0;
     const isMinimal = config?.design === 'minimal';
     const key = `empty-${day.toISOString()}`;
@@ -380,8 +381,8 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
 
     return (
       <div key={key}
-           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] shrink-0 mb-[0.8em] opacity-50 ${hasBg ? `backdrop-blur-md border ${borderCls} shadow-xl` : ''}`}
-           style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})` }}
+           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] shrink-0 mb-[0.8em] opacity-50 ${hasBg ? `border ${borderCls} shadow-xl` : ''}`}
+           style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})`, backdropFilter: hasBg && cardBlur > 0 ? `blur(${cardBlur}px)` : undefined, WebkitBackdropFilter: hasBg && cardBlur > 0 ? `blur(${cardBlur}px)` : undefined }}
       >
         <div
           className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex flex-col items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}
@@ -428,6 +429,7 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
       ? t("Ganztägig")
       : format(startDate, timePattern);
     const cardOpacity = config?.cardOpacity !== undefined ? config.cardOpacity : 40;
+    const cardBlur = config?.cardBlur ?? 12;
     const hasBg = cardOpacity > 0;
     const isMinimal = config?.design === 'minimal';
     const eventColor = ev.feedColor || accentColor;
@@ -464,8 +466,8 @@ export default function CalendarWidget({ config, dashboardId, onVisibilityChange
     // Ensure color uses proper parsing if needed, but styling allows raw hex
     return (
       <div key={ev.id}
-           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-all hover:scale-[1.02] shrink-0 mb-[0.8em] ${hasBg ? `backdrop-blur-md border ${borderCls} shadow-xl` : ''}`}
-           style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})`, boxShadow: hasBg ? `0 8px 32px ${accentColorForEvent}15` : 'none', borderLeft: hasBg ? `0.3em solid ${accentColorForEvent}` : 'none' }}
+           className={`flex items-center justify-start gap-[0.8em] w-full rounded-3xl p-[0.6em] transform transition-all hover:scale-[1.02] shrink-0 mb-[0.8em] ${hasBg ? `border ${borderCls} shadow-xl` : ''}`}
+           style={{ backgroundColor: `rgba(${cardRgb},${cardOpacity / 100})`, backdropFilter: hasBg && cardBlur > 0 ? `blur(${cardBlur}px)` : undefined, WebkitBackdropFilter: hasBg && cardBlur > 0 ? `blur(${cardBlur}px)` : undefined, boxShadow: hasBg ? `0 8px 32px ${accentColorForEvent}15` : 'none', borderLeft: hasBg ? `0.3em solid ${accentColorForEvent}` : 'none' }}
       >
         <div
           className={`shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex flex-col items-center justify-center relative overflow-hidden ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''}`}

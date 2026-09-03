@@ -156,16 +156,29 @@ export default function CalendarInspector({
              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
           />
        </div>
-       <div>
-          <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
-             <span>{t("Hintergrund Kacheln (Deckkraft)")}</span>
-             <span className="text-blue-400">{activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}%</span>
-          </label>
-          <input
-             type="range" min="0" max="100" value={activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}
-             onChange={(e) => updateConfig(activeWidget.i, 'cardOpacity', parseInt(e.target.value))}
-             className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
-          />
+       <div className="grid grid-cols-2 gap-3">
+          <div>
+             <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                <span>{t("Deckkraft")}</span>
+                <span className="text-blue-400">{activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}%</span>
+             </label>
+             <input
+                type="range" min="0" max="100" value={activeWidget.config?.cardOpacity !== undefined ? activeWidget.config.cardOpacity : 40}
+                onChange={(e) => updateConfig(activeWidget.i, 'cardOpacity', parseInt(e.target.value))}
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
+             />
+          </div>
+          <div>
+             <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+                <span>{t("Unschärfe")}</span>
+                <span className="text-blue-400">{(activeWidget.config as any)?.cardBlur ?? 12}px</span>
+             </label>
+             <input
+                type="range" min="0" max="40" step="2" value={(activeWidget.config as any)?.cardBlur ?? 12}
+                onChange={(e) => updateConfig(activeWidget.i, 'cardBlur', parseInt(e.target.value))}
+                className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
+             />
+          </div>
        </div>
        {view !== "month" && (
        <div>
