@@ -10,7 +10,7 @@ import { prisma } from "@/lib/companion/prisma";
 // every fresh browser inherits — the strict-EN fallback in LocaleProvider
 // only kicks in when neither localStorage nor a server default exists.
 
-export type DefaultLocale = "de" | "en";
+export type DefaultLocale = "de" | "en" | "nb" | "nn";
 
 async function readExtra(): Promise<any> {
   try {
@@ -30,7 +30,7 @@ async function readExtra(): Promise<any> {
 export async function getDefaultLocale(): Promise<DefaultLocale | null> {
   const extra = await readExtra();
   const stored = extra?.defaultLocale;
-  if (stored === "de" || stored === "en") return stored;
+  if (stored === "de" || stored === "en" || stored === "nb" || stored === "nn") return stored;
   return null;
 }
 
@@ -42,7 +42,7 @@ export async function setDefaultLocale(
 ): Promise<void> {
   const extra = await readExtra();
   const next = { ...extra };
-  if (locale === "de" || locale === "en") {
+  if (locale === "de" || locale === "en" || locale === "nb" || locale === "nn") {
     next.defaultLocale = locale;
   } else {
     delete next.defaultLocale;
