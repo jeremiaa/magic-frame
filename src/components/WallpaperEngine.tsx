@@ -135,6 +135,22 @@ export default function WallpaperEngine({
            console.error("Failed to load Immich playlist:", err?.message || err);
            setIsReady(true);
         });
+    } else if (source === 'icloud') {
+      fetch(`/api/wallpaper/icloud/playlist?dashboardId=${dashboardId}&lang=${locale}&t=${Date.now()}`)
+        .then(async res => {
+           const data = await res.json();
+           if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+           return data;
+        })
+        .then(data => {
+           if (Array.isArray(data) && data.length > 0) setImages(data);
+           else console.warn("iCloud Shared Album returned no images for this view");
+           setIsReady(true);
+        })
+        .catch(err => {
+           console.error("Failed to load iCloud Shared Album:", err?.message || err);
+           setIsReady(true);
+        });
     } else {
       const generated = Array.from({ length: 20 }).map((_, i) => ({
         id: `unsplash-${i}-${Date.now()}`,

@@ -270,8 +270,9 @@ export interface WidgetLayoutItem {
 }
 
 export interface WallpaperConfig {
-  source: string; // 'unsplash', 'url', 'webdav', 'immich'
+  source: string; // 'unsplash', 'url', 'webdav', 'immich', 'icloud'
   query: string; // keywords or image url
+  icloudUrl?: string;
   intervalSec: number;
   showMetadata: boolean;
   webdavUrl?: string;

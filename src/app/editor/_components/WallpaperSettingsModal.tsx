@@ -120,6 +120,7 @@ export default function WallpaperSettingsModal({
                    <option value="url">{t("Feste Bild-URL")}</option>
                    <option value="webdav">{t("Lokaler NAS Ordner (WebDAV)")}</option>
                    <option value="immich">{t("Immich API (Album)")}</option>
+                   <option value="icloud">{t("iCloud Shared Album")}</option>
                 </select>
              </div>
 
@@ -395,6 +396,21 @@ export default function WallpaperSettingsModal({
                      </div>
                    ))}
                 </div>
+             ) : wallpaper.source === 'icloud' ? (
+                <div className="space-y-3">
+                   <div>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Public iCloud Shared Album link")}</label>
+                      <input
+                         type="url" value={wallpaper.icloudUrl || ''}
+                         onChange={(e) => setWallpaper({ ...wallpaper, icloudUrl: e.target.value })}
+                         placeholder="https://www.icloud.com/sharedalbum/#..."
+                         className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] rounded-xl p-4 outline-none focus:border-blue-500 transition-colors"
+                      />
+                   </div>
+                   <p className="text-[11px] text-[var(--mf-fg)]/50 leading-relaxed">
+                      {t("Use the public link from the album’s Share menu. Anyone with the link can view its photos. iCloud links are handled by Apple’s public shared-album service.")}
+                   </p>
+                </div>
              ) : wallpaper.source === 'webdav' ? (
                 <div className="space-y-4">
                    <div>
@@ -511,7 +527,7 @@ export default function WallpaperSettingsModal({
                 </div>
              )}
 
-             {(wallpaper.source === 'bundled' || wallpaper.source === 'unsplash' || wallpaper.source === 'webdav' || wallpaper.source === 'immich') && (
+             {(wallpaper.source === 'bundled' || wallpaper.source === 'unsplash' || wallpaper.source === 'webdav' || wallpaper.source === 'immich' || wallpaper.source === 'icloud') && (
                 <div>
                    <label className="text-sm font-medium text-[var(--mf-fg)]/80 mb-2 flex justify-between">
                       <span>{t("Bildwechsel Intervall")}</span>

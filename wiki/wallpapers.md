@@ -34,6 +34,7 @@ Pick the source at the top of the **Quelle** tab.
 | `url` | Feste Bild-URL | One fixed picture from a web address. It never changes. |
 | `webdav` | Lokaler NAS Ordner (WebDAV) | A folder on your own NAS, over WebDAV. |
 | `immich` | Immich API (Album) | Your own [Immich](immich.md) photo library — an album, your favourites, your memories, or everyone tagged as a particular person. |
+| `icloud` | iCloud Shared Album | Photos from a public iCloud Shared Album link. The album owner must enable **Public Website** in the album's Share settings. |
 | `unsplash` | Unsplash (Dynamisch via Suchbegriff) | Despite the name, this does not use Unsplash. It asks an image-generation service on the internet (`image.pollinations.ai`) for 20 pictures built from your search words. It is the one source that needs the internet and sends your search words off the machine. |
 
 ### Immich
@@ -69,6 +70,21 @@ server and a tablet does not need to reach Immich at all. The image served is
 Immich's own **preview** rendition, not the original file — that is what keeps a
 4K TV loading pictures quickly.
 
+### An iCloud Shared Album
+
+1. In Apple Photos, open the shared album's sharing settings and enable
+   **Public Website**. This creates a public link that anyone who has it can
+   view; Magic Frame does not sign in to an Apple Account.
+2. Copy the shared album link and choose **iCloud Shared Album** as the source.
+3. Paste the full `https://www.icloud.com/sharedalbum/...` link, including its
+   fragment after `#`, and save the view.
+
+Magic Frame reads the album's public photo stream through Apple's shared-album
+service and proxies photos to the displays. Up to 1500 photos are shuffled for
+each playlist. Shared Album links use Apple's public web service, which Apple
+can change; private albums and revoked links cannot be loaded. Photos remain
+hosted by Apple, and normal Shared Album limits and image quality apply.
+
 ### A WebDAV folder
 
 1. Choose **Lokaler NAS Ordner (WebDAV)** as the source.
@@ -99,8 +115,8 @@ As with Immich, the pictures are passed through Magic Frame
 
 **Bildwechsel Intervall** (Image change interval) sets how long each picture
 stays up: from 10 seconds to 24 hours, in round steps — seconds at the short
-end, hours at the long end. It appears for the bundled, WebDAV, Immich and
-generated sources, and not for a solid colour or a fixed URL, where there is
+end, hours at the long end. It appears for the bundled, WebDAV, Immich, iCloud
+Shared Album and generated sources, and not for a solid colour or a fixed URL, where there is
 nothing to change to.
 
 To change the picture on a schedule of your own — every morning at seven, say
