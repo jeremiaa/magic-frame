@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   listTasks,
+  listSections,
   createTask,
   closeTask,
   reopenTask,
@@ -13,14 +14,26 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ projectId: string }> };
 
-/** GET → offene Tasks im Projekt. */
+/**
+ * GET → offene Tasks im Projekt, plus die Abschnitte (Sections) des Projekts.
+ * Sections werden immer mitgeliefert (günstiger, paginierter Zusatz-Call,
+ * gleiches Muster wie /projects) — ob ein Widget sie zur Gruppierung nutzt,
+ * entscheidet dessen eigene Einstellung. Welche Tasks geliefert werden,
+ * ändert sich dadurch nicht.
+ */
 export async function GET(_: NextRequest, ctx: Ctx) {
   try {
     const { projectId } = await ctx.params;
     if (!/^[0-9A-Za-z]+$/.test(projectId)) {
       return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
     }
-    const tasks = await listTasks(projectId);
+    // Sections are additive display data, never allowed to block tasks:
+    // if that call fails for any reason, fall back to an empty list instead
+    // of failing the whole response.
+    const [tasks, sections] = await Promise.all([
+      listTasks(projectId),
+      listSections(projectId).catch(() => []),
+    ]);
     return NextResponse.json({
       projectId,
       tasks: tasks.map((t) => ({
@@ -30,7 +43,11 @@ export async function GET(_: NextRequest, ctx: Ctx) {
         due: t.due ?? null,
         labels: t.labels ?? [],
         isCompleted: t.checked,
+        sectionId: t.section_id ?? null,
       })),
+      sections: sections
+        .map((s) => ({ id: s.id, name: s.name, order: s.order ?? 0 }))
+        .sort((a, b) => a.order - b.order),
     });
   } catch (err: any) {
     if (err instanceof TodoistError) {

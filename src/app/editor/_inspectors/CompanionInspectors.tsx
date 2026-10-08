@@ -125,6 +125,7 @@ export function TodosInspector({ widget, updateConfig }: Props) {
   const assignee = (widget.config as any)?.assignee ?? "";
   const hideAdd = (widget.config as any)?.hideAddForm ?? false;
   const listSource = (widget.config as any)?.listSource ?? "local";
+  const groupBySections = (widget.config as any)?.todoistGroupBySections === true;
   return (
     <div className="space-y-4">
       <HASourceSelector widget={widget} updateConfig={updateConfig} />
@@ -168,6 +169,18 @@ export function TodosInspector({ widget, updateConfig }: Props) {
           />
           <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
             {t("Nur Todos mit diesem Assignee werden angezeigt; neue Todos werden dieser Person zugewiesen.")}
+          </p>
+        </div>
+      )}
+      {listSource === "todoist" && (
+        <div>
+          <CheckboxRow
+            checked={groupBySections}
+            onChange={(v) => updateConfig(widget.i, "todoistGroupBySections", v)}
+            label="Nach Abschnitten gruppieren"
+          />
+          <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
+            {t("Zeigt die Abschnitte des Todoist-Projekts als Überschriften. Welche Aufgaben geladen werden, ändert sich dadurch nicht.")}
           </p>
         </div>
       )}

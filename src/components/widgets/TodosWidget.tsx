@@ -17,11 +17,21 @@ type Todo = {
   priority: "low" | "normal" | "high";
   createdAt: string;
   completedAt: string | null;
+  // Todoist only — which section of the project the task sits in. Always
+  // null for the other list sources (local, Home Assistant).
+  sectionId: string | null;
+};
+
+type TodoistSection = {
+  id: string;
+  name: string;
+  order: number;
 };
 
 export default function TodosWidget({ config }: { config?: any }) {
   const { t: tr } = useLocale();
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [sections, setSections] = useState<TodoistSection[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const assigneeFilter: string | undefined = config?.assignee || undefined;
   const socketRef = useRef<ReturnType<typeof connectLiveSync> | null>(null);
@@ -31,6 +41,7 @@ export default function TodosWidget({ config }: { config?: any }) {
   const useTodoist = config?.listSource === "todoist" && !!config?.todoistProjectId;
   const todoistProject: string = config?.todoistProjectId ?? "";
   const isRemote = useHa || useTodoist;
+  const groupBySections = useTodoist && config?.todoistGroupBySections === true;
 
   async function reload() {
     if (useHa) {
@@ -47,6 +58,7 @@ export default function TodosWidget({ config }: { config?: any }) {
           priority: "normal",
           createdAt: "",
           completedAt: it.status === "completed" ? "now" : null,
+          sectionId: null,
         }));
         setTodos(mapped);
       } catch {}
@@ -69,8 +81,10 @@ export default function TodosWidget({ config }: { config?: any }) {
           priority: mapPrio(task.priority ?? 1),
           createdAt: "",
           completedAt: task.isCompleted ? "now" : null,
+          sectionId: task.sectionId ?? null,
         }));
         setTodos(mapped);
+        setSections(Array.isArray(d.sections) ? d.sections : []);
       } catch {}
       return;
     }
@@ -80,7 +94,8 @@ export default function TodosWidget({ config }: { config?: any }) {
     try {
       const r = await fetch(`/api/todos?${qs.toString()}`, { cache: "no-store" });
       const d = await r.json();
-      setTodos(d.todos ?? []);
+      const mapped: Todo[] = (d.todos ?? []).map((t: any) => ({ ...t, sectionId: null }));
+      setTodos(mapped);
     } catch {}
   }
 
@@ -174,6 +189,23 @@ export default function TodosWidget({ config }: { config?: any }) {
   const open = todos.filter((t) => !t.completedAt);
   const done = todos.filter((t) => t.completedAt);
 
+  // Section groups for the open list, in Todoist's own order. The
+  // unsectioned bucket (Todoist shows these above any named section) has no
+  // header of its own; named sections with no open tasks are skipped rather
+  // than shown empty. Falls back to one flat group — same as ungrouped — if
+  // sections never loaded (fetch failed, or the project doesn't use them).
+  const sectionGroups: { id: string | null; name: string | null; items: Todo[] }[] =
+    groupBySections && sections.length > 0
+      ? [
+          { id: null, name: null, items: open.filter((t) => !t.sectionId) },
+          ...sections.map((s) => ({
+            id: s.id,
+            name: s.name,
+            items: open.filter((t) => t.sectionId === s.id),
+          })),
+        ].filter((g) => g.items.length > 0)
+      : [{ id: null, name: null, items: open }];
+
   return (
     <div className="w-full h-full flex flex-col gap-[0.5em] overflow-hidden p-1">
       {!hideHeader && (
@@ -187,8 +219,17 @@ export default function TodosWidget({ config }: { config?: any }) {
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col gap-[0.3em] p-[0.15em]"
            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}>
-        {open.map((t) => (
-          <TodoRow key={t.id} todo={t} onToggle={() => toggle(t.id)} showAssignee={!assigneeFilter} />
+        {sectionGroups.map((group) => (
+          <div key={group.id ?? "__none__"} className="flex flex-col gap-[0.3em]">
+            {group.name && (
+              <div className="mt-[0.3em] first:mt-0 text-[0.6em] opacity-40 uppercase tracking-wider">
+                {group.name}
+              </div>
+            )}
+            {group.items.map((t) => (
+              <TodoRow key={t.id} todo={t} onToggle={() => toggle(t.id)} showAssignee={!assigneeFilter} />
+            ))}
+          </div>
         ))}
         {done.length > 0 && (
           <div className="mt-[0.4em] pt-[0.3em] border-t border-white/10 text-[0.6em] opacity-40 uppercase tracking-wider">

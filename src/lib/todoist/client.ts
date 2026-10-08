@@ -29,6 +29,7 @@ export type TodoistDue = {
 export type TodoistTask = {
   id: string;
   project_id: string;
+  section_id?: string | null;
   content: string;
   description?: string;
   checked: boolean; // v1: was `is_completed` in REST v2
@@ -37,6 +38,13 @@ export type TodoistTask = {
   labels?: string[];
   child_order?: number;
   added_at?: string;
+};
+
+export type TodoistSection = {
+  id: string;
+  project_id: string;
+  name: string;
+  order?: number;
 };
 
 class TodoistError extends Error {
@@ -130,6 +138,17 @@ export async function listProjects(): Promise<TodoistProject[]> {
 export async function listTasks(projectId: string): Promise<TodoistTask[]> {
   return collectPaginated<TodoistTask>(
     `/tasks?project_id=${encodeURIComponent(projectId)}`,
+  );
+}
+
+/**
+ * Sections of a project, in Todoist's own display order. Used to group tasks
+ * in widgets that opt into it (see TodosWidget) — purely additive, does not
+ * change which tasks are fetched.
+ */
+export async function listSections(projectId: string): Promise<TodoistSection[]> {
+  return collectPaginated<TodoistSection>(
+    `/sections?project_id=${encodeURIComponent(projectId)}`,
   );
 }
 
