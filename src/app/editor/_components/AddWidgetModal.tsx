@@ -78,6 +78,10 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                 <div className="text-3xl mb-2 text-sky-400">🔤</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Text")}</div>
              </button>
+             <button onClick={() => addWidget("SchoolRotationWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-blue-500/10 border border-[var(--mf-bdr)]/10 hover:border-blue-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-blue-400">🏫</div>
+                <div className="font-bold text-[var(--mf-fg)]">{t("Schulrotation")}</div>
+             </button>
              {/* Die vier Familien-Karten fehlten hier komplett. Der Editor am
                  Rechner hat sie in seiner Palette, dieses Fenster ist der
                  Wähler des Handy-Editors — auf dem Handy waren Timer,

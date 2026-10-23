@@ -1,7 +1,7 @@
 # Widgets
 
 A **widget** is one tile on a view — the clock, the weather, a photo, a light
-switch. There are 19 kinds. This page is the catalogue, and then the settings
+switch. There are 20 kinds. This page is the catalogue, and then the settings
 that every one of them has, whatever kind it is.
 
 A **view** is one screenful shown at one address; you build it in the editor,
@@ -30,18 +30,19 @@ described in [The editor](the-editor.md).
 | Shopping list (`Einkaufsliste`) | `ShoppingListWidget.tsx` | A shared shopping list you can tick off on the screen | [Family widgets](widgets-family.md) |
 | To-dos (`Todos`) | `TodosWidget.tsx` | Tasks, optionally filtered to one person | [Family widgets](widgets-family.md) |
 | Text | `TextWidget.tsx` | A heading or caption that labels the widgets around it | [Labelling a view](#labelling-a-view), below |
+| School Rotation (`Schulrotation`) | `SchoolRotationWidget.tsx` | A rotating school day schedule per child, with holiday support and weekly reminders | [Family widgets](widgets-family.md) |
 
-Anything beyond these 19 is a **custom module** — a widget somebody else wrote,
+Anything beyond these 20 is a **custom module** — a widget somebody else wrote,
 installed under `Editor → Modules`. Its type id starts with `custom:` instead
 of ending in `.tsx`. See [Custom modules](custom-modules.md).
 
 ## Adding one
 
-![The 'Add widget' palette down the left of the editor, each of the 19 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
+![The 'Add widget' palette down the left of the editor, each of the 20 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
 
 1. Open `/editor`, sign in, and click the view you want to change.
 2. Down the left of the canvas is the **Add widget** (`Widget hinzufügen`)
-   palette, listing all 19 with their icons, and any custom modules under a
+   palette, listing all 20 with their icons, and any custom modules under a
    **Custom** heading below them.
 3. Click a row. The widget lands on the grid and its inspector opens.
 4. Drag it where you want it and drag its bottom-right corner to resize.
@@ -67,7 +68,7 @@ get renamed once released: renaming one would break every layout that uses it.
 
 Select a widget in the editor and the inspector opens with three tabs:
 **Layout**, **Text & colour** (`Text & Farbe`) and **Content** (`Inhalt`). The
-first two are the same for all 19 widgets; the Content tab is what the
+first two are the same for all 20 widgets; the Content tab is what the
 individual widget pages document.
 
 ### Layout

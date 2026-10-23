@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity, Leaf, Type as TypeIcon } from "lucide-react";
+import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity, Leaf, Type as TypeIcon, GraduationCap } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { viewUrl } from "@/lib/base-path";
 
@@ -93,6 +93,7 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "QrWidget.tsx":              { color: "rgba(6,182,212,0.55)",   Icon: QrCode },         // cyan
   "StatusWidget.tsx":          { color: "rgba(14,165,233,0.55)",  Icon: Activity },       // sky
   "TextWidget.tsx":            { color: "rgba(14,165,233,0.55)",  Icon: TypeIcon },       // sky
+  "SchoolRotationWidget.tsx":  { color: "rgba(59,130,246,0.55)",  Icon: GraduationCap }, // blue
 };
 
 // Konstanten aus dem Editor-Canvas: 24 Spalten; für Höhe nehmen wir max-y + h

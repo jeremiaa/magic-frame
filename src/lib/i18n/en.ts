@@ -2190,4 +2190,16 @@ export const EN: Record<string, string> = {
   "Tippen außerhalb der Buttons schließt das Widget": "Tap outside the buttons to close",
   "Verzögerung vor dem Ausblenden": "Delay before hiding",
   "Sofort": "Immediately",
+
+  // School Rotation Widget
+  "Schulrotation": "School Rotation",
+  "Schuljahr": "School Year",
+  "Erster Schultag": "First Day of School",
+  "Letzter Schultag": "Last Day of School",
+  "Rotationszyklus": "Rotation Cycle",
+  "Stundenpläne (JSON)": "Schedules (JSON)",
+  "Schulfreie Tage": "No-School Dates",
+  "Wöchentliche Erinnerungen (JSON)": "Weekly Reminders (JSON)",
+  "Kommende Tage anzeigen": "Show Upcoming Days",
+  "Anzahl kommender Tage": "Upcoming Days to Show",
 };

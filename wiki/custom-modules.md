@@ -1,7 +1,7 @@
 # Custom modules
 
-Magic Frame ships with 19 kinds of widget, listed in [Widgets](widgets.md). A
-**custom module** is a nineteenth kind that somebody else wrote: a small
+Magic Frame ships with 20 kinds of widget, listed in [Widgets](widgets.md). A
+**custom module** is a kind that somebody else wrote: a small
 JavaScript file you upload, which then appears in the editor alongside the
 built-in widgets and draws whatever it likes on your screens.
 
@@ -52,7 +52,7 @@ checks below.
 
 1. Go to **Views** and open the view you want it on.
 2. In the **Add widget** palette down the left, scroll to the bottom. Uploaded
-   modules sit under a **Custom** heading below the 19 built-in ones, each with
+   modules sit under a **Custom** heading below the 20 built-in ones, each with
    its emoji.
 3. Click it. The widget lands on the grid and its inspector opens.
 4. The **Content** (`Inhalt`) tab shows the settings the module's author defined

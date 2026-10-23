@@ -132,14 +132,14 @@ Both of these disappear in **Randlos** (Edge-to-edge) mode; see
 
 ## The widget catalogue
 
-The left column lists every widget you can add — 19 types, described in
+The left column lists every widget you can add — 20 types, described in
 [Widgets](widgets.md):
 
 Uhr (Clock), Wetter (Weather), Kalender (Calendar), HA Entity, Buttons,
 Benachrichtigungen (Notifications), Timer, Nachrichten (Messages),
 Einkaufsliste (Shopping list), Todos, Bild (Image), Sensor, Umwelt
-(Environment), Kamera (Camera), Media Player, RSS Feed, QR-Code, Status and
-Text.
+(Environment), Kamera (Camera), Media Player, RSS Feed, QR-Code, Status,
+Text and Schulrotation (School Rotation).
 
 Click one and it is added straight away: 8 columns wide, 4 rows high, at the
 left edge on row 5, with its inspector already open. There is no
@@ -258,7 +258,7 @@ Two things it does not have:
 - **A grid.** You cannot drag a widget to a position here. Set the position
   numerically in the inspector's Layout tab, or do the arranging on a computer.
 - **Custom modules.** Its **Neues Modul wählen** (Choose new module) dialog
-  offers all 19 built-in types, but not the modules you installed yourself. Add
+  offers all 20 built-in types, but not the modules you installed yourself. Add
   those from the desktop editor.
 
 ## What the editor does not do

@@ -554,7 +554,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "481b1fef3d29"
+        "src/app/editor/(app)/page.tsx": "a52bfab3881f"
       }
     },
     {
@@ -576,7 +576,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "481b1fef3d29"
+        "src/app/editor/(app)/page.tsx": "a52bfab3881f"
       }
     },
     {
@@ -598,13 +598,13 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
+        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
       }
     },
     {
       "id": "widgets-add-palette",
       "page": "widgets.md",
-      "caption": "The 'Add widget' palette down the left of the editor, each of the 19 widgets a row with its icon and a plus.",
+      "caption": "The 'Add widget' palette down the left of the editor, each of the 20 widgets a row with its icon and a plus.",
       "shows": [
         "src/app/editor/_components/AddWidgetModal.tsx",
         "src/app/editor/(app)/views/[id]/page.tsx"
@@ -621,8 +621,8 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/_components/AddWidgetModal.tsx": "1f09b0ab6467",
-        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
+        "src/app/editor/_components/AddWidgetModal.tsx": "a33438054a4a",
+        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
       }
     },
     {
@@ -1158,7 +1158,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
+        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
       }
     },
     {
@@ -1183,7 +1183,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "e8d40f4a8206"
+        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
       }
     },
     {

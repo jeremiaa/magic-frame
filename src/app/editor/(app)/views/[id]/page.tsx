@@ -40,6 +40,7 @@ import {
   Activity,
   Leaf,
   Type as TypeIcon,
+  GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -85,6 +86,7 @@ const WIDGET_CATALOG: {
   { type: "QrWidget.tsx", label: "QR-Code", icon: <QrCode size={16} /> },
   { type: "StatusWidget.tsx", label: "Status", icon: <Activity size={16} /> },
   { type: "TextWidget.tsx", label: "Text", icon: <TypeIcon size={16} /> },
+  { type: "SchoolRotationWidget.tsx", label: "Schulrotation", icon: <GraduationCap size={16} /> },
 ];
 
 
@@ -393,6 +395,17 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         <div className="w-full h-full flex flex-col justify-center gap-[8%] p-[14%]">
           <div className="rounded-full" style={{ height: "22%", width: "78%", backgroundColor: dim, minHeight: 3 }} />
           <div className="rounded-full" style={{ height: "12%", width: "46%", backgroundColor: faint, minHeight: 2 }} />
+        </div>
+      );
+
+    case "SchoolRotationWidget.tsx":
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-[8%] p-[10%]">
+          <div className="rounded-lg" style={{ height: "20%", width: "40%", backgroundColor: dim, minHeight: 4 }} />
+          <div className="flex gap-[6%] w-full justify-center">
+            <div className="rounded-full" style={{ height: "12%", width: "36%", backgroundColor: dimmer, minHeight: 2 }} />
+            <div className="rounded-full" style={{ height: "12%", width: "36%", backgroundColor: faint, minHeight: 2 }} />
+          </div>
         </div>
       );
 

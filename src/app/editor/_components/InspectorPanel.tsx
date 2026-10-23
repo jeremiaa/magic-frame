@@ -30,6 +30,7 @@ import RssInspector from "../_inspectors/RssInspector";
 import QrInspector from "../_inspectors/QrInspector";
 import StatusInspector from "../_inspectors/StatusInspector";
 import TextInspector from "../_inspectors/TextInspector";
+import SchoolRotationInspector from "../_inspectors/SchoolRotationInspector";
 import CustomModuleInspector from "../_inspectors/CustomModuleInspector";
 import HAEntityInput from "./HAEntityInput";
 
@@ -673,6 +674,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "TextWidget.tsx" && (
         <TextInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "SchoolRotationWidget.tsx" && (
+        <SchoolRotationInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type.startsWith("custom:") && (
         <CustomModuleInspector widget={activeWidget} updateConfig={updateConfig} />

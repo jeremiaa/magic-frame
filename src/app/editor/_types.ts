@@ -356,6 +356,7 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "QrWidget.tsx": "QR-Code",
   "StatusWidget.tsx": "Status",
   "TextWidget.tsx": "Text",
+  "SchoolRotationWidget.tsx": "Schulrotation",
 };
 
 // Every German default string we have ever auto-assigned (the current types

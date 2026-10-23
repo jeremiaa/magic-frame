@@ -39,6 +39,7 @@ import {
   Rss,
   QrCode,
   Activity,
+  GraduationCap,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
@@ -73,6 +74,7 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "RssWidget.tsx":            { color: "rgba(245,158,11,0.55)",  Icon: Rss },
   "QrWidget.tsx":             { color: "rgba(6,182,212,0.55)",   Icon: QrCode },
   "StatusWidget.tsx":         { color: "rgba(14,165,233,0.55)",  Icon: Activity },
+  "SchoolRotationWidget.tsx": { color: "rgba(59,130,246,0.55)",  Icon: GraduationCap },
 };
 const GRID_COLS = 24;
 

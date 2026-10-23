@@ -14,7 +14,7 @@ settings it talks about in full, so a single section is a usable answer.
 # Widgets
 
 A **widget** is one tile on a view — the clock, the weather, a photo, a light
-switch. There are 19 kinds. This page is the catalogue, and then the settings
+switch. There are 20 kinds. This page is the catalogue, and then the settings
 that every one of them has, whatever kind it is.
 
 A **view** is one screenful shown at one address; you build it in the editor,
@@ -43,18 +43,19 @@ described in [The editor](the-editor.md).
 | Shopping list (`Einkaufsliste`) | `ShoppingListWidget.tsx` | A shared shopping list you can tick off on the screen | [Family widgets](widgets-family.md) |
 | To-dos (`Todos`) | `TodosWidget.tsx` | Tasks, optionally filtered to one person | [Family widgets](widgets-family.md) |
 | Text | `TextWidget.tsx` | A heading or caption that labels the widgets around it | [Labelling a view](#labelling-a-view), below |
+| School Rotation (`Schulrotation`) | `SchoolRotationWidget.tsx` | A rotating school day schedule per child, with holiday support and weekly reminders | [Family widgets](widgets-family.md) |
 
-Anything beyond these 19 is a **custom module** — a widget somebody else wrote,
+Anything beyond these 20 is a **custom module** — a widget somebody else wrote,
 installed under `Editor → Modules`. Its type id starts with `custom:` instead
 of ending in `.tsx`. See [Custom modules](custom-modules.md).
 
 ## Adding one
 
-![The 'Add widget' palette down the left of the editor, each of the 19 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
+![The 'Add widget' palette down the left of the editor, each of the 20 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
 
 1. Open `/editor`, sign in, and click the view you want to change.
 2. Down the left of the canvas is the **Add widget** (`Widget hinzufügen`)
-   palette, listing all 19 with their icons, and any custom modules under a
+   palette, listing all 20 with their icons, and any custom modules under a
    **Custom** heading below them.
 3. Click a row. The widget lands on the grid and its inspector opens.
 4. Drag it where you want it and drag its bottom-right corner to resize.
@@ -80,7 +81,7 @@ get renamed once released: renaming one would break every layout that uses it.
 
 Select a widget in the editor and the inspector opens with three tabs:
 **Layout**, **Text & colour** (`Text & Farbe`) and **Content** (`Inhalt`). The
-first two are the same for all 19 widgets; the Content tab is what the
+first two are the same for all 20 widgets; the Content tab is what the
 individual widget pages document.
 
 ### Layout
@@ -495,7 +496,7 @@ another.
 ## A widget
 
 A **widget** is one tile on a view: the clock, the weather, the calendar, a
-photo, a light switch. There are 19 kinds, listed in [Widgets](widgets.md).
+photo, a light switch. There are 20 kinds, listed in [Widgets](widgets.md).
 
 Two things about widgets matter everywhere else in this wiki:
 
@@ -1379,14 +1380,14 @@ Both of these disappear in **Randlos** (Edge-to-edge) mode; see
 
 ## The widget catalogue
 
-The left column lists every widget you can add — 19 types, described in
+The left column lists every widget you can add — 20 types, described in
 [Widgets](widgets.md):
 
 Uhr (Clock), Wetter (Weather), Kalender (Calendar), HA Entity, Buttons,
 Benachrichtigungen (Notifications), Timer, Nachrichten (Messages),
 Einkaufsliste (Shopping list), Todos, Bild (Image), Sensor, Umwelt
-(Environment), Kamera (Camera), Media Player, RSS Feed, QR-Code, Status and
-Text.
+(Environment), Kamera (Camera), Media Player, RSS Feed, QR-Code, Status,
+Text and Schulrotation (School Rotation).
 
 Click one and it is added straight away: 8 columns wide, 4 rows high, at the
 left edge on row 5, with its inspector already open. There is no
@@ -1505,7 +1506,7 @@ Two things it does not have:
 - **A grid.** You cannot drag a widget to a position here. Set the position
   numerically in the inspector's Layout tab, or do the arranging on a computer.
 - **Custom modules.** Its **Neues Modul wählen** (Choose new module) dialog
-  offers all 19 built-in types, but not the modules you installed yourself. Add
+  offers all 20 built-in types, but not the modules you installed yourself. Add
   those from the desktop editor.
 
 ## What the editor does not do
@@ -8068,8 +8069,8 @@ changes nothing. The token belongs in the query; the `toggle` does not.
 
 # Custom modules
 
-Magic Frame ships with 19 kinds of widget, listed in [Widgets](widgets.md). A
-**custom module** is a nineteenth kind that somebody else wrote: a small
+Magic Frame ships with 20 kinds of widget, listed in [Widgets](widgets.md). A
+**custom module** is a kind that somebody else wrote: a small
 JavaScript file you upload, which then appears in the editor alongside the
 built-in widgets and draws whatever it likes on your screens.
 
@@ -8120,7 +8121,7 @@ checks below.
 
 1. Go to **Views** and open the view you want it on.
 2. In the **Add widget** palette down the left, scroll to the bottom. Uploaded
-   modules sit under a **Custom** heading below the 19 built-in ones, each with
+   modules sit under a **Custom** heading below the 20 built-in ones, each with
    its emoji.
 3. Click it. The widget lands on the grid and its inspector opens.
 4. The **Content** (`Inhalt`) tab shows the settings the module's author defined

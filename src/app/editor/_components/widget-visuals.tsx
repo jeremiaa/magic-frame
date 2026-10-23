@@ -19,6 +19,7 @@ import {
   Activity,
   Leaf,
   Type as TypeIcon,
+  GraduationCap,
 } from "lucide-react";
 
 // Einheitliche Optik pro Widget-Typ: Icon + Akzentfarbe. Wird von der
@@ -45,6 +46,7 @@ export const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: st
   "StatusWidget.tsx":          { hex: "#0ea5e9", glow: "rgba(14,165,233,0.25)",  tint: "rgba(14,165,233,0.12)"  }, // sky
   "EnvironmentWidget.tsx":     { hex: "#84cc16", glow: "rgba(132,204,22,0.25)",  tint: "rgba(132,204,22,0.12)"  }, // lime
   "TextWidget.tsx":            { hex: "#0ea5e9", glow: "rgba(14,165,233,0.25)",  tint: "rgba(14,165,233,0.12)"  }, // sky
+  "SchoolRotationWidget.tsx":  { hex: "#3b82f6", glow: "rgba(59,130,246,0.25)",  tint: "rgba(59,130,246,0.12)"  }, // blue
 };
 
 export const DEFAULT_ACCENT = { hex: "#64748b", glow: "rgba(100,116,139,0.2)", tint: "rgba(100,116,139,0.1)" };
@@ -94,6 +96,8 @@ export function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":
       return <ClipboardList size={size} />;
+    case "SchoolRotationWidget.tsx":
+      return <GraduationCap size={size} />;
     default:
       return null;
   }

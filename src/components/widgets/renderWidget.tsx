@@ -20,6 +20,7 @@ import QrWidget from "./QrWidget";
 import TextWidget from "./TextWidget";
 import StatusWidget from "./StatusWidget";
 import EnvironmentWidget from "./EnvironmentWidget";
+import SchoolRotationWidget from "./SchoolRotationWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
 
 // Die EINE Render-Map "type → Widget-Komponente". Genutzt vom Live-View
@@ -74,6 +75,7 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
   if (type === "WeatherWidget.tsx") return <WeatherWidget config={config} location={config?.location} lat={config?.lat} lon={config?.lon} />;
   if (type === "HomeAssistantWidget.tsx") return <HomeAssistantWidget config={config} onVisibilityChange={onVisibilityChange} />;
   if (type === "HANotificationWidget.tsx") return <HANotificationWidget config={config} dashboardId={dashboardId} onVisibilityChange={onVisibilityChange} />;
+  if (type === "SchoolRotationWidget.tsx") return <SchoolRotationWidget config={config} />;
   // Custom-Module: type beginnt mit "custom:". Werden zur Laufzeit via
   // <script>-Tag-Injection geladen und rendern via window.MagicFrame-Bridge.
   if (typeof type === "string" && type.startsWith("custom:")) {
