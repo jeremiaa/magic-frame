@@ -12,7 +12,7 @@ export const manifest = {
   label: "School Rotation",
   description: "Rotating school schedule with per-child activities and holiday support.",
   iconEmoji: "🏫",
-  version: "1.0.0",
+  version: "1.1.0",
   author: "sth2258",
   fields: [
     {
@@ -50,6 +50,13 @@ export const manifest = {
       type: "textarea",
       default: "",
       help: "One per line: YYYY-MM-DD followed by optional reason. Lines starting with # are comments. These dates pause the rotation — add holidays, snow days, etc.",
+    },
+    {
+      key: "reminders",
+      label: "Weekly Reminders (JSON)",
+      type: "textarea",
+      default: "[]",
+      help: 'JSON array of reminders. Each has: day (Monday-Friday), text, and optional icon and kid fields. Example: [{"day": "Wednesday", "text": "Library books due", "icon": "📚"}]',
     },
     {
       key: "showUpcoming",
@@ -179,6 +186,26 @@ function actIcon(activity) {
   return ACTIVITY_ICONS[activity.toLowerCase()] || "▸";
 }
 
+// -- Reminders --
+
+const DAY_NAMES_LOWER = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+function parseReminders(text) {
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed.filter((r) => r.day && r.text) : [];
+  } catch {
+    return [];
+  }
+}
+
+function getRemindersForDay(reminders, date, isSchool) {
+  if (!isSchool) return [];
+  const dayName = DAY_NAMES_LOWER[date.getDay()];
+  return reminders.filter((r) => r.day.toLowerCase() === dayName);
+}
+
 const KID_COLORS = [
   "#4f8ef7", "#f76fa1", "#50c878", "#f7b84f",
   "#a87ff7", "#4fd1c5", "#f75f5f", "#7fb8f7",
@@ -223,6 +250,7 @@ export default function render(ctx) {
     }
   }, [c.schedules]);
 
+  const reminders = useMemo(() => parseReminders(c.reminders), [c.reminders]);
   const excl = useMemo(() => parseExclusions(c.noSchoolDates), [c.noSchoolDates]);
   const today = useMemo(() => parseDate(dateKey), [dateKey]);
   const info = useMemo(
@@ -294,6 +322,37 @@ export default function render(ctx) {
       h("div", { className: "flex justify-center flex-wrap", style: { gap: "0.3em", fontSize: "0.85em" } },
         ...renderKidLine(info.todayRotation, true),
       ),
+
+    // Weekly reminders
+    (() => {
+      const active = getRemindersForDay(reminders, today, isSchool);
+      if (active.length === 0) return null;
+      return h("div", { className: "flex flex-col", style: { gap: "0.15em" } },
+        ...active.map((r, ri) => {
+          const kidColor = r.kid && kids
+            ? (() => {
+                const idx = kids.findIndex((k) => k.name.toLowerCase() === r.kid.toLowerCase());
+                return idx >= 0 ? KID_COLORS[idx % KID_COLORS.length] : "#fbbf24";
+              })()
+            : null;
+          return h("div", {
+            key: ri,
+            className: "flex items-center",
+            style: {
+              gap: "0.35em", background: "rgba(251, 191, 36, 0.15)",
+              border: "1px solid rgba(251, 191, 36, 0.3)", borderRadius: "0.3em",
+              padding: "0.2em 0.4em", fontSize: "0.8em",
+            },
+          },
+            h("span", { style: { fontSize: "0.95em", flexShrink: 0 } }, r.icon || "🔔"),
+            h("span", { style: { fontWeight: 500, color: "#fbbf24" } }, r.text),
+            r.kid && h("span", {
+              style: { fontWeight: 600, color: kidColor || "#fbbf24", marginLeft: "auto", fontSize: "0.9em", flexShrink: 0 },
+            }, r.kid),
+          );
+        }),
+      );
+    })(),
 
     // Tomorrow / next school day
     info.upcoming.length > 0 && kids.length > 0 &&
