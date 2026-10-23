@@ -97,6 +97,8 @@ export const NB: Record<string, string> = {
   "schwach": "svak",
   "Auf diesem Gerät abmelden": "Logg ut på denne enheten",
   "Sprache": "Språk",
+  "Portugiesisch (Brasilien)": "Portugisisk (Brasil)",
+  "Portugiesisch (ter., 27 de mai.)": "Brasiliansk portugisisk (ter., 27 de mai.)",
   "Sprache der Editor-Oberfläche. Wird lokal gespeichert.":
     "Språk for redigeringsgrensesnittet. Lagres lokalt.",
   "Sprache der Oberfläche. Pro Browser merkbar + als Default für alle Displays gespeichert.":
@@ -392,8 +394,11 @@ export const NB: Record<string, string> = {
   "Wird am Server gespeichert. Views ohne eigene Immich-Daten nutzen diese Verbindung.": "Lagres på serveren. Visninger uten egne Immich-data bruker denne tilkoblingen.",
   "Globale Verbindung konfiguriert.": "Global tilkobling konfigurert.",
   "Optional — nur nötig, wenn Views keine eigenen Daten haben.": "Valgfritt — bare nødvendig hvis visninger ikke har egne data.",
-  "Wird verschlüsselt am Server gespeichert und beim HA-Proxy eingesetzt. Niemals im Frontend-Bundle.":
-    "Lagres kryptert på serveren og brukes av HA-proxyen. Aldri i frontend-bunten.",
+  "Bleibt am Server und wird nie wieder an den Browser geschickt.":
+    "Blir på serveren og sendes aldri tilbake til nettleseren.",
+  "Gespeichert — leer lassen, um ihn zu behalten": "Lagret — la feltet stå tomt for å beholde verdien",
+  "Neue Adresse — bitte den Token oder Schlüssel noch einmal eintragen.":
+    "Ny adresse — skriv inn tokenet eller nøkkelen på nytt.",
   "Verbindung konfiguriert.": "Tilkobling konfigurert.",
   "Nicht konfiguriert — HA-Widgets bleiben leer.": "Ikke konfigurert — HA-widgeter forblir tomme.",
   "iCal-Feeds werden weiterhin direkt pro Kalender-Widget im View-Editor konfiguriert. Generische MQTT- und REST-Integrationen kommen mit dem Modul-Market.":
@@ -1068,6 +1073,11 @@ export const NB: Record<string, string> = {
   "Feste Bild-URL": "Fast bilde-URL",
   "Lokaler NAS Ordner (WebDAV)": "Lokal NAS-mappe (WebDAV)",
   "Immich API (Album)": "Immich API (album)",
+  "Geteiltes iCloud-Album": "Delt iCloud-album",
+  "Öffentlicher Link zum geteilten iCloud-Album": "Offentlig lenke til det delte iCloud-albumet",
+  "Nimm den öffentlichen Link aus dem Teilen-Menü des Albums. Jeder mit dem Link kann die Fotos sehen. iCloud-Links laufen über Apples öffentlichen Dienst für geteilte Alben.": "Bruk den offentlige lenken fra delingsmenyen til albumet. Alle som har lenken, kan se bildene. iCloud-lenker håndteres av Apples offentlige tjeneste for delte album.",
+  "Nach Abschnitten gruppieren": "Grupper etter seksjoner",
+  "Zeigt die Abschnitte des Todoist-Projekts als Überschriften. Welche Aufgaben geladen werden, ändert sich dadurch nicht.": "Viser seksjonene i Todoist-prosjektet som overskrifter. Hvilke oppgaver som lastes inn, endres ikke.",
   "20 mitgelieferte Bilder — kein Setup nötig. Ideal als Start für einen neuen View. Du kannst jederzeit auf eine eigene Quelle (Immich, NAS, URL) wechseln.": "20 medfølgende bilder — ikke behov for oppsett. Perfekt som start for en ny visning. Du kan når som helst bytte til en egen kilde (Immich, NAS, URL).",
   "Immich Instanz URL (Domain)": "Immich-instans-URL (domene)",
   "API-Key (Read Only)": "API-nøkkel (kun lesing)",
@@ -1442,6 +1452,20 @@ export const NB: Record<string, string> = {
   "Rotate": "Roter",
   "Alle Endpoints, Socket-Events und Beispiele:": "Alle endepunkter, socket-hendelser og eksempler:",
   "(im Repo).": "(i repoet).",
+
+  // Innstillinger — MCP-serverkort
+  "MCP-Server für KI-Agenten": "MCP-server for KI-agenter",
+  "KI-Agenten wie Claude bedienen Magic Frame über das Model Context Protocol: Ansichten lesen und umbauen, Notizen an die Wand schicken, Einkaufsliste und To-dos führen. Angemeldet wird mit dem Token oben.":
+    "KI-agenter som Claude styrer Magic Frame via Model Context Protocol: leser og bygger om visninger, sender notater til veggen og fører handleliste og gjøremål. De logger inn med tokenet ovenfor.",
+  "Adresse": "Adresse",
+  "Claude Code: im Terminal ausführen": "Claude Code: kjør i en terminal",
+  "TOKEN durch den Token oben ersetzen. Andere MCP-Programme brauchen dieselben zwei Angaben: die Adresse und den Header Authorization: Bearer TOKEN.":
+    "Erstatt TOKEN med tokenet ovenfor. Andre MCP-klienter trenger de samme to opplysningene: adressen og headeren Authorization: Bearer TOKEN.",
+  "Ein Viewer-Token darf lesen und Haushaltsdinge erledigen: Notizen, Einkaufsliste, To-dos, Timer. Ansichten ändern und Displays steuern kann nur ein Admin-Token.":
+    "Et token for en bruker med kun visning kan lese og ta seg av ting i husholdningen: notater, handleliste, gjøremål, tidtakere. Bare et admin-token kan endre visninger og styre skjermer.",
+  "Die Claude-App und Home Assistant verbinden sich nur über OAuth, das kann Magic Frame noch nicht.":
+    "Claude-appen og Home Assistant kobler seg bare til via OAuth, og det støtter ikke Magic Frame ennå.",
+  "Alle Werkzeuge:": "Alle verktøy:",
   "Beispiel:": "Eksempel:",
   "Nutze deine Todoist-Projekte als Quelle für Todos- und Einkaufslisten-Widgets. Setze einen API-Token (Todoist → Einstellungen → Integrationen → Entwickler → API-Token), danach erscheint Todoist im Quelle-Dropdown der Widgets.":
     "Bruk Todoist-prosjektene dine som kilde for gjøremåls- og handleliste-widgeter. Angi et API-token (Todoist → Innstillinger → Integrasjoner → Utvikler → API-token), deretter vises Todoist i widgetenes kildenedtrekk.",
