@@ -9,6 +9,7 @@ RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
+ENV NODE_OPTIONS="--max-old-space-size=384"
 # Leer für das normale Abbild. Nur das Add-on-Abbild wird mit dem Platzhalter
 # gebaut, den scripts/mf-basepath.mjs beim Containerstart durch den echten
 # Ingress-Pfad ersetzt. Siehe next.config.ts.
