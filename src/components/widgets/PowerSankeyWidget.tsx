@@ -421,7 +421,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const allIds = useMemo(() => {
     const ids = [gridId, solarId, battPwrId, battLvlId];
     for (const f of flows) { if (f.entityId) ids.push(f.entityId); }
-    return ids.filter(Boolean).join(";");
+    return ids.filter(Boolean).join(",");
   }, [gridId, solarId, battPwrId, battLvlId, flows]);
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
