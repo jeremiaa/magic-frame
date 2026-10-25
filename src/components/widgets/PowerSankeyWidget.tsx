@@ -531,7 +531,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     const battLevel = battLvlId ? toPercent(statesDict[battLvlId]) : null;
     let homeLoad = Math.max(0, gi + solar + bd - ge - bc);
 
-    const cons: ConsumerFlow[] = flows.map((f) => {
+    const cons: ConsumerFlow[] = flows
+      .filter((f) => f.type !== "battery" && f.type !== "grid" && f.type !== "solar")
+      .map((f) => {
       const st = statesDict[f.entityId];
       const w = toWatts(st);
       const v = w == null ? 0 : Math.max(0, quiet(w));
