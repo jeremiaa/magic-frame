@@ -438,15 +438,16 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     let cancelled = false;
     const fetchState = async () => {
       try {
-        const res = await fetch(`/api/ha/state?ids=${encodeURIComponent(allIds)}`, { cache: "no-store" });
+        const url = `/api/ha/state?ids=${encodeURIComponent(allIds)}`;
+        const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error(`HA ${res.status}`);
         const dict = await res.json();
         if (!cancelled) {
           setStatesDict(dict ?? {});
           setError("");
         }
-      } catch {
-        if (!cancelled) setError("Connection failed");
+      } catch (err: any) {
+        if (!cancelled) setError(err?.message || "Connection failed");
       }
     };
     fetchState();
@@ -544,22 +545,26 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
 
   /* ---- Show a skeleton when configured but no flow yet ---- */
   if (!anyFlow && allIds) {
-    const entityNames = flows.map(f => f.label || f.entityId).filter(Boolean);
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-[0.75em] gap-[0.3em] text-center p-[0.5em]">
-        <span style={{ fontSize: "1.3em" }}>⚡</span>
-        <span style={{ fontWeight: 700, color: textMain }}>No power flowing</span>
-        {entityNames.length > 0 && (
-          <span className="text-[0.8em]" style={{ color: textSub }}>
-            Monitoring {entityNames.slice(0, 4).join(", ")}{entityNames.length > 4 ? ` +${entityNames.length - 4}` : ""}
+      const entityNames = flows.map(f => f.label || f.entityId).filter(Boolean);
+      const fetchedCount = Object.keys(statesDict).length;
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center text-[0.75em] gap-[0.3em] text-center p-[0.5em]">
+          <span style={{ fontSize: "1.3em" }}>⚡</span>
+          <span style={{ fontWeight: 700, color: textMain }}>No power flowing</span>
+          <span className="text-[0.7em]" style={{ color: textSub, opacity: 0.6 }}>
+            {allIds.split(",").length} sensor(s) configured, {fetchedCount} returned
           </span>
-        )}
-        <span className="text-[0.7em]" style={{ color: textSub, opacity: 0.6 }}>
-          Flow diagram will appear when power is detected.
-        </span>
-      </div>
-    );
-  }
+          {entityNames.length > 0 && (
+            <span className="text-[0.8em]" style={{ color: textSub }}>
+              {entityNames.slice(0, 4).join(", ")}{entityNames.length > 4 ? ` +${entityNames.length - 4}` : ""}
+            </span>
+          )}
+          {error && (
+            <span className="text-[0.7em]" style={{ color: "#f87171" }}>{error}</span>
+          )}
+        </div>
+      );
+    }
 
   /* ---- inline render helpers ---- */
 
