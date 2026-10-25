@@ -13,6 +13,7 @@ import ShoppingListWidget from "./ShoppingListWidget";
 import TodosWidget from "./TodosWidget";
 import ImageWidget from "./ImageWidget";
 import SensorWidget from "./SensorWidget";
+import PowerSankeyWidget from "./PowerSankeyWidget";
 import CameraWidget from "./CameraWidget";
 import MediaPlayerWidget from "./MediaPlayerWidget";
 import RssWidget from "./RssWidget";
@@ -57,6 +58,7 @@ export function renderWidget(type: string, config: any, opts: RenderWidgetOpts =
   if (type === "TodosWidget.tsx") return <TodosWidget config={config} />;
   if (type === "ImageWidget.tsx") return <ImageWidget config={config} dashboardId={dashboardId} />;
   if (type === "SensorWidget.tsx") return <SensorWidget config={config} />;
+  if (type === "PowerSankeyWidget.tsx") return <PowerSankeyWidget config={config} />;
   if (type === "EnvironmentWidget.tsx") return <EnvironmentWidget config={config} />;
   if (type === "CameraWidget.tsx")
     return (

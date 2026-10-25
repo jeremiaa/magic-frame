@@ -37,6 +37,7 @@ export const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: st
   "MessagesWidget.tsx":        { hex: "#d946ef", glow: "rgba(217,70,239,0.25)",  tint: "rgba(217,70,239,0.12)"  }, // fuchsia
   "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
   "SensorWidget.tsx":          { hex: "#14b8a6", glow: "rgba(20,184,166,0.25)",  tint: "rgba(20,184,166,0.12)"  }, // teal
+  "PowerSankeyWidget.tsx":    { hex: "#a78bfa", glow: "rgba(167,139,250,0.25)", tint: "rgba(167,139,250,0.12)" }, // violet
   "CameraWidget.tsx":          { hex: "#f43f5e", glow: "rgba(244,63,94,0.25)",   tint: "rgba(244,63,94,0.12)"   }, // rose
   "MediaPlayerWidget.tsx":     { hex: "#ec4899", glow: "rgba(236,72,153,0.25)",  tint: "rgba(236,72,153,0.12)"  }, // pink
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
@@ -78,6 +79,8 @@ export function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <ImageIcon size={size} />;
     case "SensorWidget.tsx":
       return <Gauge size={size} />;
+    case "PowerSankeyWidget.tsx":
+      return <Zap size={size} />;
     case "CameraWidget.tsx":
       return <Video size={size} />;
     case "MediaPlayerWidget.tsx":

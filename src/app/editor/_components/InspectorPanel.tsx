@@ -23,6 +23,7 @@ import {
 } from "../_inspectors/CompanionInspectors";
 import { ImageInspector } from "../_inspectors/ImageInspector";
 import { SensorInspector } from "../_inspectors/SensorInspector";
+import { PowerSankeyInspector } from "../_inspectors/PowerSankeyInspector";
 import { EnvironmentInspector } from "../_inspectors/EnvironmentInspector";
 import CameraInspector from "../_inspectors/CameraInspector";
 import { MediaPlayerInspector } from "../_inspectors/MediaPlayerInspector";
@@ -83,6 +84,7 @@ const NO_MULTICOL_CONTENT = new Set<string>([
   "TodosWidget.tsx",
   "ImageWidget.tsx",
   "SensorWidget.tsx",
+  "PowerSankeyWidget.tsx",
   "EnvironmentWidget.tsx",
   "CameraWidget.tsx",
   // Die Status-Felder sind EIN zusammenhängender Block (break-inside: avoid),
@@ -656,6 +658,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "SensorWidget.tsx" && (
         <SensorInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "PowerSankeyWidget.tsx" && (
+        <PowerSankeyInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type === "CameraWidget.tsx" && (
         <CameraInspector widget={activeWidget} updateConfig={updateConfig} />
