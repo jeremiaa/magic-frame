@@ -435,6 +435,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     const [error, setError] = useState("");
     const [renderError, setRenderError] = useState("");
     const [size, setSize] = useState<Sized | null>(null);
+    const [probe, setProbe] = useState("");
     const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -483,7 +484,16 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     let tries = 0;
     let raf = 0;
     const retry = () => {
-      if (measure() || ++tries > 30) return;
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        setSize({ w: Math.round(r.width), h: Math.round(r.height) });
+        setProbe("");
+        return;
+      }
+      tries++;
+      const note = `try ${tries}: ${Math.round(r.width)}x${Math.round(r.height)}`;
+      if (tries > 60) { setProbe(`measuring gave up — ${note}`); return; }
+      if (tries % 10 === 0) setProbe(note);
       raf = requestAnimationFrame(retry);
     };
     retry();
@@ -676,7 +686,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-[0.7em] gap-[0.3em]" style={{ opacity: 0.6 }}>
             <span>…</span>
             <span style={{ fontSize: "0.8em", color: textSub }}>
-              {!size ? "measuring…" : !L ? `layout failed: gi=${F?.gi} so=${F?.solar} bd=${F?.bd} bc=${F?.bc}` : ""}
+              {!size ? (probe || "measuring…") : !L ? `layout failed: gi=${F?.gi} so=${F?.solar} bd=${F?.bd} bc=${F?.bc}` : ""}
             </span>
           </div>
         ) : (
