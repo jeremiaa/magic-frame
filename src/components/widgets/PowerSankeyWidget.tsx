@@ -698,7 +698,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       )}
       <div ref={boxRef} className="relative flex-1 min-h-0 overflow-hidden">
         {(!size || !L) ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-[0.7em] gap-[0.3em]" style={{ opacity: 0.6 }}>
+          <div className="flex-1 flex flex-col items-center justify-center text-[0.7em] gap-[0.3em]" style={{ opacity: 0.6 }}>
             <span>…</span>
             <span style={{ fontSize: "0.8em", color: textSub }}>
               {!size ? (probe || "measuring…") : !L ? `layout failed: gi=${F?.gi} so=${F?.solar} bd=${F?.bd} bc=${F?.bc}` : ""}
@@ -709,7 +709,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
             <svg
               width={size.w}
               height={size.h}
-              className="absolute left-0 top-0"
+              className="block"
             >
               {L.bands.map((b) => (
                 <path key={b.key} d={b.d} fill={b.colour} fillOpacity={0.45} stroke="none" />
