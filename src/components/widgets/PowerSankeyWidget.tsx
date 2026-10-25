@@ -725,24 +725,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                   transform: "translateY(-50%)",
                 }}
               >
-                {srcLabel(n).map((ln, i) => {
-                  const base = ln.big ?0.78 : 0.6;
+                {srcLabel(n).map((ln, i, arr) => {
+                  const base = ln.big ? 0.78 : 0.6;
                   const fs = ln.scale ? `${base * ln.scale}em` : `${base}em`;
                   return (
-                    <div
+                    <span
                       key={i}
                       style={{
                         fontSize: fs,
-                        fontWeight: ln.big ?700 : 400,
+                        fontWeight: ln.big ? 700 : 400,
                         color: ln.big ? textMain : textSub,
-                        opacity: ln.big ?1 : 0.65,
+                        opacity: ln.big ? 1 : 0.65,
                         lineHeight: 1.2,
                         whiteSpace: "nowrap",
+                        display: "inline-block",
                         ...ln.style,
                       }}
                     >
-                      {ln.text}
-                    </div>
+                      {ln.text}{i === 0 && arr.length > 1 ? " " : ""}
+                    </span>
                   );
                 })}
               </div>
@@ -782,24 +783,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                     overflow: "hidden",
                   }}
                 >
-                  {lines.map((ln, i) => {
-                    const base = ln.big ? 0.78 :0.6;
+                  {lines.map((ln, i, arr) => {
+                    const base = ln.big ? 0.78 : 0.6;
                     const fs = `${base * rightScale}em`;
                     return (
-                      <div
+                      <span
                         key={i}
                         style={{
                           fontSize: fs,
-                          fontWeight: ln.big ? 700 :400,
+                          fontWeight: ln.big ? 700 : 400,
                           color: ln.big ? textMain : textSub,
-                          opacity: ln.big ? 1 :0.65,
+                          opacity: ln.big ? 1 : 0.65,
                           lineHeight: 1.2,
                           whiteSpace: "nowrap",
+                          display: "inline-block",
                           ...ln.style,
                         }}
                       >
-                        {ln.text}
-                      </div>
+                        {ln.text}{i === 0 && arr.length > 1 ? " " : ""}
+                      </span>
                     );
                   })}
                 </div>
