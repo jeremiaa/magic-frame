@@ -469,20 +469,30 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     if (!boxRef.current) return;
     const el = boxRef.current;
 
-    // Capture initial size immediately (ResizeObserver only fires on changes)
     const measure = () => {
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0) {
         setSize({ w: Math.round(r.width), h: Math.round(r.height) });
+        return true;
       }
+      return false;
     };
-    measure();
+
+    // Layout may settle late (grid allocation) — retry across frames
+    let tries = 0;
+    let raf = 0;
+    const retry = () => {
+      if (measure() || ++tries > 30) return;
+      raf = requestAnimationFrame(retry);
+    };
+    retry();
 
     if (typeof ResizeObserver !== "undefined") {
       const ro = new ResizeObserver(() => measure());
       ro.observe(el);
-      return () => ro.disconnect();
+      return () => { ro.disconnect(); cancelAnimationFrame(raf); };
     }
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const F = useMemo((): ComputedFlow | null => {
