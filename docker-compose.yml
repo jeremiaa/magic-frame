@@ -1,34 +1,33 @@
 # Magic Frame Stack
 #
-# Hinweis: Der Postgres-DB-Name (POSTGRES_DB / DATABASE_URL-Pfad) heißt
-# weiterhin `magicdashboard` — bewusst NICHT umbenannt, damit bestehende
-# Installationen ohne Datenverlust auf neue Releases updaten können. Der
-# App-Code referenziert die DB nur über DATABASE_URL, der Name ist nur
-# ein interner Identifier.
+# Note: The Postgres DB name (POSTGRES_DB / DATABASE_URL path) is still
+# `magicdashboard` — deliberately NOT renamed so existing installations
+# can upgrade to new releases without data loss. The app code references
+# the DB only via DATABASE_URL; the name is just an internal identifier.
 #
-# Externe Postgres-Datenbank:
-#   Setze DATABASE_URL in der .env auf deinen eigenen Postgres-Server.
-#   Starte OHNE db-Service: `docker compose up` (der db-Dienst hat das
-#   Profil "db", ist also standardmäßig nicht mit dabei).
-#   Mit der internen DB: `docker compose --profile db up`.
+# External Postgres database:
+#   Set DATABASE_URL in .env to your own Postgres server.
+#   Start WITHOUT the db service: `docker compose up` (the db service has
+#   the "db" profile, so it's excluded by default).
+#   With the internal DB: `docker compose --profile db up`.
 #
-# Caddy ist immer dabei und macht Reverse-Proxy + automatisches HTTPS
-# (via Let's Encrypt). Im Default (keine Domain konfiguriert) fungiert
-# Caddy einfach als transparenter HTTP-Proxy auf :80 → app:3000.
-# Sobald in der App eine Domain + ACME-Email gesetzt wird, generiert die
-# App ein neues Caddyfile und triggert einen Reload — Caddy holt das Cert.
+# Caddy is always included and handles reverse proxy + automatic HTTPS
+# (via Let's Encrypt). By default (no domain configured), Caddy simply
+# acts as a transparent HTTP proxy on :80 → app:3000.
+# Once a domain + ACME email are set in the app, the app generates a new
+# Caddyfile and triggers a reload — Caddy fetches the cert.
 #
-# Die App lauscht nur intern auf 3000 (Compose-Network), nicht mehr
-# direkt am Host. Wer den alten Direct-:80-Mode will, kann
-# `ports: ["80:3000"]` bei `app` setzen und Caddy auf einen anderen
-# Port verschieben — aber dann läuft auch kein automatisches HTTPS.
+# The app listens only internally on 3000 (Compose network), not directly
+# on the host. If you want the old direct-:80 mode, you can set
+# `ports: ["80:3000"]` on `app` and move Caddy to a different port —
+# but then automatic HTTPS won't work.
 
 services:
   app:
-    # Standard: vorgebautes Multi-Arch-Image von ghcr.io (schnell, kein lokaler
-    # Build — vor allem auf dem Pi). `build:` bleibt aktiv als Opt-in:
-    # `docker compose up -d --build` (oder install.sh --build) baut weiterhin
-    # from-source. Beide Wege funktionieren. (#9)
+    # Default: pre-built multi-arch image from ghcr.io (fast, no local
+    # build — especially on Pi). `build:` stays active as opt-in:
+    # `docker compose up -d --build` (or install.sh --build) still builds
+    # from source. Both paths work. (#9)
     image: ghcr.io/jeremiaa/magic-frame-app:${MAGIC_FRAME_VERSION:-latest}
     build:
       context: .
@@ -39,8 +38,8 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/magicdashboard?schema=public}
       - NODE_ENV=production
-      # Host-Timezone-Passthrough (#73): der Installer schreibt TZ in die .env.
-      # Leer/ungesetzt = UTC — bestehende Installationen ändern sich nicht.
+      # Host timezone passthrough (#73): the installer writes TZ into .env.
+      # Empty/unset = UTC — existing installations are unchanged.
       - TZ=${TZ:-}
       - SESSION_SECRET=${SESSION_SECRET}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-}
@@ -52,45 +51,45 @@ services:
       - MS_CLIENT_ID=${MS_CLIENT_ID:-}
       - MS_CLIENT_SECRET=${MS_CLIENT_SECRET:-}
       - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY:-}
-      # Caddy-Admin-API für Reloads. Standard-URL des Sidecar-Containers.
+      # Caddy admin API for reloads. Default URL of the sidecar container.
       - CADDY_ADMIN_URL=${CADDY_ADMIN_URL:-http://caddy:2019}
-      # Notbremse für die Entitäts-Erlaubnisliste von /api/ha/action (auf "1"
-      # setzen hebt sie auf). Muss HIER stehen und nicht nur in der .env: der
-      # app-Dienst hat eine ausdrückliche environment-Liste, und Compose reicht
-      # die .env sonst nur zur Interpolation in dieser Datei weiter — im
-      # Container käme die Variable nie an.
+      # Kill switch for the entity allow-list on /api/ha/action (set to "1"
+      # to disable it). Must live HERE and not just in .env: the app
+      # service has an explicit environment list, and Compose otherwise
+      # only passes .env for interpolation in this file — the variable
+      # would never reach the container.
       - MAGIC_FRAME_HA_ACTION_UNRESTRICTED=${MAGIC_FRAME_HA_ACTION_UNRESTRICTED:-}
-      # Anzahl der Reverse-Proxies vor Magic Frame (siehe .env.example).
+      # Number of reverse proxies in front of Magic Frame (see .env.example).
       - TRUSTED_PROXY_HOPS=${TRUSTED_PROXY_HOPS:-1}
     volumes:
       - magic_configs:/app/configs
       - magic_wallpapers:/app/wallpapers
-      # Shared Caddy-Config-Volume — App schreibt Caddyfile rein, Caddy liest.
+      # Shared Caddy config volume — app writes Caddyfile, Caddy reads it.
       - magic_caddy_config:/caddy/config
 
   caddy:
-    # Vorgebautes Image (s. app). `build:` bleibt der Opt-in-From-Source-Pfad.
+    # Pre-built image (see app). `build:` remains the opt-in from-source path.
     image: ghcr.io/jeremiaa/magic-frame-caddy:${MAGIC_FRAME_VERSION:-latest}
     build:
       context: ./caddy
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      # Host-Timezone-Passthrough (#73), s. app.
+      # Host timezone passthrough (#73), see app.
       - TZ=${TZ:-}
-    # Host-Ports. Default 80/443, überschreibbar via .env (HTTP_PORT / HTTPS_PORT)
-    # falls die Standard-Ports auf dem Host belegt sind. Nicht gesetzte Variablen
-    # fallen auf 80/443 zurück — bestehende Installationen ändern sich also nicht.
+    # Host ports. Default 80/443, overridable via .env (HTTP_PORT / HTTPS_PORT)
+    # if the standard ports are taken on the host. Unset variables fall back
+    # to 80/443 — existing installations are unchanged.
     ports:
       - "${HTTP_PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
       - "${HTTPS_PORT:-443}:443/udp"
-      # Admin-API: nur an localhost binden — kein Remote-Zugriff erwünscht.
+      # Admin API: bind to localhost only — no remote access desired.
       - "127.0.0.1:2019:2019"
     volumes:
-      # Caddyfile-Verzeichnis (von App beschreibbar, von Caddy gelesen)
+      # Caddyfile directory (writeable by app, read by Caddy)
       - magic_caddy_config:/etc/caddy
-      # Persistent ACME-State (Certs, Account-Keys)
+      # Persistent ACME state (certs, account keys)
       - magic_caddy_data:/data
       - magic_caddy_conf:/config
     depends_on:
@@ -104,22 +103,22 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: magicdashboard
-      # Host-Timezone-Passthrough (#73), s. app. Gespeicherte Timestamps bleiben
-      # UTC (Prisma normalisiert) — TZ betrifft nur Log-/Session-Defaults.
+      # Host timezone passthrough (#73), see app. Stored timestamps remain
+      # UTC (Prisma normalises) — TZ only affects log/session defaults.
       TZ: ${TZ:-}
-    # Kein `ports:` — die Datenbank ist über das Compose-Netz als `db:5432`
-    # erreichbar, und mehr braucht niemand: die App verbindet über DATABASE_URL,
-    # das dokumentierte Backup läuft über `docker compose exec db pg_dump`.
+    # No `ports:` — the database is reachable over the Compose network as
+    # `db:5432`, and that's all anyone needs: the app connects via
+    # DATABASE_URL, documented backups run via `docker compose exec db pg_dump`.
     #
-    # Hier stand früher `- "5432:5432"`. Damit lag ein Superuser-Zugang mit
-    # postgres/postgres im ganzen Netz — Passwort-Hashes, TOTP-Geheimnisse,
-    # Shortcut-Token, der Home-Assistant-Token und die Kalender-Token inklusive.
-    # Ein veröffentlichter Docker-Port hängt sich ausserdem vor die Firewall des
-    # Hosts, ist also auch dann offen, wenn ufw den Port sperrt.
+    # There used to be `- "5432:5432"` here. That exposed a superuser login
+    # with postgres/postgres to the entire network — password hashes, TOTP
+    # secrets, shortcut tokens, the Home Assistant token, and calendar tokens
+    # included. A published Docker port also bypasses the host firewall,
+    # remaining open even when ufw blocks the port.
     #
-    # Wer ihn wirklich braucht (pgAdmin, DBeaver), legt eine
-    # docker-compose.override.yml daneben — Compose führt sie automatisch mit,
-    # und ein Update fasst sie nie an:
+    # If you really need it (pgAdmin, DBeaver), add a
+    # docker-compose.override.yml alongside — Compose merges it automatically
+    # and an update never touches it:
     #   services:
     #     db:
     #       ports:
