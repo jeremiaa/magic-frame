@@ -327,6 +327,7 @@ function computeLayout(
       label: otherLabel,
       v: F.otherV,
       colour: C.consumer,
+      entityId: "",
       h: Math.max(th(F.otherV), MIN_NODE),
       centre: midOf(attachR["other"])!,
       top: 0,
@@ -713,6 +714,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
             {L.srcNodes.map((n) => (
               <div
                 key={"lbl-" + n.key}
+                data-key={n.key}
                 className="absolute text-right"
                 style={{
                   right: size.w - L.leftBarX + 6,
@@ -768,6 +770,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
               return (
                 <div
                   key={"lbl-" + n.key}
+                  data-key={n.key}
                   className="absolute"
                   style={{
                     left: L.rightBarX + L.bw + 6,
