@@ -466,28 +466,29 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     };
   }, [allIds]);
 
-  const needsMeasure = !size;
   useEffect(() => {
-    if (!needsMeasure || !boxRef.current) return;
+    // Re-run every render until size is captured — the ref div only
+    // enters the DOM once we leave the diagnostic early-return states.
     const el = boxRef.current;
+    if (size || !el) return;
+
+    let raf = 0;
+    let tries = 0;
+
+    const done = (w: number, h: number) => {
+      setSize({ w: Math.round(w), h: Math.round(h) });
+      setProbe("");
+    };
 
     const measure = () => {
       const r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0) {
-        setSize({ w: Math.round(r.width), h: Math.round(r.height) });
-        return true;
-      }
-      return false;
+      if (r.width > 0 && r.height > 0) done(r.width, r.height);
     };
 
-    // Layout may settle late (grid allocation) — retry across frames
-    let tries = 0;
-    let raf = 0;
     const retry = () => {
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0) {
-        setSize({ w: Math.round(r.width), h: Math.round(r.height) });
-        setProbe("");
+        done(r.width, r.height);
         return;
       }
       tries++;
@@ -496,7 +497,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       if (tries % 10 === 0) setProbe(note);
       raf = requestAnimationFrame(retry);
     };
-    retry();
+    raf = requestAnimationFrame(retry);
 
     if (typeof ResizeObserver !== "undefined") {
       const ro = new ResizeObserver(() => measure());
@@ -504,7 +505,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       return () => { ro.disconnect(); cancelAnimationFrame(raf); };
     }
     return () => cancelAnimationFrame(raf);
-  }, [needsMeasure]);
+  });
 
   const F = useMemo((): ComputedFlow | null => {
     if (!allIds) return null;
