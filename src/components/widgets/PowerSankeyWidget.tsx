@@ -169,6 +169,7 @@ function computeLayout(
   otherLabel: string,
   homeLabel: string,
   gridId: string,
+  battPwrId: string,
 ): Layout | null {
   const { w, h } = size;
   const MIN_BAND = 2;
@@ -203,12 +204,12 @@ function computeLayout(
     { v: F.gi, c: C.import, k: "grid-in" },
     { v: F.solar, c: C.solar, k: "solar" },
     { v: F.bd, c: C.battOut, k: "batt-out" },
-    { v: F.bc, c: C.battIn, k: "batt-in" },
   ].filter((f) => f.v > 0);
 
   const homeRightFlows = [
     ...(gridOnRight ? [{ v: F.ge, c: C.export, k: "grid-out" }] : []),
     ...F.cons.map((c, i) => ({ v: c.v, c: c.colour, k: "con" + i })),
+    ...(F.bc > 0 ? [{ v: F.bc, c: C.battIn, k: "batt-in" }] : []),
     ...(F.otherV > 0 ? [{ v: F.otherV, c: C.consumer, k: "other" }] : []),
   ];
 
@@ -256,16 +257,14 @@ function computeLayout(
       top: 0,
     });
   }
-  if (F.hasBattery) {
+  if (F.bd > 0) {
     const bdR = attachL["batt-out"];
-    const bcR = attachL["batt-in"];
     srcNodes.push({
       key: "battery",
       colour: C.battOut,
-      h: Math.max(th(F.bd) + th(F.bc), MIN_NODE),
-      centre:
-        bdR && bcR ? (bdR[0] + bcR[1]) / 2 : midOf(bdR) ?? midOf(bcR) ?? contentTop + contentH * 0.8,
-      flows: { import: bdR ?? null, export: bcR ?? null },
+      h: Math.max(th(F.bd), MIN_NODE),
+      centre: midOf(bdR) ?? contentTop + contentH * 0.8,
+      flows: { import: bdR ?? null, export: null },
       top: 0,
     });
   }
@@ -280,6 +279,21 @@ function computeLayout(
   srcNodes.forEach((n, i) => (n.top = srcYs[i]));
 
   const conNodes: ConNode[] = [];
+
+  // Battery charging -> right side (home -> battery)
+  if (F.bc > 0) {
+    conNodes.push({
+      key: "battery-charge",
+      label: "Battery",
+      v: F.bc,
+      colour: C.battIn,
+      entityId: battPwrId,
+      h: Math.max(th(F.bc), MIN_NODE),
+      centre: midOf(attachR["batt-in"])!,
+      top: 0,
+    });
+  }
+
   if (gridOnRight) {
     conNodes.push({
       key: "grid-out",
@@ -554,7 +568,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
 
   const L = useMemo((): Layout | null => {
     if (!size || !F) return null;
-    return computeLayout(size, C, F, otherLabel, homeLabel, gridId);
+    return computeLayout(size, C, F, otherLabel, homeLabel, gridId, battPwrId);
   }, [size, F, C, otherLabel, homeLabel, gridId]);
 
   if (!allIds) {
