@@ -236,7 +236,7 @@ function computeLayout(
   const midOf = (r: [number, number] | null): number | null => (r ? (r[0] + r[1]) / 2 : null);
 
   const srcNodes: SrcNode[] = [];
-  if (F.hasGrid && !gridOnRight) {
+  if (F.gi > 0 && !gridOnRight) {
     const giR = attachL["grid-in"];
     srcNodes.push({
       key: "grid",
@@ -294,7 +294,7 @@ function computeLayout(
     });
   }
 
-  if (gridOnRight) {
+  if (gridOnRight && F.ge > 0) {
     conNodes.push({
       key: "grid-out",
       label: "Grid",
