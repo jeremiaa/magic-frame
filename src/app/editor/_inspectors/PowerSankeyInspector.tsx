@@ -16,6 +16,8 @@ type FlowType = "grid" | "solar" | "battery" | "consumer";
 
 type Flow = {
   entityId: string;
+  levelId?: string;
+  invert?: boolean;
   label?: string;
   color?: string;
   type: FlowType;
@@ -256,6 +258,34 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                   </div>
                 </div>
               </div>
+
+                {flow.type === "battery" && (
+                  <div className="pt-1 border-t border-[var(--mf-bdr)]/5">
+                    <HAEntityInput
+                      value={flow.levelId || ""}
+                      onChange={(v) => updateFlow(idx, "levelId", v)}
+                      placeholder="sensor.battery_level"
+                      clearable
+                    />
+                  </div>
+                )}
+                {(flow.type === "battery" || flow.type === "grid") && (
+                  <label className="flex items-center gap-3 cursor-pointer group pt-1">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={flow.invert === true}
+                        onChange={(e) => updateFlow(idx, "invert", e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                    </div>
+                    <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
+                      {flow.type === "battery" ? "Invert battery sensor" : "Invert grid sensor"}
+                    </span>
+                  </label>
+                )}
+              </div>
             </AccordionCard>
           );
         })}
@@ -325,48 +355,6 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
         {renderColorPicker("batteryInColor", "Battery charge colour", "#10b981")}
         {renderColorPicker("consumerColor", "Consumer colour (default)", "#ef4444")}
       </div>
-
-      {/* ── 7. Legacy sensors ─────────────────────────────────────────────── */}
-      <AccordionCard
-        open={cfg._legacyOpen === true}
-        onToggle={() => updateConfig(widget.i, "_legacyOpen", !cfg._legacyOpen)}
-        title={t("Legacy sensors")}
-      >
-        <div className="space-y-3">
-          <input
-            type="text"
-            value={cfg.gridSensor || ""}
-            onChange={(e) => updateConfig(widget.i, "gridSensor", e.target.value)}
-            placeholder="sensor.grid_power"
-            className={INPUT}
-          />
-          <input
-            type="text"
-            value={cfg.solarSensor || ""}
-            onChange={(e) => updateConfig(widget.i, "solarSensor", e.target.value)}
-            placeholder="sensor.solar_power"
-            className={INPUT}
-          />
-          <input
-            type="text"
-            value={cfg.batteryPowerSensor || ""}
-            onChange={(e) => updateConfig(widget.i, "batteryPowerSensor", e.target.value)}
-            placeholder="sensor.battery_power"
-            className={INPUT}
-          />
-          <input
-            type="text"
-            value={cfg.batteryLevelSensor || ""}
-            onChange={(e) => updateConfig(widget.i, "batteryLevelSensor", e.target.value)}
-            placeholder="sensor.battery_level"
-            className={INPUT}
-          />
-          <div className="flex flex-wrap gap-x-6 gap-y-3">
-            {renderSwitch("invertGrid", "Invert grid sensor")}
-            {renderSwitch("invertBattery", "Invert battery sensor")}
-          </div>
-        </div>
-      </AccordionCard>
     </div>
   );
 }

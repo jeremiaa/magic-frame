@@ -113,6 +113,8 @@ function resolveOverlaps(centres: number[], heights: number[], top: number, bott
 
 interface FlowDef {
   entityId: string;
+  levelId?: string;
+  invert?: boolean;
   label?: string;
   color?: string;
   type: "grid" | "solar" | "battery" | "consumer";
@@ -409,20 +411,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const conMode: 0 | 1 | 2 = conIconOnly ? 1 : conShowIcons ? 2 : 0;
   const battScale = Math.max(0.5, Math.min(4, Number(config?.batteryIconScale) ||1));
 
-  const gridId = (config?.gridSensor || "").trim();
-  const solarId = (config?.solarSnsor || config?.solarSensor || "").trim();
-  const battPwrId = (config?.batteryPowerSnsor || config?.batteryPowerSensor || "").trim();
-  const battLvlId = (config?.batteryLevelSnsor || config?.batteryLevelSensor || "").trim();
-  const invertGrid = config?.invertGrd || config?.invertGrid || false;
-  const invertBattery = config?.invertBattery || false;
-
   const flows: FlowDef[] = Array.isArray(config?.flows) ? config.flows : [];
 
+  // Derive source IDs from typed flow array (no legacy sensor fields).
+  const gridId   = (flows.find(f => f.type === "grid")   ?.entityId || "").trim();
+  const solarId  = (flows.find(f => f.type === "solar")  ?.entityId || "").trim();
+  const battFlow = flows.find(f => f.type === "battery");
+  const battPwrId = battFlow?.entityId?.trim() || "";
+  const battLvlId = battFlow?.levelId?.trim() || "";
+  const invertGrid = battFlow?.invert ?? false;
+  const invertBattery = battFlow?.invert ?? false;
+
   const allIds = useMemo(() => {
-    const ids = [gridId, solarId, battPwrId, battLvlId];
-    for (const f of flows) { if (f.entityId) ids.push(f.entityId); }
+    const ids = [];
+    for (const f of flows) {
+      if (f.entityId) ids.push(f.entityId);
+      if (f.levelId) ids.push(f.levelId);
+    }
     return ids.filter(Boolean).join(",");
-  }, [gridId, solarId, battPwrId, battLvlId, flows]);
+  }, [flows]);
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
     const [error, setError] = useState("");
@@ -511,16 +518,6 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       };
     });
     const consSum = cons.reduce((a, c) => a + c.v, 0);
-
-    // When consumers exist but no net source (no grid/solar/battery
-    // configured or all zero), use consumer sum as home load so the
-    // sankey renders — smart-plug-only case.
-    const hasSource = gi > 0 || solar > 0 || bd > 0 || bc > 0;
-    if (!hasSource && consSum > 0 && !hasGrid) {
-      homeLoad = consSum;
-      gi = consSum;
-    }
-
     const otherV = showOther && flows.length > 0 ? Math.max(0, homeLoad - consSum) : 0;
 
     return { gi, ge, solar, bd, bc, battLevel, homeLoad, cons, otherV, hasGrid, hasBattery };
