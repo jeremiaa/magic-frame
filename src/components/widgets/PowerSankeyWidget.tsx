@@ -465,8 +465,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     };
   }, [allIds]);
 
+  const needsMeasure = !size;
   useEffect(() => {
-    if (!boxRef.current) return;
+    if (!needsMeasure || !boxRef.current) return;
     const el = boxRef.current;
 
     const measure = () => {
@@ -493,7 +494,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       return () => { ro.disconnect(); cancelAnimationFrame(raf); };
     }
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [needsMeasure]);
 
   const F = useMemo((): ComputedFlow | null => {
     if (!allIds) return null;
