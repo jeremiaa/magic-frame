@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useMemo } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 
 /* ------------------------------------------------------------------ */
@@ -480,45 +480,26 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     };
   }, [allIds]);
 
-  useEffect(() => {
-    // Re-run every render until size is captured — the ref div only
-    // enters the DOM once we leave the diagnostic early-return states.
+  useLayoutEffect(() => {
     const el = boxRef.current;
-    if (size || !el) return;
-
-    let raf = 0;
-    let tries = 0;
-
-    const done = (w: number, h: number) => {
-      setSize({ w: Math.round(w), h: Math.round(h) });
+    if (!el || size) return;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) {
+      setSize({ w: Math.round(r.width), h: Math.round(r.height) });
       setProbe("");
-    };
-
-    const measure = () => {
-      const r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0) done(r.width, r.height);
-    };
-
-    const retry = () => {
-      const r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0) {
-        done(r.width, r.height);
-        return;
-      }
-      tries++;
-      const note = `try ${tries}: ${Math.round(r.width)}x${Math.round(r.height)}`;
-      if (tries > 60) { setProbe(`measuring gave up — ${note}`); return; }
-      if (tries % 10 === 0) setProbe(note);
-      raf = requestAnimationFrame(retry);
-    };
-    raf = requestAnimationFrame(retry);
-
-    if (typeof ResizeObserver !== "undefined") {
-      const ro = new ResizeObserver(() => measure());
-      ro.observe(el);
-      return () => { ro.disconnect(); cancelAnimationFrame(raf); };
+    } else {
+      // One rAF retry for browsers that haven't finished layout
+      const raf = requestAnimationFrame(() => {
+        const r2 = el.getBoundingClientRect();
+        if (r2.width > 0 && r2.height > 0) {
+          setSize({ w: Math.round(r2.width), h: Math.round(r2.height) });
+          setProbe("");
+        } else {
+          setProbe(`measuring gave up — ${Math.round(r2.width)}x${Math.round(r2.height)}`);
+        }
+      });
+      return () => cancelAnimationFrame(raf);
     }
-    return () => cancelAnimationFrame(raf);
   });
 
   const F = useMemo((): ComputedFlow | null => {
