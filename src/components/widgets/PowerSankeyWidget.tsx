@@ -497,7 +497,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       bc = Math.max(0, -b);
     }
     const battLevel = battLvlId ? toPercent(statesDict[battLvlId]) : null;
-    const homeLoad = Math.max(0, gi + solar + bd - ge - bc);
+    let homeLoad = Math.max(0, gi + solar + bd - ge - bc);
 
     const cons: ConsumerFlow[] = flows.map((f) => {
       const st = statesDict[f.entityId];
@@ -511,6 +511,16 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       };
     });
     const consSum = cons.reduce((a, c) => a + c.v, 0);
+
+    // When consumers exist but no net source (no grid/solar/battery
+    // configured or all zero), use consumer sum as home load so the
+    // sankey renders — smart-plug-only case.
+    const hasSource = gi > 0 || solar > 0 || bd > 0 || bc > 0;
+    if (!hasSource && consSum > 0 && !hasGrid) {
+      homeLoad = consSum;
+      gi = consSum;
+    }
+
     const otherV = showOther && flows.length > 0 ? Math.max(0, homeLoad - consSum) : 0;
 
     return { gi, ge, solar, bd, bc, battLevel, homeLoad, cons, otherV, hasGrid, hasBattery };
@@ -547,20 +557,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   if (!anyFlow && allIds) {
       const entityNames = flows.map(f => f.label || f.entityId).filter(Boolean);
       const fetchedCount = Object.keys(statesDict).length;
+      const sampleKeys = Object.keys(statesDict).slice(0, 4);
+      const sampleVals = sampleKeys.map(k => {
+        const st = statesDict[k];
+        return st ? `${st.state || "?"} ${st.attributes?.unit_of_measurement || ""}`.trim() : "—";
+      });
       return (
-        <div className="w-full h-full flex flex-col items-center justify-center text-[0.75em] gap-[0.3em] text-center p-[0.5em]">
+        <div className="w-full h-full flex flex-col items-center justify-center text-[0.7em] gap-[0.2em] text-center p-[0.5em] overflow-hidden">
           <span style={{ fontSize: "1.3em" }}>⚡</span>
           <span style={{ fontWeight: 700, color: textMain }}>No power flowing</span>
-          <span className="text-[0.7em]" style={{ color: textSub, opacity: 0.6 }}>
-            {allIds.split(",").length} sensor(s) configured, {fetchedCount} returned
+          <span style={{ color: textSub }}>
+            {fetchedCount} sensor(s) ok · gi={F?.gi ?? 0} so={F?.solar ?? 0} bd={F?.bd ?? ""} bc={F?.bc ?? ""} hl={F?.homeLoad ?? 0}
           </span>
-          {entityNames.length > 0 && (
-            <span className="text-[0.8em]" style={{ color: textSub }}>
-              {entityNames.slice(0, 4).join(", ")}{entityNames.length > 4 ? ` +${entityNames.length - 4}` : ""}
+          {sampleVals.map((v, i) => (
+            <span key={i} className="text-[0.85em]" style={{ color: textSub, opacity: 0.6 }}>
+              {sampleKeys[i].substring(0, 30)} = {v}
             </span>
-          )}
+          ))}
           {error && (
-            <span className="text-[0.7em]" style={{ color: "#f87171" }}>{error}</span>
+            <span style={{ color: "#f87171" }}>{error}</span>
           )}
         </div>
       );
