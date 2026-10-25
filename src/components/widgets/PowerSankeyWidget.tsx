@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 
 /* ------------------------------------------------------------------ */
@@ -113,8 +113,6 @@ function resolveOverlaps(centres: number[], heights: number[], top: number, bott
 
 interface FlowDef {
   entityId: string;
-  levelId?: string;
-  invert?: boolean;
   label?: string;
   color?: string;
   type: "grid" | "solar" | "battery" | "consumer";
@@ -169,7 +167,6 @@ function computeLayout(
   otherLabel: string,
   homeLabel: string,
   gridId: string,
-  battPwrId: string,
 ): Layout | null {
   const { w, h } = size;
   const MIN_BAND = 2;
@@ -204,12 +201,12 @@ function computeLayout(
     { v: F.gi, c: C.import, k: "grid-in" },
     { v: F.solar, c: C.solar, k: "solar" },
     { v: F.bd, c: C.battOut, k: "batt-out" },
+    { v: F.bc, c: C.battIn, k: "batt-in" },
   ].filter((f) => f.v > 0);
 
   const homeRightFlows = [
     ...(gridOnRight ? [{ v: F.ge, c: C.export, k: "grid-out" }] : []),
     ...F.cons.map((c, i) => ({ v: c.v, c: c.colour, k: "con" + i })),
-    ...(F.bc > 0 ? [{ v: F.bc, c: C.battIn, k: "batt-in" }] : []),
     ...(F.otherV > 0 ? [{ v: F.otherV, c: C.consumer, k: "other" }] : []),
   ];
 
@@ -236,7 +233,7 @@ function computeLayout(
   const midOf = (r: [number, number] | null): number | null => (r ? (r[0] + r[1]) / 2 : null);
 
   const srcNodes: SrcNode[] = [];
-  if (F.gi > 0 && !gridOnRight) {
+  if (F.hasGrid && !gridOnRight) {
     const giR = attachL["grid-in"];
     srcNodes.push({
       key: "grid",
@@ -257,14 +254,16 @@ function computeLayout(
       top: 0,
     });
   }
-  if (F.bd > 0) {
+  if (F.hasBattery) {
     const bdR = attachL["batt-out"];
+    const bcR = attachL["batt-in"];
     srcNodes.push({
       key: "battery",
       colour: C.battOut,
-      h: Math.max(th(F.bd), MIN_NODE),
-      centre: midOf(bdR) ?? contentTop + contentH * 0.8,
-      flows: { import: bdR ?? null, export: null },
+      h: Math.max(th(F.bd) + th(F.bc), MIN_NODE),
+      centre:
+        bdR && bcR ? (bdR[0] + bcR[1]) / 2 : midOf(bdR) ?? midOf(bcR) ?? contentTop + contentH * 0.8,
+      flows: { import: bdR ?? null, export: bcR ?? null },
       top: 0,
     });
   }
@@ -279,22 +278,7 @@ function computeLayout(
   srcNodes.forEach((n, i) => (n.top = srcYs[i]));
 
   const conNodes: ConNode[] = [];
-
-  // Battery charging -> right side (home -> battery)
-  if (F.bc > 0) {
-    conNodes.push({
-      key: "battery-charge",
-      label: "Battery",
-      v: F.bc,
-      colour: C.battIn,
-      entityId: battPwrId,
-      h: Math.max(th(F.bc), MIN_NODE),
-      centre: midOf(attachR["batt-in"])!,
-      top: 0,
-    });
-  }
-
-  if (gridOnRight && F.ge > 0) {
+  if (gridOnRight) {
     conNodes.push({
       key: "grid-out",
       label: "Grid",
@@ -327,7 +311,6 @@ function computeLayout(
       label: otherLabel,
       v: F.otherV,
       colour: C.consumer,
-      entityId: "",
       h: Math.max(th(F.otherV), MIN_NODE),
       centre: midOf(attachR["other"])!,
       top: 0,
@@ -426,32 +409,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const conMode: 0 | 1 | 2 = conIconOnly ? 1 : conShowIcons ? 2 : 0;
   const battScale = Math.max(0.5, Math.min(4, Number(config?.batteryIconScale) ||1));
 
+  const gridId = (config?.gridSensor || "").trim();
+  const solarId = (config?.solarSnsor || config?.solarSensor || "").trim();
+  const battPwrId = (config?.batteryPowerSnsor || config?.batteryPowerSensor || "").trim();
+  const battLvlId = (config?.batteryLevelSnsor || config?.batteryLevelSensor || "").trim();
+  const invertGrid = config?.invertGrd || config?.invertGrid || false;
+  const invertBattery = config?.invertBattery || false;
+
   const flows: FlowDef[] = Array.isArray(config?.flows) ? config.flows : [];
 
-  // Derive source IDs from typed flow array (no legacy sensor fields).
-  const gridId   = (flows.find(f => f.type === "grid")   ?.entityId || "").trim();
-  const solarId  = (flows.find(f => f.type === "solar")  ?.entityId || "").trim();
-  const battFlow = flows.find(f => f.type === "battery");
-  const battPwrId = battFlow?.entityId?.trim() || "";
-  const battLvlId = battFlow?.levelId?.trim() || "";
-  const invertGrid = (flows.find(f => f.type === "grid")?.invert) ?? false;
-  const invertBattery = battFlow?.invert ?? false;
-
   const allIds = useMemo(() => {
-    const ids = [];
-    for (const f of flows) {
-      if (f.entityId) ids.push(f.entityId);
-      if (f.levelId) ids.push(f.levelId);
-    }
-    return ids.filter(Boolean).join(",");
-  }, [flows]);
+    const ids = [gridId, solarId, battPwrId, battLvlId];
+    for (const f of flows) { if (f.entityId) ids.push(f.entityId); }
+    return ids.filter(Boolean).join(";");
+  }, [gridId, solarId, battPwrId, battLvlId, flows]);
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
-    const [error, setError] = useState("");
-    const [renderError, setRenderError] = useState("");
-    const [size, setSize] = useState<Sized | null>(null);
-    const [probe, setProbe] = useState("");
-    const boxRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState("");
+  const [size, setSize] = useState< Sized | null>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!allIds) {
@@ -461,16 +437,15 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     let cancelled = false;
     const fetchState = async () => {
       try {
-        const url = `/api/ha/state?ids=${encodeURIComponent(allIds)}`;
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetch(`/api/ha/state?ids=${encodeURIComponent(allIds)}`, { cache: "no-store" });
         if (!res.ok) throw new Error(`HA ${res.status}`);
         const dict = await res.json();
         if (!cancelled) {
           setStatesDict(dict ?? {});
           setError("");
         }
-      } catch (err: any) {
-        if (!cancelled) setError(err?.message || "Connection failed");
+      } catch {
+        if (!cancelled) setError("Connection failed");
       }
     };
     fetchState();
@@ -481,27 +456,18 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     };
   }, [allIds]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
+    if (!boxRef.current || typeof ResizeObserver === "undefined") return;
     const el = boxRef.current;
-    if (!el || size) return;
-    const r = el.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0) {
-      setSize({ w: Math.round(r.width), h: Math.round(r.height) });
-      setProbe("");
-    } else {
-      // One rAF retry for browsers that haven't finished layout
-      const raf = requestAnimationFrame(() => {
-        const r2 = el.getBoundingClientRect();
-        if (r2.width > 0 && r2.height > 0) {
-          setSize({ w: Math.round(r2.width), h: Math.round(r2.height) });
-          setProbe("");
-        } else {
-          setProbe(`measuring gave up — ${Math.round(r2.width)}x${Math.round(r2.height)}`);
-        }
-      });
-      return () => cancelAnimationFrame(raf);
-    }
-  });
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (r && r.width > 0 && r.height > 0) {
+        setSize({ w: Math.round(r.width), h: Math.round(r.height) });
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const F = useMemo((): ComputedFlow | null => {
     if (!allIds) return null;
@@ -529,11 +495,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       bc = Math.max(0, -b);
     }
     const battLevel = battLvlId ? toPercent(statesDict[battLvlId]) : null;
-    let homeLoad = Math.max(0, gi + solar + bd - ge - bc);
+    const homeLoad = Math.max(0, gi + solar + bd - ge - bc);
 
-    const cons: ConsumerFlow[] = flows
-      .filter((f) => f.type !== "battery" && f.type !== "grid" && f.type !== "solar")
-      .map((f) => {
+    const cons: ConsumerFlow[] = flows.map((f) => {
       const st = statesDict[f.entityId];
       const w = toWatts(st);
       const v = w == null ? 0 : Math.max(0, quiet(w));
@@ -552,15 +516,14 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
 
   const L = useMemo((): Layout | null => {
     if (!size || !F) return null;
-    return computeLayout(size, C, F, otherLabel, homeLabel, gridId, battPwrId);
+    return computeLayout(size, C, F, otherLabel, homeLabel, gridId);
   }, [size, F, C, otherLabel, homeLabel, gridId]);
 
   if (!allIds) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-[0.8em] gap-[0.4em] text-center p-[0.5em]" style={{ color: textMain }}>
-        <span style={{ fontSize: "1.5em" }}>⚡</span>
-        <span style={{ fontWeight: 700 }}>Power Sankey</span>
-        <span className="text-[0.75em]" style={{ color: textSub }}>
+      <div className="w-full h-full flex flex-col items-center justify-center text-[0.8em] gap-[0.4em] text-center p-[0.5em]" style={{ color: textSub }}>
+        ⚡ Power Sankey
+        <span className="text-[0.75em] opacity-60">
           Set your Home Assistant sensors in the Inspector.
         </span>
       </div>
@@ -576,34 +539,6 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   }
 
   const anyFlow = F ? (F.gi + F.ge + F.solar + F.bd + F.bc + F.homeLoad) > 0 : false;
-
-  /* ---- Show a skeleton when configured but no flow yet ---- */
-  if (!anyFlow && allIds) {
-      const entityNames = flows.map(f => f.label || f.entityId).filter(Boolean);
-      const fetchedCount = Object.keys(statesDict).length;
-      const sampleKeys = Object.keys(statesDict).slice(0, 4);
-      const sampleVals = sampleKeys.map(k => {
-        const st = statesDict[k];
-        return st ? `${st.state || "?"} ${st.attributes?.unit_of_measurement || ""}`.trim() : "—";
-      });
-      return (
-        <div className="w-full h-full flex flex-col items-center justify-center text-[0.7em] gap-[0.2em] text-center p-[0.5em] overflow-hidden">
-          <span style={{ fontSize: "1.3em" }}>⚡</span>
-          <span style={{ fontWeight: 700, color: textMain }}>No power flowing</span>
-          <span style={{ color: textSub }}>
-            {fetchedCount} sensor(s) ok · gi={F?.gi ?? 0} so={F?.solar ?? 0} bd={F?.bd ?? ""} bc={F?.bc ?? ""} hl={F?.homeLoad ?? 0}
-          </span>
-          {sampleVals.map((v, i) => (
-            <span key={i} className="text-[0.85em]" style={{ color: textSub, opacity: 0.6 }}>
-              {sampleKeys[i].substring(0, 30)} = {v}
-            </span>
-          ))}
-          {error && (
-            <span style={{ color: "#f87171" }}>{error}</span>
-          )}
-        </div>
-      );
-    }
 
   /* ---- inline render helpers ---- */
 
@@ -682,18 +617,15 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       )}
       <div ref={boxRef} className="relative flex-1 min-h-0 overflow-hidden">
         {(!size || !L) ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-[0.7em] gap-[0.3em]" style={{ opacity: 0.6 }}>
-            <span>…</span>
-            <span style={{ fontSize: "0.8em", color: textSub }}>
-              {!size ? (probe || "measuring…") : !L ? `layout failed: gi=${F?.gi} so=${F?.solar} bd=${F?.bd} bc=${F?.bc}` : ""}
-            </span>
+          <div className="absolute inset-0 flex items-center justify-center text-[0.7em]" style={{ opacity: 0.5 }}>
+            …
           </div>
         ) : (
           <>
             <svg
               width={size.w}
               height={size.h}
-              className="block"
+              className="absolute left-0 top-0"
             >
               {L.bands.map((b) => (
                 <path key={b.key} d={b.d} fill={b.colour} fillOpacity={0.45} stroke="none" />
@@ -716,7 +648,6 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
             {L.srcNodes.map((n) => (
               <div
                 key={"lbl-" + n.key}
-                data-key={n.key}
                 className="absolute text-right"
                 style={{
                   right: size.w - L.leftBarX + 6,
@@ -724,25 +655,24 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                   transform: "translateY(-50%)",
                 }}
               >
-                {srcLabel(n).map((ln, i, arr) => {
-                  const base = ln.big ? 0.78 : 0.6;
+                {srcLabel(n).map((ln, i) => {
+                  const base = ln.big ?0.78 : 0.6;
                   const fs = ln.scale ? `${base * ln.scale}em` : `${base}em`;
                   return (
-                    <span
+                    <div
                       key={i}
                       style={{
                         fontSize: fs,
-                        fontWeight: ln.big ? 700 : 400,
+                        fontWeight: ln.big ?700 : 400,
                         color: ln.big ? textMain : textSub,
-                        opacity: ln.big ? 1 : 0.65,
+                        opacity: ln.big ?1 : 0.65,
                         lineHeight: 1.2,
                         whiteSpace: "nowrap",
-                        display: "inline-block",
                         ...ln.style,
                       }}
                     >
-                      {ln.text}{i === 0 && arr.length > 1 ? " " : ""}
-                    </span>
+                      {ln.text}
+                    </div>
                   );
                 })}
               </div>
@@ -772,7 +702,6 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
               return (
                 <div
                   key={"lbl-" + n.key}
-                  data-key={n.key}
                   className="absolute"
                   style={{
                     left: L.rightBarX + L.bw + 6,
@@ -783,25 +712,24 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                     overflow: "hidden",
                   }}
                 >
-                  {lines.map((ln, i, arr) => {
-                    const base = ln.big ? 0.78 : 0.6;
+                  {lines.map((ln, i) => {
+                    const base = ln.big ? 0.78 :0.6;
                     const fs = `${base * rightScale}em`;
                     return (
-                      <span
+                      <div
                         key={i}
                         style={{
                           fontSize: fs,
-                          fontWeight: ln.big ? 700 : 400,
+                          fontWeight: ln.big ? 700 :400,
                           color: ln.big ? textMain : textSub,
-                          opacity: ln.big ? 1 : 0.65,
+                          opacity: ln.big ? 1 :0.65,
                           lineHeight: 1.2,
                           whiteSpace: "nowrap",
-                          display: "inline-block",
                           ...ln.style,
                         }}
                       >
-                        {ln.text}{i === 0 && arr.length > 1 ? " " : ""}
-                      </span>
+                        {ln.text}
+                      </div>
                     );
                   })}
                 </div>
