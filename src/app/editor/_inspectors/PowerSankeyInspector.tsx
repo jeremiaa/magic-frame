@@ -285,7 +285,6 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                     </span>
                   </label>
                 )}
-              </div>
             </AccordionCard>
           );
         })}
