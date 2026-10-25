@@ -655,8 +655,11 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       )}
       <div ref={boxRef} className="relative flex-1 min-h-0 overflow-hidden">
         {(!size || !L) ? (
-          <div className="absolute inset-0 flex items-center justify-center text-[0.7em]" style={{ opacity: 0.5 }}>
-            …
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-[0.7em] gap-[0.3em]" style={{ opacity: 0.6 }}>
+            <span>…</span>
+            <span style={{ fontSize: "0.8em", color: textSub }}>
+              {!size ? "measuring…" : !L ? `layout failed: gi=${F?.gi} so=${F?.solar} bd=${F?.bd} bc=${F?.bc}` : ""}
+            </span>
           </div>
         ) : (
           <>
