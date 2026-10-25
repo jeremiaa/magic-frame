@@ -419,7 +419,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const battFlow = flows.find(f => f.type === "battery");
   const battPwrId = battFlow?.entityId?.trim() || "";
   const battLvlId = battFlow?.levelId?.trim() || "";
-  const invertGrid = battFlow?.invert ?? false;
+  const invertGrid = (flows.find(f => f.type === "grid")?.invert) ?? false;
   const invertBattery = battFlow?.invert ?? false;
 
   const allIds = useMemo(() => {
@@ -466,16 +466,23 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   }, [allIds]);
 
   useEffect(() => {
-    if (!boxRef.current || typeof ResizeObserver === "undefined") return;
+    if (!boxRef.current) return;
     const el = boxRef.current;
-    const ro = new ResizeObserver((entries) => {
-      const r = entries[0]?.contentRect;
-      if (r && r.width > 0 && r.height > 0) {
+
+    // Capture initial size immediately (ResizeObserver only fires on changes)
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
         setSize({ w: Math.round(r.width), h: Math.round(r.height) });
       }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
+    };
+    measure();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(() => measure());
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
   }, []);
 
   const F = useMemo((): ComputedFlow | null => {
