@@ -425,9 +425,10 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   }, [gridId, solarId, battPwrId, battLvlId, flows]);
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
-  const [error, setError] = useState("");
-  const [size, setSize] = useState< Sized | null>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
+    const [error, setError] = useState("");
+    const [renderError, setRenderError] = useState("");
+    const [size, setSize] = useState<Sized | null>(null);
+    const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!allIds) {
@@ -521,9 +522,10 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
 
   if (!allIds) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-[0.8em] gap-[0.4em] text-center p-[0.5em]" style={{ color: textSub }}>
-        ⚡ Power Sankey
-        <span className="text-[0.75em] opacity-60">
+      <div className="w-full h-full flex flex-col items-center justify-center text-[0.8em] gap-[0.4em] text-center p-[0.5em]" style={{ color: textMain }}>
+        <span style={{ fontSize: "1.5em" }}>⚡</span>
+        <span style={{ fontWeight: 700 }}>Power Sankey</span>
+        <span className="text-[0.75em]" style={{ color: textSub }}>
           Set your Home Assistant sensors in the Inspector.
         </span>
       </div>
@@ -539,6 +541,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   }
 
   const anyFlow = F ? (F.gi + F.ge + F.solar + F.bd + F.bc + F.homeLoad) > 0 : false;
+
+  /* ---- Show a skeleton when configured but no flow yet ---- */
+  if (!anyFlow && allIds) {
+    const entityNames = flows.map(f => f.label || f.entityId).filter(Boolean);
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-[0.75em] gap-[0.3em] text-center p-[0.5em]">
+        <span style={{ fontSize: "1.3em" }}>⚡</span>
+        <span style={{ fontWeight: 700, color: textMain }}>No power flowing</span>
+        {entityNames.length > 0 && (
+          <span className="text-[0.8em]" style={{ color: textSub }}>
+            Monitoring {entityNames.slice(0, 4).join(", ")}{entityNames.length > 4 ? ` +${entityNames.length - 4}` : ""}
+          </span>
+        )}
+        <span className="text-[0.7em]" style={{ color: textSub, opacity: 0.6 }}>
+          Flow diagram will appear when power is detected.
+        </span>
+      </div>
+    );
+  }
 
   /* ---- inline render helpers ---- */
 
