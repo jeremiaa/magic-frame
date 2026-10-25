@@ -24,10 +24,10 @@ type Flow = {
 const FLOW_TYPES: FlowType[] = ["grid", "solar", "battery", "consumer"];
 
 const FLOW_LABELS: Record<FlowType, string> = {
-  grid: "Netz",
+  grid: "Grid",
   solar: "Solar",
-  battery: "Batterie",
-  consumer: "Verbraucher",
+  battery: "Battery",
+  consumer: "Consumer",
 };
 
 const FLOW_COLORS: Record<FlowType, string> = {
@@ -87,10 +87,10 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
               onClick={() => updateConfig(widget.i, key, undefined)}
               className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
             >
-              {t("Standard")}
+              {t("Default")}
             </button>
           ) : (
-            <span className="text-xs text-[var(--mf-fg)]/40">{t("Standard (keine Farbe)")}</span>
+            <span className="text-xs text-[var(--mf-fg)]/40">{t("Default (no colour)")}</span>
           )}
         </div>
       </div>
@@ -151,7 +151,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
     <div className="space-y-4">
       {/* ── 1. Title ──────────────────────────────────────────────────────── */}
       <div>
-        <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Titel")}</label>
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Title")}</label>
         <input
           type="text"
           value={cfg.title || ""}
@@ -164,7 +164,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
       {/* ── 2. Flows card-list ────────────────────────────────────────────── */}
       <div className="space-y-3">
         {flows.length === 0 && (
-          <p className="text-xs text-[var(--mf-fg)]/40 px-1">{t("Noch keine Flüsse — unten hinzufügen.")}</p>
+          <p className="text-xs text-[var(--mf-fg)]/40 px-1">{t("No flows yet — add one below.")}</p>
         )}
         {flows.map((flow, idx) => {
           const typeLabel = FLOW_LABELS[flow.type] || flow.type;
@@ -189,7 +189,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                     onClick={(e) => { e.stopPropagation(); moveFlow(idx, -1); }}
                     disabled={idx === 0}
                     className="text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] disabled:opacity-20 px-1.5 py-0.5 text-xs"
-                    title={t("Nach oben")}
+                    title={t("Move up")}
                   >
                     ▲
                   </button>
@@ -197,7 +197,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                     onClick={(e) => { e.stopPropagation(); moveFlow(idx, 1); }}
                     disabled={idx === flows.length - 1}
                     className="text-[var(--mf-fg)]/40 hover:text-[var(--mf-fg)] disabled:opacity-20 px-1.5 py-0.5 text-xs"
-                    title={t("Nach unten")}
+                    title={t("Move down")}
                   >
                     ▼
                   </button>
@@ -206,7 +206,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
             >
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Typ")}</label>
+                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Type")}</label>
                   <select
                     value={flow.type}
                     onChange={(e) => updateFlow(idx, "type", e.target.value)}
@@ -229,12 +229,12 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                   type="text"
                   value={flow.label || ""}
                   onChange={(e) => updateFlow(idx, "label", e.target.value)}
-                  placeholder={t("Label (leer = HA-Name)")}
+                  placeholder={t("Label (empty = HA name)")}
                   className={INPUT}
                 />
 
                 <div>
-                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Farbe")}</label>
+                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Colour")}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -248,10 +248,10 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                         onClick={() => updateFlow(idx, "color", undefined)}
                         className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
                       >
-                        {t("Standard")}
+                        {t("Default")}
                       </button>
                     ) : (
-                      <span className="text-xs text-[var(--mf-fg)]/40">{t("Standard (keine Farbe)")}</span>
+                      <span className="text-xs text-[var(--mf-fg)]/40">{t("Default (no colour)")}</span>
                     )}
                   </div>
                 </div>
@@ -266,12 +266,12 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
         onClick={addFlow}
         className="w-full flex items-center justify-center gap-2 bg-[var(--mf-elev)]/10 hover:bg-[var(--mf-elev)]/20 text-[var(--mf-fg)] py-2.5 rounded-lg text-sm font-medium transition-colors"
       >
-        <Plus size={16} /> {t("Flow hinzufügen")}
+        <Plus size={16} /> {t("Add flow")}
       </button>
 
       {/* ── 3. Appearance settings ────────────────────────────────────────── */}
       <div className="border-t border-[var(--mf-bdr)]/10 pt-4 space-y-3">
-        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Darstellung")}</p>
+        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Appearance")}</p>
 
         <input
           type="text"
@@ -309,7 +309,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
 
       {/* ── 5. Range sliders ──────────────────────────────────────────────── */}
       <div className="border-t border-[var(--mf-bdr)]/10 pt-4 space-y-3">
-        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Skalierung")}</p>
+        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Scaling")}</p>
         {renderRange("batteryIconScale", "Battery Icon Scale", 0.5, 4, 0.1, 1, "%", (v) => String(Math.round(v * 100)))}
         {renderRange("minFlowW", "Minimum flow (W)", 0, 100, 1, 0, "W")}
         {renderRange("iconSize", "Icon size", 0.6, 2.4, 0.1, 1, "%", (v) => String(Math.round(v * 100)))}
@@ -317,7 +317,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
 
       {/* ── 6. Colour pickers ─────────────────────────────────────────────── */}
       <div className="border-t border-[var(--mf-bdr)]/10 pt-4 space-y-3">
-        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Farben")}</p>
+        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Colours")}</p>
         {renderColorPicker("importColor", "Grid import colour", "#10b981")}
         {renderColorPicker("exportColor", "Grid export colour", "#ef4444")}
         {renderColorPicker("solarColor", "Solar colour", "#f59e0b")}
@@ -362,8 +362,8 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
             className={INPUT}
           />
           <div className="flex flex-wrap gap-x-6 gap-y-3">
-            {renderSwitch("invertGrid", "Grid-Sensor invertieren")}
-            {renderSwitch("invertBattery", "Batterie-Sensor invertieren")}
+            {renderSwitch("invertGrid", "Invert grid sensor")}
+            {renderSwitch("invertBattery", "Invert battery sensor")}
           </div>
         </div>
       </AccordionCard>
