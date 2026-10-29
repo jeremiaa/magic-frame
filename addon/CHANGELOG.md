@@ -14,6 +14,14 @@ scripts/check-wiki.mjs prüft, dass die Version aus package.json hier steht.
 
 What each version changes, in short. The full notes are on the [releases page](https://github.com/jeremiaa/magic-frame/releases).
 
+## 1.5.11
+
+- School rotation: an activity written as *Art / Violin* gets the icon of the part the widget knows, and one it doesn't know gets a plain dot that every screen can draw. By @sth2258.
+- Norwegian for the School rotation and Digests, digest text included, by @ghveem.
+- The Digests pages call their second field *Address* instead of *Slug*, and their heading follows the language.
+
+[Full notes for 1.5.11](https://github.com/jeremiaa/magic-frame/releases/tag/v1.5.11)
+
 ## 1.5.10
 
 - **New: Digests.** Widgets you pick — school rotation, calendar, to-dos, shopping list, weather, sensors — as plain text at an address Home Assistant can read, to send on as a phone notification or an SMS. In the editor under *Digests*, which also shows the Home Assistant configuration to copy. Built by @sth2258.
