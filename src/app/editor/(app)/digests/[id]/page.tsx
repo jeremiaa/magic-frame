@@ -451,7 +451,7 @@ export default function DigestEditorPage({
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-2">
-                Digest
+                {t("Digests")}
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <label className="flex-1">
@@ -464,7 +464,7 @@ export default function DigestEditorPage({
                   />
                 </label>
                 <label className="sm:w-60">
-                  <span className="text-xs text-[var(--mf-fg)]/60 block mb-1">Slug</span>
+                  <span className="text-xs text-[var(--mf-fg)]/60 block mb-1">{t("Adresse")}</span>
                   <input
                     type="text"
                     value={slug}

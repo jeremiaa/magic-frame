@@ -126,7 +126,7 @@ export default function DigestsListPage() {
         <header className="flex items-end justify-between mb-8">
           <div>
             <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--mf-fg)]/40 mb-2">
-              Digests
+              {t("Digests")}
             </div>
             <h1 className="text-3xl font-semibold">
               {t("Text-Zusammenfassungen")}
@@ -236,7 +236,7 @@ export default function DigestsListPage() {
 
             <label className="block mb-6">
               <span className="text-xs font-medium text-[var(--mf-fg)]/70 block mb-2">
-                Slug
+                {t("Adresse")}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-[var(--mf-fg)]/40 font-mono text-sm">/api/digest/</span>
