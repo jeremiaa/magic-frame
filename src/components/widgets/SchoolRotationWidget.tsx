@@ -51,7 +51,12 @@ const ACTIVITY_ICONS: Record<string, string> = {
 };
 
 function actIcon(activity: string) {
-  return ACTIVITY_ICONS[activity.toLowerCase()] || "▸";
+  const key = activity.toLowerCase();
+  if (ACTIVITY_ICONS[key]) return ACTIVITY_ICONS[key];
+  for (const part of key.split(/\s*\/\s*/)) {
+    if (ACTIVITY_ICONS[part]) return ACTIVITY_ICONS[part];
+  }
+  return "·";
 }
 
 const KID_COLORS = [
