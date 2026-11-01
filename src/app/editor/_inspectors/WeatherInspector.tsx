@@ -251,6 +251,21 @@ export default function WeatherInspector({
                 </select>
              </div>
              <div>
+                <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Alignment")}</label>
+                <select
+                   value={(activeWidget.config as any)?.align || 'center'}
+                   onChange={(e) => updateConfig(activeWidget.i, 'align', e.target.value)}
+                   className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] font-sans text-sm rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer"
+                >
+                   <option value="left">{t("Left")}</option>
+                   <option value="center">{t("Centre")}</option>
+                   <option value="right">{t("Right")}</option>
+                </select>
+                <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">
+                   {t("Where the weather content sits inside the tile. Centre is the default; left/right help on differently sized displays.")}
+                </p>
+             </div>
+             <div>
                 <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Icon Stil")}</label>
                 <select
                    value={normalizeIconSet((activeWidget.config as any)?.iconSet) || 'lucide'}

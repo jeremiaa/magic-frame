@@ -75,6 +75,8 @@ const weatherConfig = baseConfig.extend({
   lon: z.string().optional(),
   location: z.string().optional(),
   forecastLayout: z.enum(["horizontal", "vertical"]).optional(),
+  // where the weather content sits inside the tile (default centre = old look)
+  align: z.enum(["left", "center", "right"]).optional(),
   iconSet: z.string().optional(),
   // Meteocons (MIT): Stil fill/line + optionale SMIL-Animation. Nur relevant
   // wenn iconSet === "meteocons"; Defaults = fill / statisch.
