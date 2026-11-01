@@ -815,6 +815,10 @@ export const wallpaperSchema = z
     query: z.string().optional(),
     // source "icloud" (#116): öffentlicher Link eines geteilten iCloud-Albums.
     icloudUrl: z.string().optional(),
+    // source "ha_entity": die Bild-URL steht im gewählten Attribut der
+    // Home-Assistant-Entity (leer = Zustand der Entity).
+    haEntityId: z.string().optional(),
+    haAttribute: z.string().optional(),
     intervalSec: z.number().optional(),
     showMetadata: z.boolean().optional(),
     // Wie das Bild skaliert wird (issue #17). cover = Fill (default, croppt),

@@ -270,9 +270,13 @@ export interface WidgetLayoutItem {
 }
 
 export interface WallpaperConfig {
-  source: string; // 'unsplash', 'url', 'webdav', 'immich', 'icloud'
+  source: string; // 'unsplash', 'url', 'webdav', 'immich', 'icloud', 'ha_entity'
   query: string; // keywords or image url
   icloudUrl?: string;
+  // Home Assistant Entity als Bild-URL-Quelle: die Adresse steht im
+  // gewählten Attribut der Entity (leer = Zustand der Entity).
+  haEntityId?: string;
+  haAttribute?: string;
   intervalSec: number;
   showMetadata: boolean;
   webdavUrl?: string;
