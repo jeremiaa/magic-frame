@@ -19,7 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 
 const RUNNER = /* ts */ `
-import { computeLayout, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
+import { computeLayout, buildRowZones, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
 import assert from "node:assert";
 
 function ring(o: Partial<ResolvedRing>): ResolvedRing {
@@ -27,7 +27,10 @@ function ring(o: Partial<ResolvedRing>): ResolvedRing {
     idx: 0, id: "sensor.demo", attr: null, label: "Demo", min: 0, max: 100,
     style: "fixed", stopsList: [], thicknessPct: null, value: 50, unit: "kW",
     showUnit: true, decimals: 1, showRing: true, showMarker: false,
-    entColor: null, fallbackColour: null, ...o,
+    entColor: null, fallbackColour: null,
+    showRowIcon: true, showRowName: true, showRowValue: true,
+    iconPlacement: "before-name", valuePlacement: "far-right", rowAlign: "left",
+    ...o,
   };
 }
 const base = {
@@ -201,6 +204,69 @@ check("progress arc uses round cap; track does not", () => {
 check("centreEntity out of range clamps", () => {
   const L = computeLayout({ ...base, centreEntity: 5, rings: [ring({ value: 7.5, decimals: 1 })] });
   assert.equal(L.centre!.valueText, "7.5");
+});
+
+// ---- 16. entity-row zone layout (per-entity icon/name/value + placements) ----
+const rowBase = {
+  showRowIcon: true, showRowName: true, showRowValue: true,
+  iconPlacement: "before-name", valuePlacement: "far-right",
+};
+check("default layout: value pinned right, icon+name in centre cluster", () => {
+  const z = buildRowZones({ ...rowBase });
+  assert.deepEqual(z.left, []);
+  assert.deepEqual(z.center, ["icon", "name"]);
+  assert.deepEqual(z.right, ["value"]);
+});
+check("value far-left: value pinned left, cluster keeps icon+name", () => {
+  const z = buildRowZones({ ...rowBase, valuePlacement: "far-left" });
+  assert.deepEqual(z.left, ["value"]);
+  assert.deepEqual(z.center, ["icon", "name"]);
+  assert.deepEqual(z.right, []);
+});
+check("hidden elements occupy no slot", () => {
+  const z = buildRowZones({ ...rowBase, showRowValue: false });
+  assert.deepEqual(z.right, []);
+  assert.deepEqual(z.center, ["icon", "name"]);
+  const z2 = buildRowZones({ ...rowBase, showRowName: false, showRowIcon: false });
+  assert.deepEqual(z2, { left: [], center: [], right: ["value"] });
+});
+check("icon far-left + value far-right: name centred between edge pins", () => {
+  const z = buildRowZones({ ...rowBase, iconPlacement: "far-left" });
+  assert.deepEqual(z.left, ["icon"]);
+  assert.deepEqual(z.center, ["name"]);
+  assert.deepEqual(z.right, ["value"]);
+});
+check("value after-name stays in the cluster, after the name", () => {
+  const z = buildRowZones({ ...rowBase, valuePlacement: "after-name" });
+  assert.deepEqual(z.center, ["icon", "name", "value"]);
+  assert.deepEqual(z.right, []);
+});
+check("value before-name: cluster reads icon, value, name", () => {
+  const z = buildRowZones({ ...rowBase, valuePlacement: "before-name" });
+  assert.deepEqual(z.center, ["icon", "value", "name"]);
+  assert.deepEqual(z.right, []);
+});
+check("both far-left: value outermost on the left edge", () => {
+  const z = buildRowZones({ ...rowBase, valuePlacement: "far-left", iconPlacement: "far-left" });
+  assert.deepEqual(z.left, ["value", "icon"]);
+  assert.deepEqual(z.center, ["name"]);
+});
+check("both far-right: value outermost on the right edge", () => {
+  const z = buildRowZones({ ...rowBase, valuePlacement: "far-right", iconPlacement: "far-right" });
+  assert.deepEqual(z.right, ["icon", "value"]);
+  assert.deepEqual(z.center, ["name"]);
+});
+check("icon after-name: cluster reads name, icon", () => {
+  const z = buildRowZones({ ...rowBase, iconPlacement: "after-name" });
+  assert.deepEqual(z.center, ["name", "icon"]);
+  assert.deepEqual(z.right, ["value"]);
+});
+check("name only: single centre slot", () => {
+  const z = buildRowZones({
+    showRowIcon: false, showRowName: true, showRowValue: false,
+    iconPlacement: "before-name", valuePlacement: "far-right",
+  });
+  assert.deepEqual(z, { left: [], center: ["name"], right: [] });
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");

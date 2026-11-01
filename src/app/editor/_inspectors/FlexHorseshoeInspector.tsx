@@ -29,6 +29,13 @@ type EntityCfg = {
   unitOverride?: string;
   showUnit?: boolean;
   decimals?: number;
+  // entity-row display — per entity
+  showRowIcon?: boolean;
+  showRowName?: boolean;
+  showRowValue?: boolean;
+  iconPlacement?: string;
+  valuePlacement?: string;
+  rowAlign?: string;
 };
 
 const RING_STYLES: RingStyleType[] = ["fixed", "colorstop", "interpolated", "segments", "gradient"];
@@ -49,11 +56,17 @@ const RING_COLORS: Record<RingStyleType, string> = {
   gradient: "#ab47bc",
 };
 
-const VALUE_PLACEMENTS: { value: string; label: string }[] = [
-  { value: "right", label: "Right (row end)" },
-  { value: "afterName", label: "After name" },
-  { value: "beforeName", label: "Before name" },
-  { value: "left", label: "Left (row start)" },
+const ROW_PLACEMENTS: { value: string; label: string }[] = [
+  { value: "far-left", label: "Far left" },
+  { value: "before-name", label: "Before name" },
+  { value: "after-name", label: "After name" },
+  { value: "far-right", label: "Far right" },
+];
+
+const ROW_ALIGNS: { value: string; label: string }[] = [
+  { value: "left", label: "Left" },
+  { value: "center", label: "Center" },
+  { value: "right", label: "Right" },
 ];
 
 const INPUT =
@@ -241,6 +254,30 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
       </div>
     );
   };
+
+  // Per-entity select (writes into entities[idx][key])
+  const renderEntitySelect = (
+    idx: number,
+    key: keyof EntityCfg,
+    label: string,
+    options: { value: string; label: string }[],
+    defaultValue: string,
+  ) => (
+    <div>
+      <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{label}</label>
+      <select
+        value={String(entities[idx][key] ?? defaultValue)}
+        onChange={(e) => updateEntity(idx, key, e.target.value)}
+        className={INPUT}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {t(o.label)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 
   const headerExtra = (idx: number, count: number, move: (idx: number, dir: number) => void) => (
     <div className="flex gap-0.5 shrink-0">
@@ -462,37 +499,42 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                   </div>
                   {renderEntityRange(idx, "decimals", t("Decimals"), 0, 3, 1, 1)}
                 </div>
+
+                <div className="border-t border-[var(--mf-bdr)]/10 pt-3 space-y-3">
+                  <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Entity row")}</label>
+                  <p className="text-xs text-[var(--mf-fg)]/40">
+                    {t("The row shows when any of these is on. Far left / far right pin to the row edges; before name / after name sit beside the name, positioned by the row justification.")}
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    {renderEntitySwitch(idx, "showRowIcon", t("Icon"), true)}
+                    {renderEntitySwitch(idx, "showRowName", t("Name"), true)}
+                    {renderEntitySwitch(idx, "showRowValue", t("Value"), true)}
+                  </div>
+                  {renderEntitySelect(idx, "iconPlacement", t("Icon justification"), ROW_PLACEMENTS, "before-name")}
+                  {renderEntitySelect(idx, "valuePlacement", t("Value justification"), ROW_PLACEMENTS, "far-right")}
+                  {renderEntitySelect(idx, "rowAlign", t("Row justification"), ROW_ALIGNS, "left")}
+                </div>
               </div>
             </AccordionCard>
           );
         })}
       </div>
 
-      {/* ── 3. Entity rows ────────────────────────────────────────────────── */}
+      {/* ── 3. Rows position ──────────────────────────────────────────────── */}
       <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
-        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Entity rows")}</label>
-        <div className="flex flex-wrap gap-4">
-          {renderSwitch("showEntityList", t("Show entity rows"), true)}
-          {renderSwitch("showEntityName", t("Show entity name"), true)}
-          {renderSwitch("showIcons", t("Entity icons"), true)}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {renderSelect(
-            "valuePlacement",
-            "Value justification",
-            VALUE_PLACEMENTS,
-            "right",
-          )}
-          {renderSelect(
-            "entityListPosition",
-            "Name/list position",
-            [
-              { value: "below", label: "Below horseshoe" },
-              { value: "above", label: "Above horseshoe" },
-            ],
-            "below",
-          )}
-        </div>
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Rows position")}</label>
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("Each entity's row shows whenever its icon, name or value is toggled on inside the entity above.")}
+        </p>
+        {renderSelect(
+          "entityListPosition",
+          "Rows relative to gauge",
+          [
+            { value: "below", label: "Below horseshoe" },
+            { value: "above", label: "Above horseshoe" },
+          ],
+          "below",
+        )}
       </div>
 
       {/* ── 4. Big centre value ───────────────────────────────────────────── */}

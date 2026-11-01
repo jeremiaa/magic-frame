@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useState, useRef, useMemo, type ReactElement } from "react";
+import { useLayoutEffect, useState, useRef, useMemo, type ReactElement, type CSSProperties } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
@@ -13,6 +13,18 @@ import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 const BAD_STATES = new Set(["unavailable", "unknown", "none", ""]);
 
 export type RingStyle = "fixed" | "colorstop" | "interpolated" | "segments" | "gradient";
+
+/**
+ * Where an icon/value sits in the entity row: pinned to a row edge
+ * ("far-left"/"far-right") or beside the name ("before-name"/"after-name").
+ */
+export type RowPlacement = "far-left" | "before-name" | "after-name" | "far-right";
+
+/** Justification of the entity row's content (its name cluster). */
+export type RowAlign = "left" | "center" | "right";
+
+const PLACEMENTS: readonly RowPlacement[] = ["far-left", "before-name", "after-name", "far-right"];
+const ROW_ALIGNS: readonly RowAlign[] = ["left", "center", "right"];
 
 /**
  * Entity = gauge ring. Max TWO entities:
@@ -34,6 +46,16 @@ export interface EntityCfg {
   unitOverride?: string; // "" = no override
   showUnit?: boolean;
   decimals?: number;
+  /* ---- entity-row display, per entity ---- */
+  showRowIcon?: boolean; // icon in the entity row
+  showRowName?: boolean; // name in the entity row
+  showRowValue?: boolean; // value in the entity row
+  /** icon position in the row: row edge or beside the name */
+  iconPlacement?: RowPlacement;
+  /** value position in the row: row edge or beside the name */
+  valuePlacement?: RowPlacement;
+  /** row justification: positions the name cluster left/centre/right */
+  rowAlign?: RowAlign;
 }
 
 /** Legacy config shape: rings were configured separately from entities. */
@@ -203,6 +225,69 @@ function valueFrac(min: number, max: number, v: number): number {
   return Math.max(0, Math.min(1, (v - min) / span));
 }
 
+/** Row placement validation with fallback (config values are user input). */
+function normPlacement(v: unknown, d: RowPlacement): RowPlacement {
+  return PLACEMENTS.includes(v as RowPlacement) ? (v as RowPlacement) : d;
+}
+
+function normRowAlign(v: unknown, d: RowAlign): RowAlign {
+  return ROW_ALIGNS.includes(v as RowAlign) ? (v as RowAlign) : d;
+}
+
+/* ---- entity-row zone layout ---- */
+
+/** Which element occupies a slot in the entity row. */
+export type RowSlot = "icon" | "value" | "name";
+
+/**
+ * Row layout: [far-left zone] [name cluster, rowAlign] [far-right zone].
+ * far-left/far-right pin to the row edges; before-name/after-name sit
+ * beside the name inside the cluster, which the row justification
+ * (rowAlign) positions within whatever space the edge zones leave. With
+ * nothing pinned to an edge the cluster takes the whole row and rowAlign
+ * justifies the entire row.
+ *
+ * Zone arrays list slots outermost→innermost (left) / innermost→outermost
+ * (right), so the value ends up as the outermost element on either edge —
+ * matching the legacy layouts.
+ */
+export interface RowZones {
+  left: RowSlot[];
+  center: RowSlot[];
+  right: RowSlot[];
+}
+
+/** Pure placement logic for one entity row. Hidden elements take no slot. */
+export function buildRowZones(P: {
+  showRowIcon: boolean;
+  showRowName: boolean;
+  showRowValue: boolean;
+  iconPlacement: RowPlacement;
+  valuePlacement: RowPlacement;
+}): RowZones {
+  const left: RowSlot[] = [];
+  const center: RowSlot[] = [];
+  const right: RowSlot[] = [];
+  const icon: RowSlot | null = P.showRowIcon ? "icon" : null;
+  const value: RowSlot | null = P.showRowValue ? "value" : null;
+  const name: RowSlot | null = P.showRowName ? "name" : null;
+
+  // left edge, value outermost (legacy "left" had the value leftmost)
+  if (value && P.valuePlacement === "far-left") left.push(value);
+  if (icon && P.iconPlacement === "far-left") left.push(icon);
+  // name cluster in reading order: icon · value · name · value · icon
+  if (icon && P.iconPlacement === "before-name") center.push(icon);
+  if (value && P.valuePlacement === "before-name") center.push(value);
+  if (name) center.push(name);
+  if (value && P.valuePlacement === "after-name") center.push(value);
+  if (icon && P.iconPlacement === "after-name") center.push(icon);
+  // right edge, value outermost (legacy "right" had the value rightmost)
+  if (icon && P.iconPlacement === "far-right") right.push(icon);
+  if (value && P.valuePlacement === "far-right") right.push(value);
+
+  return { left, center, right };
+}
+
 export interface ResolvedRing {
   idx: number; // entity index (0 = outer/main, 1 = inner)
   id: string;
@@ -221,6 +306,13 @@ export interface ResolvedRing {
   showMarker: boolean;
   entColor: string | null;
   fallbackColour: string | null;
+  /* entity-row display (resolved) */
+  showRowIcon: boolean;
+  showRowName: boolean;
+  showRowValue: boolean;
+  iconPlacement: RowPlacement;
+  valuePlacement: RowPlacement;
+  rowAlign: RowAlign;
 }
 
 /** A stroked arc piece. Rendered with fill="none" + stroke so that the
@@ -470,13 +562,13 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const titleAlign = ["left", "center", "right"].includes(config?.titleAlign) ? config.titleAlign : "left";
   const titlePosition = config?.titlePosition === "bottom" ? "bottom" : "top";
 
-  // Entity rows
-  const showEntityList = config?.showEntityList !== false;
-  const showIcons = config?.showIcons !== false;
-  const showEntityName = config?.showEntityName !== false;
-  const valuePlacement = ["left", "beforeName", "afterName", "right"].includes(config?.valuePlacement)
-    ? config.valuePlacement
-    : "right";
+  // Entity rows: visibility (icon/name/value), icon & value placement and the
+  // row justification now live inside each entity (showRowIcon, showRowName,
+  // showRowValue, iconPlacement, valuePlacement, rowAlign). A row renders
+  // whenever any of those three visibility flags is on — there is no global
+  // "show rows" toggle any more. The legacy global keys (showEntityList,
+  // showEntityName, showIcons, valuePlacement) are honoured as per-entity
+  // fallbacks during resolution. Only the rows-above/below choice stays here.
   const entityListPosition = config?.entityListPosition === "above" ? "above" : "below";
 
   // Big centre value
@@ -543,6 +635,21 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
     // Legacy fallbacks from the old global settings (config-level, passthrough).
     const legacyShowUnit = config?.showUnit !== false;
     const legacyDecimals = Math.max(0, Math.min(3, Math.round(Number(config?.decimals ?? 1))));
+    // Legacy global entity-row settings → per-entity fallbacks.
+    const legacyRowOn = config?.showEntityList !== false;
+    const legacyShowIcons = config?.showIcons !== false;
+    const legacyShowName = config?.showEntityName !== false;
+    // Old value placement → new (value, icon) placement pair. The old layouts
+    // always sat the icon beside the name, with the value at a row edge or
+    // beside the name itself.
+    const legacyValuePlacement: RowPlacement =
+      config?.valuePlacement === "left"
+        ? "far-left"
+        : config?.valuePlacement === "beforeName"
+          ? "before-name"
+          : config?.valuePlacement === "afterName"
+            ? "after-name"
+            : "far-right";
     const out: ResolvedRing[] = [];
     sources.forEach((e, i) => {
       const { id, attr } = parseEntityRef(e.entityId || "");
@@ -570,6 +677,12 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         showMarker: (e as EntityCfg).showMarker === true,
         entColor: (e as EntityCfg).color || null,
         fallbackColour: (e as EntityCfg).color || fixedColor,
+        showRowIcon: (e as EntityCfg).showRowIcon ?? (legacyShowIcons && legacyRowOn),
+        showRowName: (e as EntityCfg).showRowName ?? (legacyShowName && legacyRowOn),
+        showRowValue: (e as EntityCfg).showRowValue ?? legacyRowOn,
+        iconPlacement: normPlacement((e as EntityCfg).iconPlacement, "before-name"),
+        valuePlacement: normPlacement((e as EntityCfg).valuePlacement, legacyValuePlacement),
+        rowAlign: normRowAlign((e as EntityCfg).rowAlign, "left"),
       });
     });
     return out;
@@ -644,7 +757,11 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
 
   /* ---- entity rows ---- */
 
-  const listEl = showEntityList && resolvedRings.length > 0 ? (
+  // Per-entity rows: show each entity's row when any of its icon/name/value
+  // flags is on.
+  const rowRings = resolvedRings.filter((r) => r.showRowIcon || r.showRowName || r.showRowValue);
+
+  const listEl = rowRings.length > 0 ? (
     <div
       style={{
         flex: "0 0 auto",
@@ -653,7 +770,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         overflow: "hidden",
       }}
     >
-      {resolvedRings.map((r) => {
+      {rowRings.map((r) => {
         const st = statesDict[r.id];
         const numeric = r.value != null;
         const dotColour = numeric
@@ -669,12 +786,12 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
             ? String(r.attr ? (st.attributes ? st.attributes[r.attr] : "") : st.state)
             : "—";
 
-        const valEl = (
+        const valEl = r.showRowValue ? (
           <span style={{ fontSize: "0.68em", fontWeight: 700, color: dotColour, whiteSpace: "nowrap", flex: "0 0 auto" }}>
             {valText}
           </span>
-        );
-        const nameEl = showEntityName ? (
+        ) : null;
+        const nameEl = r.showRowName ? (
           <span
             style={{
               fontSize: "0.62em",
@@ -688,25 +805,34 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
             {r.label}
           </span>
         ) : null;
-        const iconEl = showIcons ? (
+        const iconEl = r.showRowIcon ? (
           <span style={{ fontSize: "0.95em", flex: "0 0 auto" }}>{iconFor(st, r.id)}</span>
         ) : null;
-        const spacer = <span style={{ flex: 1, minWidth: "0.45em" }} />;
 
-        let children: (ReactElement | null)[];
-        switch (valuePlacement) {
-          case "left":
-            children = [valEl, spacer, iconEl, nameEl];
-            break;
-          case "beforeName":
-            children = [iconEl, valEl, nameEl, spacer];
-            break;
-          case "afterName":
-            children = [iconEl, nameEl, valEl, spacer];
-            break;
-          default: // right
-            children = [iconEl, nameEl, spacer, valEl];
-        }
+        /* Row layout: [far-left zone] [name cluster, rowAlign] [far-right
+         * zone] — pure logic lives in buildRowZones, this maps slots to the
+         * rendered elements. */
+        const zones = buildRowZones({
+          showRowIcon: r.showRowIcon,
+          showRowName: r.showRowName,
+          showRowValue: r.showRowValue,
+          iconPlacement: r.iconPlacement,
+          valuePlacement: r.valuePlacement,
+        });
+        const slotEl = (s: RowSlot): ReactElement | null =>
+          s === "icon" ? iconEl : s === "value" ? valEl : nameEl;
+        const leftZone = zones.left.map(slotEl);
+        const centerZone = zones.center.map(slotEl);
+        const rightZone = zones.right.map(slotEl);
+
+        const justify =
+          r.rowAlign === "center" ? "center" : r.rowAlign === "right" ? "flex-end" : "flex-start";
+        const zoneStyle: CSSProperties = {
+          display: "flex",
+          alignItems: "baseline",
+          gap: "0.45em",
+          minWidth: 0,
+        };
 
         return (
           <div
@@ -721,7 +847,22 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               color: textMain,
             }}
           >
-            {children.filter(Boolean)}
+            {leftZone.some(Boolean) ? (
+              <div style={{ ...zoneStyle, flex: "0 0 auto" }}>{leftZone.filter(Boolean)}</div>
+            ) : null}
+            <div
+              style={{
+                ...zoneStyle,
+                flex: "1 1 auto",
+                justifyContent: justify,
+                overflow: "hidden",
+              }}
+            >
+              {centerZone.filter(Boolean)}
+            </div>
+            {rightZone.some(Boolean) ? (
+              <div style={{ ...zoneStyle, flex: "0 0 auto" }}>{rightZone.filter(Boolean)}</div>
+            ) : null}
           </div>
         );
       })}

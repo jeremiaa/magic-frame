@@ -443,6 +443,17 @@ const flexHorseshoeConfig = baseConfig
           unitOverride: z.string().optional(),
           showUnit: z.boolean().optional(),
           decimals: z.number().optional(),
+          // entity-row display — per entity. A row renders when any of the
+          // three visibility flags is on.
+          showRowIcon: z.boolean().optional(),
+          showRowName: z.boolean().optional(),
+          showRowValue: z.boolean().optional(),
+          // far-left/far-right pin to the row edges; before-name/after-name
+          // sit beside the name inside the row-justified cluster.
+          iconPlacement: z.enum(["far-left", "before-name", "after-name", "far-right"]).optional(),
+          valuePlacement: z.enum(["far-left", "before-name", "after-name", "far-right"]).optional(),
+          // justification of the row's content (its name cluster)
+          rowAlign: z.enum(["left", "center", "right"]).optional(),
         })
       )
       .optional(),
@@ -460,11 +471,12 @@ const flexHorseshoeConfig = baseConfig
         })
       )
       .optional(),
-    // Entity rows under/over the gauge
-    showEntityList: z.boolean().optional(),
+    // Rows above/below the gauge. Per-entity row visibility (showRowIcon/
+    // showRowName/showRowValue — a row shows if any is on), icon/value
+    // placement and row justification all live inside each entity above.
+    // Legacy keys (showEntityList/showEntityName/showIcons/valuePlacement)
+    // still validate via passthrough and are honoured as per-entity fallbacks.
     entityListPosition: z.enum(["above", "below"]).optional(),
-    showEntityName: z.boolean().optional(),
-    valuePlacement: z.enum(["left", "beforeName", "afterName", "right"]).optional(),
     // Big centre value
     showCentreValue: z.boolean().optional(),
     centreEntity: z.union([z.literal(0), z.literal(1)]).optional(),
