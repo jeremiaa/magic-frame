@@ -312,7 +312,6 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
         <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Skalierung")}</p>
         {renderRange("batteryIconScale", "Battery Icon Scale", 0.5, 4, 0.1, 1, "%", (v) => String(Math.round(v * 100)))}
         {renderRange("minFlowW", "Minimum flow (W)", 0, 100, 1, 0, "W")}
-        {renderRange("iconSize", "Icon size", 0.6, 2.4, 0.1, 1, "%", (v) => String(Math.round(v * 100)))}
       </div>
 
       {/* ── 6. Colour pickers ─────────────────────────────────────────────── */}
