@@ -54,6 +54,10 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                            <div className="text-3xl mb-2 text-violet-400">⚡</div>
                            <div className="font-bold text-[var(--mf-fg)]">{t("Power Sankey")}</div>
                          </button>
+                         <button onClick={() => addWidget("FlexHorseshoeWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-sky-500/10 border border-[var(--mf-bdr)]/10 hover:border-sky-500/30 rounded-xl p-4 text-center transition-colors">
+                           <div className="text-3xl mb-2 text-sky-400">🧲</div>
+                           <div className="font-bold text-[var(--mf-fg)]">{t("Flex Horseshoe")}</div>
+                         </button>
              <button onClick={() => addWidget("EnvironmentWidget.tsx")} className="bg-[var(--mf-elev)]/5 hover:bg-lime-500/10 border border-[var(--mf-bdr)]/10 hover:border-lime-500/30 rounded-xl p-4 text-center transition-colors">
                 <div className="text-3xl mb-2 text-lime-400">🌿</div>
                 <div className="font-bold text-[var(--mf-fg)]">{t("Umwelt")}</div>

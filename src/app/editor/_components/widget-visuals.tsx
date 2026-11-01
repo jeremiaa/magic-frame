@@ -12,6 +12,7 @@ import {
   ClipboardList,
   Image as ImageIcon,
   Gauge,
+  Disc3,
   Video,
   Music,
   Rss,
@@ -38,6 +39,7 @@ export const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: st
   "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
   "SensorWidget.tsx":          { hex: "#14b8a6", glow: "rgba(20,184,166,0.25)",  tint: "rgba(20,184,166,0.12)"  }, // teal
   "PowerSankeyWidget.tsx":    { hex: "#a78bfa", glow: "rgba(167,139,250,0.25)", tint: "rgba(167,139,250,0.12)" }, // violet
+  "FlexHorseshoeWidget.tsx":  { hex: "#38bdf8", glow: "rgba(56,189,248,0.25)", tint: "rgba(56,189,248,0.12)" }, // sky blue
   "CameraWidget.tsx":          { hex: "#f43f5e", glow: "rgba(244,63,94,0.25)",   tint: "rgba(244,63,94,0.12)"   }, // rose
   "MediaPlayerWidget.tsx":     { hex: "#ec4899", glow: "rgba(236,72,153,0.25)",  tint: "rgba(236,72,153,0.12)"  }, // pink
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
@@ -81,6 +83,8 @@ export function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <Gauge size={size} />;
     case "PowerSankeyWidget.tsx":
       return <Zap size={size} />;
+    case "FlexHorseshoeWidget.tsx":
+      return <Disc3 size={size} />;
     case "CameraWidget.tsx":
       return <Video size={size} />;
     case "MediaPlayerWidget.tsx":

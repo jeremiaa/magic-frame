@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon, Gauge, Video, Music, Rss, QrCode, Activity, Leaf, Type as TypeIcon, GraduationCap } from "lucide-react";
+import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon,  Gauge, Disc3, Video, Music, Rss, QrCode, Activity, Leaf, Type as TypeIcon, GraduationCap } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { viewUrl } from "@/lib/base-path";
 
@@ -87,6 +87,7 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "ImageWidget.tsx":           { color: "rgba(168,85,247,0.55)",  Icon: ImageIcon },      // purple
   "SensorWidget.tsx":          { color: "rgba(20,184,166,0.55)",  Icon: Gauge },          // teal
   "PowerSankeyWidget.tsx":     { color: "rgba(167,139,250,0.55)", Icon: Zap },            // violet
+  "FlexHorseshoeWidget.tsx":   { color: "rgba(56,189,248,0.55)",  Icon: Disc3 },           // sky blue
   "EnvironmentWidget.tsx":     { color: "rgba(132,204,22,0.55)",  Icon: Leaf },           // lime
   "CameraWidget.tsx":          { color: "rgba(244,63,94,0.55)",   Icon: Video },          // rose
   "MediaPlayerWidget.tsx":     { color: "rgba(236,72,153,0.55)",  Icon: Music },          // pink

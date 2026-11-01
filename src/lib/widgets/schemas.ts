@@ -13,6 +13,7 @@ export const WIDGET_TYPES = [
   "TodosWidget.tsx",
   "SchoolRotationWidget.tsx",
   "PowerSankeyWidget.tsx",
+  "FlexHorseshoeWidget.tsx",
 ] as const;
 
 const baseConfig = z
@@ -416,6 +417,46 @@ const powerSankeyConfig = baseConfig
   })
   .passthrough();
 
+const flexHorseshoeConfig = baseConfig
+  .extend({
+    title: z.string().optional(),
+    entities: z.array(
+      z.object({
+        entityId: z.string(),
+        label: z.string().optional(),
+        color: z.string().optional(),
+      })
+    ).optional(),
+    rings: z.array(
+      z.object({
+        entityId: z.string(),
+        min: z.number(),
+        max: z.number(),
+        style: z.enum(["fixed", "colorstop", "interpolated", "segments", "gradient"]),
+        stops: z.string().optional(),
+        thicknessPct: z.number().optional(),
+      })
+    ).optional(),
+    arcDegrees: z.number().optional(),
+    ringWidth: z.number().optional(),
+    ringGap: z.number().optional(),
+    showTicks: z.boolean().optional(),
+    tickCount: z.number().optional(),
+    tickSize: z.number().optional(),
+    tickColor: z.string().optional(),
+    showMarker: z.boolean().optional(),
+    markerColor: z.string().optional(),
+    showCentreValue: z.boolean().optional(),
+    showUnit: z.boolean().optional(),
+    centreScale: z.number().optional(),
+    showEntityList: z.boolean().optional(),
+    showIcons: z.boolean().optional(),
+    decimals: z.number().optional(),
+    trackColor: z.string().optional(),
+    fixedColor: z.string().optional(),
+  })
+  .passthrough();
+
 const mediaPlayerConfig = baseConfig
   .extend({
     // auto wählt nach Kachelform (breit → row, hoch → stack, quadratisch → cover)
@@ -643,6 +684,9 @@ export const widgetLayoutItemSchema = z.union([
     .object({ type: z.literal("SchoolRotationWidget.tsx"), config: schoolRotationConfig })
     .object({ type: z.literal("PowerSankeyWidget.tsx"), config: powerSankeyConfig })
     .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("FlexHorseshoeWidget.tsx"), config: flexHorseshoeConfig })
+    .merge(commonWidgetFields()),
   ]),
 ]);
 
@@ -694,6 +738,7 @@ export const WIDGET_CONFIG_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "TextWidget.tsx": textConfig,
   "SchoolRotationWidget.tsx": schoolRotationConfig,
   "PowerSankeyWidget.tsx": powerSankeyConfig,
+  "FlexHorseshoeWidget.tsx": flexHorseshoeConfig,
 };
 
 export const layoutSchema = z.array(widgetLayoutItemSchema);
