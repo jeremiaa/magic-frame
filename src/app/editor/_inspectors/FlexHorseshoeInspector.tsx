@@ -555,6 +555,17 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           "0",
           true,
         )}
+        {renderSelect(
+          "centreUnitPosition",
+          "Centre unit position",
+          [
+            { value: "below", label: "Below value (stacked)" },
+            { value: "above", label: "Above value (stacked)" },
+            { value: "before", label: "Before value (superscript)" },
+            { value: "after", label: "After value (superscript)" },
+          ],
+          "below",
+        )}
         {renderRange("centreScale", t("Centre value size"), 0.5, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
       </div>
 

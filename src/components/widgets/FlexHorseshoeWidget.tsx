@@ -23,6 +23,11 @@ export type RowPlacement = "far-left" | "before-name" | "after-name" | "far-righ
 /** Justification of the entity row's content (its name cluster). */
 export type RowAlign = "left" | "center" | "right";
 
+/** Where the big centre value's unit sits relative to the value. */
+export type CentreUnitPos = "below" | "above" | "before" | "after";
+
+const CENTRE_UNIT_POS: readonly CentreUnitPos[] = ["below", "above", "before", "after"];
+
 const PLACEMENTS: readonly RowPlacement[] = ["far-left", "before-name", "after-name", "far-right"];
 const ROW_ALIGNS: readonly RowAlign[] = ["left", "center", "right"];
 
@@ -232,6 +237,11 @@ function normPlacement(v: unknown, d: RowPlacement): RowPlacement {
 
 function normRowAlign(v: unknown, d: RowAlign): RowAlign {
   return ROW_ALIGNS.includes(v as RowAlign) ? (v as RowAlign) : d;
+}
+
+/** Centre unit position validation with fallback (config values are user input). */
+export function normCentreUnitPos(v: unknown, d: CentreUnitPos = "below"): CentreUnitPos {
+  return CENTRE_UNIT_POS.includes(v as CentreUnitPos) ? (v as CentreUnitPos) : d;
 }
 
 /* ---- entity-row zone layout ---- */
@@ -576,6 +586,9 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const centreEntity = Number(config?.centreEntity) === 1 ? 1 : 0;
   const showCentreIcon = config?.showCentreIcon === true;
   const centreShowUnit = config?.centreShowUnit !== false;
+  // Unit placement around the big centre value: below/above stack it in the
+  // same format as now; before/after set it as a superscript beside the value.
+  const centreUnitPos = normCentreUnitPos(config?.centreUnitPosition, "below");
 
   const ents: EntityCfg[] = Array.isArray(config?.entities)
     ? (config.entities as EntityCfg[]).slice(0, 2)
@@ -938,10 +951,31 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                   {centreIcon}
                 </div>
               ) : null}
-              <div style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
-                {L.centre.valueText}
-              </div>
-              {L.centre.unitText ? (
+              {centreUnitPos === "above" && L.centre.unitText ? (
+                <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, marginBottom: "0.08em" }}>{L.centre.unitText}</div>
+              ) : null}
+              {centreUnitPos === "before" || centreUnitPos === "after" ? (
+                <>
+                  {centreUnitPos === "before" && L.centre.unitText ? (
+                    <span style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, verticalAlign: "super", fontWeight: 600, marginRight: "0.06em" }}>
+                      {L.centre.unitText}
+                    </span>
+                  ) : null}
+                  <span style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
+                    {L.centre.valueText}
+                  </span>
+                  {centreUnitPos === "after" && L.centre.unitText ? (
+                    <span style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, verticalAlign: "super", fontWeight: 600, marginLeft: "0.06em" }}>
+                      {L.centre.unitText}
+                    </span>
+                  ) : null}
+                </>
+              ) : (
+                <div style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
+                  {L.centre.valueText}
+                </div>
+              )}
+              {centreUnitPos === "below" && L.centre.unitText ? (
                 <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65 }}>{L.centre.unitText}</div>
               ) : null}
             </div>

@@ -482,6 +482,9 @@ const flexHorseshoeConfig = baseConfig
     centreEntity: z.union([z.literal(0), z.literal(1)]).optional(),
     showCentreIcon: z.boolean().optional(),
     centreShowUnit: z.boolean().optional(),
+    // unit placement around the big centre value: below/above stack it,
+    // before/after render it as a superscript beside the value
+    centreUnitPosition: z.enum(["below", "above", "before", "after"]).optional(),
     centreScale: z.number().optional(),
     arcDegrees: z.number().optional(),
     ringWidth: z.number().optional(),

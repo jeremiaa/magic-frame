@@ -19,7 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 
 const RUNNER = /* ts */ `
-import { computeLayout, buildRowZones, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
+import { computeLayout, buildRowZones, normCentreUnitPos, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
 import assert from "node:assert";
 
 function ring(o: Partial<ResolvedRing>): ResolvedRing {
@@ -267,6 +267,20 @@ check("name only: single centre slot", () => {
     iconPlacement: "before-name", valuePlacement: "far-right",
   });
   assert.deepEqual(z, { left: [], center: ["name"], right: [] });
+});
+
+// ---- 17. centre unit position validation ----
+check("normCentreUnitPos passes valid values through", () => {
+  assert.equal(normCentreUnitPos("below"), "below");
+  assert.equal(normCentreUnitPos("above"), "above");
+  assert.equal(normCentreUnitPos("before"), "before");
+  assert.equal(normCentreUnitPos("after"), "after");
+});
+check("normCentreUnitPos falls back on junk (default below)", () => {
+  assert.equal(normCentreUnitPos(undefined), "below");
+  assert.equal(normCentreUnitPos("side"), "below");
+  assert.equal(normCentreUnitPos(""), "below");
+  assert.equal(normCentreUnitPos(5), "below");
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");
