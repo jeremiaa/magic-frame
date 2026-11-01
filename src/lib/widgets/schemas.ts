@@ -387,17 +387,15 @@ const textConfig = baseConfig
 const powerSankeyConfig = baseConfig
   .extend({
     title: z.string().optional(),
-    gridSensor: z.string().optional(),
-    solarSensor: z.string().optional(),
-    batteryPowerSensor: z.string().optional(),
-    batteryLevelSensor: z.string().optional(),
-    invertGrid: z.boolean().optional(),
-    invertBattery: z.boolean().optional(),
+    // Flows are the single source of truth: the first grid, solar and battery
+    // flow feed the sources; consumer flows draw their own right-side bands.
     flows: z.array(z.object({
       entityId: z.string(),
       label: z.string().optional(),
       color: z.string().optional(),
       type: z.enum(["grid", "solar", "battery", "consumer"]),
+      levelId: z.string().optional(),
+      invert: z.boolean().optional(),
     })).optional(),
     homeLabel: z.string().optional(),
     otherLabel: z.string().optional(),

@@ -9,7 +9,7 @@ import { useGlassStyle } from "@/lib/ui/glass";
 
 const BAD_STATES = new Set(["unavailable", "unknown", "none", ""]);
 
-function toWatts(st: any): number | null {
+export function toWatts(st: any): number | null {
   if (!st) return null;
   const raw = String(st.state ?? "").trim().toLowerCase();
   if (BAD_STATES.has(raw)) return null;
@@ -22,7 +22,7 @@ function toWatts(st: any): number | null {
   return v;
 }
 
-function toPercent(st: any): number | null {
+export function toPercent(st: any): number | null {
   if (!st) return null;
   const raw = String(st.state ?? "").trim().toLowerCase();
   if (BAD_STATES.has(raw)) return null;
@@ -116,6 +116,10 @@ interface FlowDef {
   label?: string;
   color?: string;
   type: "grid" | "solar" | "battery" | "consumer";
+  /** Battery flows only: a second entity holding the battery level (% or 0-1). */
+  levelId?: string;
+  /** Grid and battery flows: flip the sensor's sign convention. */
+  invert?: boolean;
 }
 
 interface Sized { w: number; h: number }
@@ -160,7 +164,7 @@ function singleFlowNode(n: SrcNode): boolean {
   return !n.flows.export;
 }
 
-function computeLayout(
+export function computeLayout(
   size: Sized,
   C: Record<string, string>,
   F: ComputedFlow,
@@ -233,7 +237,7 @@ function computeLayout(
   const midOf = (r: [number, number] | null): number | null => (r ? (r[0] + r[1]) / 2 : null);
 
   const srcNodes: SrcNode[] = [];
-  if (F.hasGrid && !gridOnRight) {
+  if (F.hasGrid && F.gi > 0 && !gridOnRight) {
     const giR = attachL["grid-in"];
     srcNodes.push({
       key: "grid",
@@ -254,7 +258,7 @@ function computeLayout(
       top: 0,
     });
   }
-  if (F.hasBattery) {
+  if (F.hasBattery && (F.bd > 0 || F.bc > 0)) {
     const bdR = attachL["batt-out"];
     const bcR = attachL["batt-in"];
     srcNodes.push({
@@ -409,19 +413,26 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const conMode: 0 | 1 | 2 = conIconOnly ? 1 : conShowIcons ? 2 : 0;
   const battScale = Math.max(0.5, Math.min(4, Number(config?.batteryIconScale) ||1));
 
-  const gridId = (config?.gridSensor || "").trim();
-  const solarId = (config?.solarSnsor || config?.solarSensor || "").trim();
-  const battPwrId = (config?.batteryPowerSnsor || config?.batteryPowerSensor || "").trim();
-  const battLvlId = (config?.batteryLevelSnsor || config?.batteryLevelSensor || "").trim();
-  const invertGrid = config?.invertGrd || config?.invertGrid || false;
-  const invertBattery = config?.invertBattery || false;
-
+  // Flows are the single source of truth: the first grid, solar and battery
+  // flow each feed the left side; consumer flows draw their own bands on the
+  // right. There are no legacy sensor fields - old configs must be re-created
+  // as typed flows.
   const flows: FlowDef[] = Array.isArray(config?.flows) ? config.flows : [];
+  const gridFlow = flows.find((f) => f.type === "grid");
+  const solarFlow = flows.find((f) => f.type === "solar");
+  const battFlow = flows.find((f) => f.type === "battery");
+  const gridId = (gridFlow?.entityId || "").trim();
+  const solarId = (solarFlow?.entityId || "").trim();
+  const battPwrId = (battFlow?.entityId || "").trim();
+  const battLvlId = (battFlow?.levelId || "").trim();
+  const invertGrid = gridFlow?.invert === true;
+  const invertBattery = battFlow?.invert === true;
 
   const allIds = useMemo(() => {
     const ids = [gridId, solarId, battPwrId, battLvlId];
     for (const f of flows) { if (f.entityId) ids.push(f.entityId); }
-    return ids.filter(Boolean).join(";");
+    // /api/ha/state expects comma-separated ids - semicolons silently return no data.
+    return ids.filter(Boolean).join(",");
   }, [gridId, solarId, battPwrId, battLvlId, flows]);
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
@@ -497,7 +508,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     const battLevel = battLvlId ? toPercent(statesDict[battLvlId]) : null;
     const homeLoad = Math.max(0, gi + solar + bd - ge - bc);
 
-    const cons: ConsumerFlow[] = flows.map((f) => {
+    const cons: ConsumerFlow[] = flows
+      .filter((f) => f.type === "consumer")
+      .map((f) => {
       const st = statesDict[f.entityId];
       const w = toWatts(st);
       const v = w == null ? 0 : Math.max(0, quiet(w));

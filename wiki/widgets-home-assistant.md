@@ -491,16 +491,17 @@ follows the house by itself.
 ### Setting it up
 
 1. Add a **Power Sankey** widget.
-2. Under **Flows**, click add. One flow is one consumer: the entity, a type
-   (only the colour dot in the editor changes), a label (empty = the HA name)
-   and a colour (**Standard** = the type colour).
-3. Open **Legacy sensors** and set the sources: a grid sensor (signed - import
-   positive, export negative), a solar sensor, a battery power sensor (signed -
-   discharge positive, charge negative) and a battery level sensor (`%`, or 0-1).
-   If a sensor's sign convention is backwards, **Grid-Sensor invertieren** /
-   **Batterie-Sensor invertieren** flip it.
-4. Colours under **Farben**: import, export, solar, battery charge and discharge,
-   and the fallback consumer colour - **Standard** resets any of them.
+2. Under **Flows**, add one flow per source and per consumer. The type sets
+   what a flow is: **Grid** (signed - import positive, export negative),
+   **Solar**, **Battery** (signed - discharge positive, charge negative) or
+   **Consumer**. Each flow takes an entity, a label (empty = the HA name) and
+   a colour (**Default** = the type colour).
+3. Battery flows take a second **battery level entity** (`%`, or 0-1) for the
+   percentage line; grid and battery flows have an **Invert sensor sign**
+   toggle for sensors whose sign convention is backwards.
+4. Colours under **Colours**: import, export, solar, battery charge and
+   discharge, and the fallback consumer colour - **Default** resets any of
+   them.
 
 ### Options
 
@@ -518,7 +519,8 @@ follows the house by itself.
 | `importColor` / `exportColor` / `solarColor` | - | Band colours for grid import, grid export and solar. |
 | `batteryOutColor` / `batteryInColor` | - | Battery discharge / charge band colours. |
 | `consumerColor` | - | The colour of a flow that sets none of its own. |
-| `invertGrid` / `invertBattery` | off | Flips the sign of the grid / battery power sensor. |
+| flow `invert` (grid / battery) | off | Flips the flow sensor's sign. |
+| flow `levelId` (battery) | none | Battery level entity for the percentage line. |
 
 ### What it draws
 
