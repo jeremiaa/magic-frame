@@ -36,6 +36,9 @@ type EntityCfg = {
   showRowValue?: boolean;
   iconPlacement?: string;
   icon?: string;
+  iconColor?: string;
+  rowValueColor?: string;
+  rowScale?: number;
   valuePlacement?: string;
   rowAlign?: string;
 };
@@ -204,6 +207,35 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
       </select>
     </div>
   );
+
+  // Per-entity colour (writes into entities[idx][key]; undefined = automatic)
+  const renderEntityColour = (idx: number, key: keyof EntityCfg, label: string, autoHint: string) => {
+    const val = entities[idx][key] as string | undefined;
+    return (
+      <div>
+        <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{label}</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={val || "#4dd0e1"}
+            onChange={(e) => updateEntity(idx, key, e.target.value)}
+            className="h-9 w-14 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg cursor-pointer"
+          />
+          {val ? (
+            <button
+              type="button"
+              onClick={() => updateEntity(idx, key, undefined)}
+              className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
+            >
+              {t("Reset")}
+            </button>
+          ) : (
+            <span className="text-xs text-[var(--mf-fg)]/40">{autoHint}</span>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   // Per-entity switch (writes into entities[idx][key])
   const renderEntitySwitch = (idx: number, key: keyof EntityCfg, label: string, defaultOn: boolean) => {
@@ -525,6 +557,11 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                   {renderEntitySelect(idx, "iconPlacement", t("Icon justification"), ROW_PLACEMENTS, "before-name")}
                   {renderEntitySelect(idx, "valuePlacement", t("Value justification"), ROW_PLACEMENTS, "far-right")}
                   {renderEntitySelect(idx, "rowAlign", t("Row justification"), ROW_ALIGNS, "left")}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    {renderEntityColour(idx, "iconColor", t("Icon colour"), t("Automatic (widget text)"))}
+                    {renderEntityColour(idx, "rowValueColor", t("Value colour"), t("Automatic (value colour)"))}
+                  </div>
+                  {renderEntityRange(idx, "rowScale", t("Row scale (icon, name, value)"), 0.5, 2, 0.1, 1)}
                 </div>
               </div>
             </AccordionCard>

@@ -459,6 +459,14 @@ const flexHorseshoeConfig = baseConfig
           // custom mdi icon (same picker as the Sensor widget); blank/omitted
           // = use the icon Home Assistant provides (attributes.icon)
           icon: z.string().optional(),
+          // colour for the entity's MDI/Lucide icon (emoji ignores it);
+          // blank = inherit the widget text colour
+          iconColor: z.string().optional(),
+          // explicit colour for this entity's row value; blank = the
+          // automatic chain (entity colour → value colour → fixed colour)
+          rowValueColor: z.string().optional(),
+          // scale multiplier for the entity row's icon, name and value
+          rowScale: z.number().optional(),
         })
       )
       .optional(),

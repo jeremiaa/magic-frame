@@ -65,6 +65,14 @@ export interface EntityCfg {
   /** custom mdi icon for this entity (same picker as the Sensor widget);
    *  blank = use the icon Home Assistant provides (attributes.icon) */
   icon?: string;
+  /** colour for the entity's MDI/Lucide icon (emoji glyphs ignore it);
+   *  blank = inherit the widget text colour */
+  iconColor?: string;
+  /** explicit colour for this entity's row value; blank = the automatic
+   *  chain (entity colour → value colour → fixed colour) */
+  rowValueColor?: string;
+  /** scale multiplier for the entity row's icon, name and value (default 1) */
+  rowScale?: number;
 }
 
 /** Legacy config shape: rings were configured separately from entities. */
@@ -336,6 +344,12 @@ export interface ResolvedRing {
   rowAlign: RowAlign;
   /** resolved custom icon ("" = none, fall back to HA / emoji) */
   icon: string;
+  /** resolved icon colour (null = inherit widget text colour) */
+  iconColor: string | null;
+  /** resolved explicit row value colour (null = automatic chain) */
+  rowValueColor: string | null;
+  /** resolved row scale multiplier (icon + name + value) */
+  rowScale: number;
 }
 
 /** A stroked arc piece. Rendered with fill="none" + stroke so that the
@@ -727,6 +741,9 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         valuePlacement: normPlacement((e as EntityCfg).valuePlacement, legacyValuePlacement),
         rowAlign: normRowAlign((e as EntityCfg).rowAlign, "left"),
         icon: iconCfg.trim(),
+        iconColor: (e as EntityCfg).iconColor || null,
+        rowValueColor: (e as EntityCfg).rowValueColor || null,
+        rowScale: clampNum((e as EntityCfg).rowScale, 0.5, 2, 1),
       });
     });
     return out;
@@ -840,14 +857,24 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
             : "—";
 
         const valEl = r.showRowValue ? (
-          <span style={{ fontSize: "0.68em", fontWeight: 700, color: dotColour, whiteSpace: "nowrap", flex: "0 0 auto" }}>
+          <span
+            style={{
+              fontSize: `${0.68 * r.rowScale}em`,
+              fontWeight: 700,
+              // explicit per-entity colour wins; otherwise the automatic
+              // chain (entity colour → value colour → fixed colour)
+              color: r.rowValueColor || dotColour,
+              whiteSpace: "nowrap",
+              flex: "0 0 auto",
+            }}
+          >
             {valText}
           </span>
         ) : null;
         const nameEl = r.showRowName ? (
           <span
             style={{
-              fontSize: "0.62em",
+              fontSize: `${0.62 * r.rowScale}em`,
               opacity: 0.75,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -867,12 +894,15 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
           // from inheriting the row's 1.5 line-height and stretching the row.
           <span
             style={{
-              fontSize: "0.95em",
+              fontSize: `${0.95 * r.rowScale}em`,
               flex: "0 0 auto",
               display: "inline-flex",
               alignItems: "center",
               alignSelf: "center",
               lineHeight: 1,
+              // MDI/Lucide icons draw with currentColor, so colouring the
+              // span colours the glyph; emoji glyphs simply ignore it.
+              ...(r.iconColor ? { color: r.iconColor } : {}),
             }}
           >
             {iconNode(r.icon, st, r.id)}
@@ -1004,7 +1034,14 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               }}
             >
               {centreIcon ? (
-                <div style={{ fontSize: `${Math.max(10, Math.min(30, L.centre.valuePx * 0.38))}px`, marginBottom: "0.15em" }}>
+                <div
+                  style={{
+                    fontSize: `${Math.max(10, Math.min(30, L.centre.valuePx * 0.38))}px`,
+                    marginBottom: "0.15em",
+                    // the entity's icon colour applies here too (MDI/Lucide)
+                    ...(cRing?.iconColor ? { color: cRing.iconColor } : {}),
+                  }}
+                >
                   {centreIcon}
                 </div>
               ) : null}
@@ -1054,7 +1091,11 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   if (titleEl && titlePosition === "bottom") children.push(titleEl);
 
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", color: textMain }}>
+    // Honours the shared Text & colour tab: the view wrapper sets config.color
+    // on the tile, but hard-setting textMain here would stomp it — the title
+    // (and everything inheriting the root) would ignore the user's colour.
+    // textMain stays as the fallback for tiles with no colour configured.
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", color: config?.color || textMain }}>
       {children}
     </div>
   );
