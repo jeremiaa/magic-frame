@@ -589,7 +589,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     }
     const nameLn = nameLine(statesDict[nameKey], nameKey, name, fallbackIcon, srcMode);
     const valueLn = { text: value, big: true };
-    const lines = sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn];
+    const lines: { text: string; big?: boolean; scale?: number; style?: React.CSSProperties }[] = sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn];
     if (n.key === "battery" && F!.battLevel != null) {
       const battIcon = iconFor(statesDict[battLvlId || nameKey], battLvlId || nameKey, "🔋");
       lines.push({
@@ -692,7 +692,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                 big: true,
                 style: { color: n.colour },
               };
-              const lines = isGrid
+              const lines: { text: string; big?: boolean; scale?: number; style?: React.CSSProperties }[] = isGrid
                 ? (sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn])
                 : (consumerLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn]);
 
