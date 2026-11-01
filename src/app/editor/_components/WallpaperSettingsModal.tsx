@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, FolderSync, RefreshCw, Music } from 'lucide-react';
 import type { WallpaperConfig } from '../_types';
 import { useT } from "@/lib/i18n/LocaleProvider";
@@ -58,6 +58,37 @@ export default function WallpaperSettingsModal({
 }: WallpaperSettingsModalProps) {
   const t = useT();
   const [tab, setTab] = useState<WpTab>("source");
+
+  // Attribute der gewählten HA-Entity - für den "Home Assistant Entity"-Provider.
+  const [haAttrOptions, setHaAttrOptions] = useState<string[] | null>(null);
+  const [haAttrLoading, setHaAttrLoading] = useState(false);
+  useEffect(() => {
+    if (wallpaper.source !== "ha_entity") return;
+    const entityId = (wallpaper.haEntityId || "").trim();
+    if (!entityId) { setHaAttrOptions(null); setHaAttrLoading(false); return; }
+    let cancelled = false;
+    setHaAttrLoading(true);
+    // 400 ms Debounce: HAEntityInput meldet jeden Tastendruck, und jeder
+    // Zwischenstand würde sonst einen eigenen /api/ha/state-Request feuern.
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/ha/state?ids=${encodeURIComponent(entityId)}`, { cache: "no-store" });
+        const data = res.ok ? await res.json() : null;
+        if (cancelled) return;
+        const attrs = data?.[entityId]?.attributes;
+        setHaAttrOptions(
+          attrs && typeof attrs === "object"
+            ? Object.keys(attrs).sort((a, b) => a.localeCompare(b))
+            : [],
+        );
+      } catch {
+        if (!cancelled) setHaAttrOptions([]);
+      } finally {
+        if (!cancelled) setHaAttrLoading(false);
+      }
+    }, 400);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [wallpaper.source, wallpaper.haEntityId]);
 
   // Übergangs-Effekt + abgeleitete Default-Dauer (für die Anzeige-Tab-Slider).
   // Defaults spiegeln die Engine: slide 1200 ms, sonst 1500 ms.
@@ -121,6 +152,7 @@ export default function WallpaperSettingsModal({
                    <option value="webdav">{t("Lokaler NAS Ordner (WebDAV)")}</option>
                    <option value="immich">{t("Immich API (Album)")}</option>
                    <option value="icloud">{t("Geteiltes iCloud-Album")}</option>
+                   <option value="ha_entity">{t("Home Assistant Entity")}</option>
                 </select>
              </div>
 
@@ -409,6 +441,50 @@ export default function WallpaperSettingsModal({
                    </div>
                    <p className="text-[11px] text-[var(--mf-fg)]/50 leading-relaxed">
                       {t("Nimm den öffentlichen Link aus dem Teilen-Menü des Albums. Jeder mit dem Link kann die Fotos sehen. iCloud-Links laufen über Apples öffentlichen Dienst für geteilte Alben.")}
+                   </p>
+                </div>
+             ) : wallpaper.source === 'ha_entity' ? (
+                <div className="space-y-4">
+                   <div>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Entity")}</label>
+                      <HAEntityInput
+                         value={wallpaper.haEntityId || ""}
+                         onChange={(v) => setWallpaper({ ...wallpaper, haEntityId: v, haAttribute: "" })}
+                         placeholder="sensor.daily_picture"
+                      />
+                      <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1.5">
+                         {t("Nutzt die Home-Assistant-Verbindung aus Einstellungen → Integrationen.")}
+                      </p>
+                   </div>
+                   <div>
+                      <label className="text-sm font-medium text-[var(--mf-fg)]/80 block mb-2">{t("Attribut")}</label>
+                      <select
+                         value={wallpaper.haAttribute ?? ""}
+                         onChange={(e) => setWallpaper({ ...wallpaper, haAttribute: e.target.value })}
+                         className="w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                      >
+                         <option value="">{t("Zustand (State)")}</option>
+                         {(haAttrOptions ?? []).map((a) => (
+                            <option key={a} value={a}>{a}</option>
+                         ))}
+                         {(() => {
+                            // Gespeicherte Wahl bleibt auswählbar, auch wenn die
+                            // Attributliste (noch) nicht geladen ist.
+                            const sel = wallpaper.haAttribute ?? "";
+                            return sel && !(haAttrOptions ?? []).includes(sel)
+                              ? <option value={sel}>{sel}</option>
+                              : null;
+                         })()}
+                      </select>
+                      {haAttrLoading && (
+                         <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">{t("Lade Attribute…")}</p>
+                      )}
+                      {haAttrOptions !== null && haAttrOptions.length === 0 && !haAttrLoading && (wallpaper.haEntityId || "").trim() !== "" && (
+                         <p className="text-[11px] text-[var(--mf-fg)]/40 mt-1">{t("Keine Attribute gefunden - Entity-ID prüfen.")}</p>
+                      )}
+                   </div>
+                   <p className="text-[11px] text-[var(--mf-fg)]/50 leading-relaxed">
+                      {t("Die Bild-URL kommt aus dem gewählten Attribut der Entity - z. B. ein Template-Sensor, der die Adresse des aktuellen Bildes liefert. Ohne Attribut wird der Zustand benutzt. Magic Frame fragt die Entity alle 30 Sekunden ab; ändert sich die URL, wechselt das Hintergrundbild mit einem weichen Übergang.")}
                    </p>
                 </div>
              ) : wallpaper.source === 'webdav' ? (

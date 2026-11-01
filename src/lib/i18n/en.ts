@@ -205,6 +205,7 @@ export const EN: Record<string, string> = {
   // ── Integrations ──
   "Daten- & Medienquellen": "Data & media sources",
   "Home Assistant": "Home Assistant",
+  "Home Assistant Entity": "Home Assistant Entity",
   "Kalender-Konten": "Calendar accounts",
   "Weitere Quellen": "More sources",
   "Google verbinden": "Connect Google",
@@ -384,6 +385,7 @@ export const EN: Record<string, string> = {
   "Keine Alben gefunden — ist im Wallpaper dieses Views Immich hinterlegt?": "No albums found — is Immich set in this view's wallpaper?",
   "Kein Album gewählt — im Inspector einstellen.": "No album selected — set it in the inspector.",
   "Nutzt die globale Immich-Verbindung (Einstellungen → Integrationen).": "Uses the global Immich connection (Settings → Integrations).",
+  "Nutzt die Home-Assistant-Verbindung aus Einstellungen → Integrationen.": "Uses the Home Assistant connection from Settings → Integrations.",
   "Album": "Album",
   "Neu laden": "Reload",
   "Keine Alben gefunden — ist Immich global konfiguriert?": "No albums found — is Immich configured globally?",
@@ -599,6 +601,9 @@ export const EN: Record<string, string> = {
   "Unschärfe (Blur)": "Blur",
   "Mit Immich verbinden / Alben laden": "Connect to Immich / load albums",
   "Lade Alben…": "Loading albums…",
+  "Lade Attribute…": "Loading attributes…",
+  "Keine Attribute gefunden - Entity-ID prüfen.": "No attributes found - check the entity ID.",
+  "Die Bild-URL kommt aus dem gewählten Attribut der Entity - z. B. ein Template-Sensor, der die Adresse des aktuellen Bildes liefert. Ohne Attribut wird der Zustand benutzt. Magic Frame fragt die Entity alle 30 Sekunden ab; ändert sich die URL, wechselt das Hintergrundbild mit einem weichen Übergang.": "The image URL comes from the selected attribute of the entity - for example a template sensor that provides the address of the current picture. Without an attribute, the state is used. Magic Frame polls the entity every 30 seconds; when the URL changes, the wallpaper crossfades to the new picture.",
   "Album auswählen": "Choose album",
   "Datum & Uhrzeit": "Date & time",
   "Kamera-Modell": "Camera model",
@@ -870,6 +875,7 @@ export const EN: Record<string, string> = {
   "Fehler beim Laden": "Error loading",
 
   // ── HA Entity inspector ──
+  "Attribut": "Attribute",
   "Entity": "Entity",
   "Nach oben": "Move up",
   "Nach unten": "Move down",
@@ -1998,6 +2004,7 @@ export const EN: Record<string, string> = {
     "Live values like charge level or time remaining, with an optional label.",
   "Fortschritt (0–100, optional)": "Progress (0–100, optional)",
   "Zeigt einen Balken — Ladestand, Druck-Fortschritt …": "Shows a bar — charge level, print progress …",
+  "Zustand (State)": "State",
   "Zustand anzeigen": "Show state",
   "Bild als Hintergrund (Blur)": "Picture as background (blur)",
   "Auch ohne Ereignis anzeigen": "Show even without an event",
