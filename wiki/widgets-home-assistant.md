@@ -480,3 +480,125 @@ tapped it. This is how one entity switches a whole group of widgets at once.
 
 For a single widget that appears with a state, you do not need a button at all —
 `showWhenEntity` on that widget is simpler. The Auto tab is for groups.
+
+## Power Sankey
+
+A live power-flow diagram, drawn from your own sensors: solar, battery and grid
+feed a central Home bar, and every consumer pulls its own band out to the right.
+Signs matter more than labels here — get the conventions right and the picture
+follows the house by itself.
+
+### Setting it up
+
+1. Add a **Power Sankey** widget.
+2. Under **Flows**, click add. One flow is one consumer: the entity, a type
+   (only the colour dot in the editor changes), a label (empty = the HA name)
+   and a colour (**Standard** = the type colour).
+3. Open **Legacy sensors** and set the sources: a grid sensor (signed — import
+   positive, export negative), a solar sensor, a battery power sensor (signed —
+   discharge positive, charge negative) and a battery level sensor (`%`, or 0–1).
+   If a sensor's sign convention is backwards, **Grid-Sensor invertieren** /
+   **Batterie-Sensor invertieren** flip it.
+4. Colours under **Farben**: import, export, solar, battery charge and discharge,
+   and the fallback consumer colour — **Standard** resets any of them.
+
+### Options
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `title` | none | A small heading above the diagram. |
+| `homeLabel` | `Home` | The label under the central bar. |
+| `otherLabel` | `Other` | The label on the untracked remainder. |
+| `showOther` | on | Sums the difference between home load and the configured consumers into an `Other` band, so the two sides always balance. |
+| `minFlowW` | 5 W | Flows below this many watts read as zero, so standby noise disappears instead of drawing hairlines. |
+| `batteryIconScale` | 100 % | Scales the battery percentage line on the battery node, 50–400 %. |
+| `sourceLabelFirst` / `consumerLabelFirst` | on | Name before value on the source / consumer labels; off swaps them. |
+| `showSourceIcons` / `showConsumerIcons` | on | HA entity icons beside the labels. |
+| `iconOnlySources` / `iconOnlyConsumers` | off | Icons instead of names — hides the text. |
+| `importColor` / `exportColor` / `solarColor` | — | Band colours for grid import, grid export and solar. |
+| `batteryOutColor` / `batteryInColor` | — | Battery discharge / charge band colours. |
+| `consumerColor` | — | The colour of a flow that sets none of its own. |
+| `invertGrid` / `invertBattery` | off | Flips the sign of the grid / battery power sensor. |
+
+### What it draws
+
+The left side stacks the sources — grid while importing, solar, battery — the
+centre is the white Home bar, the right side is one node per consumer plus
+`Other`. A grid that exports swaps sides: it appears on the right as `↑`, and
+the node boxes are nudged apart so they never overlap. The battery node spans
+charge and discharge at once, with its percentage line underneath.
+
+Values format as `W` under 1000 and `kW` — one decimal under 10 — and sensors
+reporting `kW` or `MW` are converted. A sensor that is `unavailable`, `unknown`
+or `none` reads as zero flow, not as a number.
+
+The widget polls `/api/ha/state` every 10 seconds — same trade-off as the Sensor
+widget. Nothing flowing yet? It says so. Nothing configured? It says that too.
+
+## Flex Horseshoe
+
+A horseshoe gauge of up to two concentric arcs, drawn from your Home Assistant
+entities: colour stops, tick marks, a value marker and a big centre value, with
+one legend row per entity. The first entity is the main one and draws the
+outside ring; the second draws the ring inside it.
+
+### Setting it up
+
+1. Add a **Flex Horseshoe** widget.
+2. Click **Add entity** — two at most. Give each its scale (**Min**, **Max**) and
+   a colour style:
+   - **Fixed colour** — one arc in one colour.
+   - **Colour stops (discrete)** — the arc takes the colour of the band the value
+     lands in.
+   - **Colour stops (interpolated)** — the arc blends between the two stops
+     around the value.
+   - **Colour stops (segments)** — the whole scale painted as solid stop-colour
+     segments.
+   - **Gradient** — a smooth gradient from the arc start to the value.
+   Stops are `0:#2196f3,20:#4caf50,30:#ff9800` — value then colour, comma
+   separated, any order (they are sorted).
+3. `sensor.foo@load_power` reads an attribute instead of the state: entity id,
+   `@`, attribute name.
+
+### Options
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `title` / `titleAlign` / `titlePosition` | — / `left` / `top` | A small heading, justified left / centre / right, above or below the gauge. |
+| `entityListPosition` | `below` | Whether the entity rows sit below or above the gauge. |
+| `entityListOffset` | 0 em | Moves the rows away from (positive) or into (negative) the arc, −3 to 3 em. |
+| `showCentreValue` | on | The big value in the middle. |
+| `centreEntity` | first | Which entity the centre shows — first (outside ring) or second (inside). |
+| `showCentreIcon` | off | That entity's icon above the centre value. |
+| `centreShowUnit` | on | The unit after the value — the entity's own **Show unit** must also be on. |
+| `centreUnitPosition` | `below` | Unit below / above the value, or inline before / after it. |
+| `centreUnitOffset` | 0 em | Raises (positive) or lowers (negative) the unit, −2 to 2 em. |
+| `centreScale` | 1 | Size multiplier on the centre value, 0.5–3×. |
+| `arcDegrees` | 260 | The sweep, 90–360°; the gap is centred at the bottom. At 360 the horseshoe closes into a full circle. |
+| `ringWidth` | 18 % | Default ring thickness as a share of the radius, 4–60 %. Per-entity **Ring thickness** overrides it. |
+| `ringGap` | 5 % | Radial gap between stacked rings. |
+| `showTicks` | off | Tick marks around the outside, one every `sweep / (count − 1)`. |
+| `tickCount` / `tickSize` | 11 / 6 % | How many ticks, and how long as a share of the half-box, 1–30 %. |
+| `tickColor` | `#8a9099` | Tick colour. **Marker colour** in the same section sets the value marker dot. |
+| `trackColor` | `#6b7280` | The full-sweep track arc behind the progress. |
+| `fixedColor` | `#4dd0e1` | The fallback colour for an entity that sets none and has no usable stops. |
+
+Per entity: `label` (empty = the HA name), a **Custom icon** (blank = the HA
+icon), **Horseshoe arc** and **Value marker** switches, **Show unit**, a
+**Unit override**, **Decimals** (0–3), and the legend row — **Icon**, **Name**
+and **Value** switches, **Icon / Value / Row justification** (`far-left`,
+`before-name`, `after-name`, `far-right`, and `left` / `centre` / `right` for the
+row), **Icon / Value / Name colour**, and **Row scale** 50–200 %.
+
+### What it draws
+
+Unlike the Sensor widget this one is on live sync — the stream pushes the
+value the moment it changes, and an `offline` badge appears in the corner when
+the stream drops. A value that is `unavailable`, `unknown` or `none` is an em
+dash: no arc, no marker, no number pretending.
+
+Rings are stroked arcs, so thickness is a stroke width with round caps; the
+track sits behind at low opacity. Rows are a flex line — `far-left` and
+`far-right` pin to the row edges, `before-name` / `after-name` sit inside the
+name cluster, and **Row justification** slides what is left. Hidden switches
+take no slot, so a row can be icon-only or value-only.

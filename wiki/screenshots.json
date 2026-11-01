@@ -76,7 +76,7 @@
         }
       ],
       "takenAt": {
-        "src/components/widgets/WeatherWidget.tsx": "b7a751a53ba7",
+        "src/components/widgets/WeatherWidget.tsx": "734babd72c2d",
         "src/lib/weather/wmo.tsx": "9f33782c649f"
       }
     },
@@ -578,7 +578,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "a52bfab3881f"
+        "src/app/editor/(app)/page.tsx": "711d6fd4c9c5"
       }
     },
     {
@@ -600,7 +600,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "a52bfab3881f"
+        "src/app/editor/(app)/page.tsx": "711d6fd4c9c5"
       }
     },
     {
@@ -622,13 +622,13 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
       "id": "widgets-add-palette",
       "page": "widgets.md",
-      "caption": "The 'Add widget' palette down the left of the editor, each of the 20 widgets a row with its icon and a plus.",
+      "caption": "The 'Add widget' palette down the left of the editor, each of the 22 widgets a row with its icon and a plus.",
       "shows": [
         "src/app/editor/_components/AddWidgetModal.tsx",
         "src/app/editor/(app)/views/[id]/page.tsx"
@@ -645,8 +645,8 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/_components/AddWidgetModal.tsx": "a33438054a4a",
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/_components/AddWidgetModal.tsx": "71c57404d0fe",
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
@@ -1182,7 +1182,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
@@ -1207,7 +1207,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
@@ -1279,7 +1279,7 @@
         }
       ],
       "takenAt": {
-        "src/components/widgets/WeatherWidget.tsx": "b7a751a53ba7"
+        "src/components/widgets/WeatherWidget.tsx": "734babd72c2d"
       }
     },
     {
