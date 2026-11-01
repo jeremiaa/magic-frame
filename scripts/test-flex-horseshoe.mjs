@@ -19,7 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 
 const RUNNER = /* ts */ `
-import { computeLayout, buildRowZones, normCentreUnitPos, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
+import { computeLayout, buildRowZones, normCentreUnitPos, clampNum, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
 import assert from "node:assert";
 
 function ring(o: Partial<ResolvedRing>): ResolvedRing {
@@ -281,6 +281,19 @@ check("normCentreUnitPos falls back on junk (default below)", () => {
   assert.equal(normCentreUnitPos("side"), "below");
   assert.equal(normCentreUnitPos(""), "below");
   assert.equal(normCentreUnitPos(5), "below");
+});
+
+// ---- 18. numeric offset clamping (unit + rows sliders) ----
+check("clampNum clamps to range and falls back on junk", () => {
+  assert.equal(clampNum(1.4, -2, 2, 0), 1.4);
+  assert.equal(clampNum(9, -2, 2, 0), 2);
+  assert.equal(clampNum(-9, -2, 2, 0), -2);
+  assert.equal(clampNum(0, -2, 2, 0), 0);
+  assert.equal(clampNum(undefined, -2, 2, 0), 0);
+  assert.equal(clampNum("abc", -2, 2, 0), 0);
+  assert.equal(clampNum(null, -2, 2, 0), 0);
+  assert.equal(clampNum("1.2", -2, 2, 0), 1.2);
+  assert.equal(clampNum(4, -3, 3, 0), 3);
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");

@@ -244,6 +244,13 @@ export function normCentreUnitPos(v: unknown, d: CentreUnitPos = "below"): Centr
   return CENTRE_UNIT_POS.includes(v as CentreUnitPos) ? (v as CentreUnitPos) : d;
 }
 
+/** Finite-number clamp with fallback (config values are user input). */
+export function clampNum(v: unknown, min: number, max: number, d: number): number {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return d;
+  return Math.min(max, Math.max(min, n));
+}
+
 /* ---- entity-row zone layout ---- */
 
 /** Which element occupies a slot in the entity row. */
@@ -586,9 +593,12 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const centreEntity = Number(config?.centreEntity) === 1 ? 1 : 0;
   const showCentreIcon = config?.showCentreIcon === true;
   const centreShowUnit = config?.centreShowUnit !== false;
-  // Unit placement around the big centre value: below/above stack it in the
-  // same format as now; before/after set it as a superscript beside the value.
+  // Unit placement around the big centre value: below/above stack it; before/
+  // after set it inline beside the value. centreUnitOffset (em) fine-tunes the
+  // unit's vertical position relative to the value row in every mode.
   const centreUnitPos = normCentreUnitPos(config?.centreUnitPosition, "below");
+  const centreUnitOffset = clampNum(config?.centreUnitOffset, -2, 2, 0);
+  const unitDy = -centreUnitOffset; // positive offset = raised (CSS top goes negative)
 
   const ents: EntityCfg[] = Array.isArray(config?.entities)
     ? (config.entities as EntityCfg[]).slice(0, 2)
@@ -771,14 +781,23 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   /* ---- entity rows ---- */
 
   // Per-entity rows: show each entity's row when any of its icon/name/value
-  // flags is on.
+  // flags is on. entityListOffset (em) moves the row block relative to the
+  // arc: positive pushes it further away, negative pulls it closer (can
+  // overlap the horseshoe).
   const rowRings = resolvedRings.filter((r) => r.showRowIcon || r.showRowName || r.showRowValue);
+  const entityListOffset = clampNum(config?.entityListOffset, -3, 3, 0);
 
   const listEl = rowRings.length > 0 ? (
     <div
       style={{
         flex: "0 0 auto",
         padding: entityListPosition === "above" ? "0.2em 0.7em 0.2em" : "0.2em 0.7em 0.35em",
+        ...(entityListPosition === "above" && entityListOffset !== 0
+          ? { marginBottom: `${entityListOffset}em` }
+          : {}),
+        ...(entityListPosition === "below" && entityListOffset !== 0
+          ? { marginTop: `${entityListOffset}em` }
+          : {}),
         maxHeight: "45%",
         overflow: "hidden",
       }}
@@ -952,12 +971,12 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                 </div>
               ) : null}
               {centreUnitPos === "above" && L.centre.unitText ? (
-                <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, marginBottom: "0.08em" }}>{L.centre.unitText}</div>
+                <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, marginBottom: "0.08em", position: "relative", top: `${unitDy}em` }}>{L.centre.unitText}</div>
               ) : null}
               {centreUnitPos === "before" || centreUnitPos === "after" ? (
                 <>
                   {centreUnitPos === "before" && L.centre.unitText ? (
-                    <span style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, verticalAlign: "super", fontWeight: 600, marginRight: "0.06em" }}>
+                    <span style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, fontWeight: 600, position: "relative", top: `${unitDy}em`, marginRight: "0.06em" }}>
                       {L.centre.unitText}
                     </span>
                   ) : null}
@@ -965,7 +984,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                     {L.centre.valueText}
                   </span>
                   {centreUnitPos === "after" && L.centre.unitText ? (
-                    <span style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, verticalAlign: "super", fontWeight: 600, marginLeft: "0.06em" }}>
+                    <span style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, fontWeight: 600, position: "relative", top: `${unitDy}em`, marginLeft: "0.06em" }}>
                       {L.centre.unitText}
                     </span>
                   ) : null}
@@ -976,7 +995,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                 </div>
               )}
               {centreUnitPos === "below" && L.centre.unitText ? (
-                <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65 }}>{L.centre.unitText}</div>
+                <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, position: "relative", top: `${unitDy}em` }}>{L.centre.unitText}</div>
               ) : null}
             </div>
           ) : null}

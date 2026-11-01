@@ -535,6 +535,19 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           ],
           "below",
         )}
+        {renderRange(
+          "entityListOffset",
+          "Rows offset from arc",
+          -3,
+          3,
+          0.1,
+          0,
+          "em",
+          (v) => Number(v).toFixed(1),
+        )}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          Positive moves the rows further from the horseshoe, negative pulls them closer (they can overlap the arc).
+        </p>
       </div>
 
       {/* ── 4. Big centre value ───────────────────────────────────────────── */}
@@ -561,11 +574,24 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           [
             { value: "below", label: "Below value (stacked)" },
             { value: "above", label: "Above value (stacked)" },
-            { value: "before", label: "Before value (superscript)" },
-            { value: "after", label: "After value (superscript)" },
+            { value: "before", label: "Before value (inline)" },
+            { value: "after", label: "After value (inline)" },
           ],
           "below",
         )}
+        {renderRange(
+          "centreUnitOffset",
+          "Unit vertical offset",
+          -2,
+          2,
+          0.1,
+          0,
+          "em",
+          (v) => Number(v).toFixed(1),
+        )}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          Positive raises the unit above the value baseline, negative lowers it. 0 leaves it sitting in line with the value text.
+        </p>
         {renderRange("centreScale", t("Centre value size"), 0.5, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
       </div>
 

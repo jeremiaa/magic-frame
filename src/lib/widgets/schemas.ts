@@ -483,8 +483,14 @@ const flexHorseshoeConfig = baseConfig
     showCentreIcon: z.boolean().optional(),
     centreShowUnit: z.boolean().optional(),
     // unit placement around the big centre value: below/above stack it,
-    // before/after render it as a superscript beside the value
+    // before/after render it inline beside the value
     centreUnitPosition: z.enum(["below", "above", "before", "after"]).optional(),
+    // vertical offset of the unit relative to the value row, in em
+    // (positive raises, negative lowers; 0 = on the baseline)
+    centreUnitOffset: z.number().optional(),
+    // distance of the entity rows from the arc, in em (positive pushes the
+    // rows further away, negative pulls them closer / over the horseshoe)
+    entityListOffset: z.number().optional(),
     centreScale: z.number().optional(),
     arcDegrees: z.number().optional(),
     ringWidth: z.number().optional(),
