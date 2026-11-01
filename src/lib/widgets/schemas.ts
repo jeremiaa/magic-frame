@@ -454,6 +454,9 @@ const flexHorseshoeConfig = baseConfig
           valuePlacement: z.enum(["far-left", "before-name", "after-name", "far-right"]).optional(),
           // justification of the row's content (its name cluster)
           rowAlign: z.enum(["left", "center", "right"]).optional(),
+          // custom mdi icon (same picker as the Sensor widget); blank/omitted
+          // = use the icon Home Assistant provides (attributes.icon)
+          icon: z.string().optional(),
         })
       )
       .optional(),

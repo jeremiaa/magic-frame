@@ -6,6 +6,7 @@ import type { WidgetLayoutItem } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import HAEntityInput from "../_components/HAEntityInput";
 import AccordionCard from "../_components/AccordionCard";
+import IconPicker from "../_components/IconPicker";
 
 type Props = {
   widget: WidgetLayoutItem;
@@ -34,6 +35,7 @@ type EntityCfg = {
   showRowName?: boolean;
   showRowValue?: boolean;
   iconPlacement?: string;
+  icon?: string;
   valuePlacement?: string;
   rowAlign?: string;
 };
@@ -383,6 +385,16 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                   placeholder={t("Label (empty = HA name)")}
                   className={INPUT}
                 />
+                <IconPicker
+                  label={t("Custom icon")}
+                  value={ent.icon || ""}
+                  onChange={(iconId) => updateEntity(idx, "icon", iconId)}
+                  placeholder="mdi:solar-power"
+                  defaultPrefix="mdi"
+                />
+                <p className="text-xs text-[var(--mf-fg)]/40">
+                  {t("Leave blank to use the icon Home Assistant provides for this entity.")}
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Min")}</label>

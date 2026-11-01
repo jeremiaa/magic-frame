@@ -30,6 +30,7 @@ function ring(o: Partial<ResolvedRing>): ResolvedRing {
     entColor: null, fallbackColour: null,
     showRowIcon: true, showRowName: true, showRowValue: true,
     iconPlacement: "before-name", valuePlacement: "far-right", rowAlign: "left",
+    icon: "",
     ...o,
   };
 }

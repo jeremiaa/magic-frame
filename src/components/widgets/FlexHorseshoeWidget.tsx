@@ -3,6 +3,7 @@
 import { useLayoutEffect, useState, useRef, useMemo, type ReactElement, type CSSProperties } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
+import { Icon } from "./WidgetIcon";
 
 /* ------------------------------------------------------------------ */
 /* Pure helpers — module scope, no hooks, no React.                    */
@@ -61,6 +62,9 @@ export interface EntityCfg {
   valuePlacement?: RowPlacement;
   /** row justification: positions the name cluster left/centre/right */
   rowAlign?: RowAlign;
+  /** custom mdi icon for this entity (same picker as the Sensor widget);
+   *  blank = use the icon Home Assistant provides (attributes.icon) */
+  icon?: string;
 }
 
 /** Legacy config shape: rings were configured separately from entities. */
@@ -330,6 +334,8 @@ export interface ResolvedRing {
   iconPlacement: RowPlacement;
   valuePlacement: RowPlacement;
   rowAlign: RowAlign;
+  /** resolved custom icon ("" = none, fall back to HA / emoji) */
+  icon: string;
 }
 
 /** A stroked arc piece. Rendered with fill="none" + stroke so that the
@@ -548,6 +554,18 @@ function iconFor(st: any, entityId: string): string {
   return "•";
 }
 
+/** Icon content for one entity: custom picker icon first (same selector as the
+ *  Sensor widget), then the icon Home Assistant provides (attributes.icon),
+ *  then the emoji keyword fallback. Rendered via the shared <Icon> so mdi ids
+ *  display natively instead of being keyword-mapped to an emoji. */
+function iconNode(cfgIcon: string, st: any, entityId: string): ReactElement {
+  const custom = (cfgIcon || "").trim();
+  if (custom) return <Icon icon={custom} />;
+  const attr = String(st?.attributes?.icon || "").trim();
+  if (attr) return <Icon icon={attr} />;
+  return <>{iconFor(st, entityId)}</>;
+}
+
 /* ------------------------------------------------------------------ */
 /* The widget.                                                          */
 /* ------------------------------------------------------------------ */
@@ -680,6 +698,8 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       const st = statesDict[id];
       const stopsList = parseStops(e.stops);
       const style = e.style || (stopsList.length ? "colorstop" : "fixed");
+      const rawIcon = (e as EntityCfg).icon;
+      const iconCfg = typeof rawIcon === "string" ? rawIcon : "";
       const unitOverride = String((e as EntityCfg).unitOverride ?? "").trim();
       const unit = unitOverride || unitOf(st, attr);
       out.push({
@@ -706,6 +726,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         iconPlacement: normPlacement((e as EntityCfg).iconPlacement, "before-name"),
         valuePlacement: normPlacement((e as EntityCfg).valuePlacement, legacyValuePlacement),
         rowAlign: normRowAlign((e as EntityCfg).rowAlign, "left"),
+        icon: iconCfg.trim(),
       });
     });
     return out;
@@ -776,7 +797,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
 
   const cIdx = resolvedRings[centreEntity] ? centreEntity : 0;
   const cRing = resolvedRings[cIdx];
-  const centreIcon = showCentreIcon && cRing ? iconFor(statesDict[cRing.id], cRing.id) : "";
+  const centreIcon = showCentreIcon && cRing ? iconNode(cRing.icon, statesDict[cRing.id], cRing.id) : null;
 
   /* ---- entity rows ---- */
 
@@ -838,7 +859,9 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
           </span>
         ) : null;
         const iconEl = r.showRowIcon ? (
-          <span style={{ fontSize: "0.95em", flex: "0 0 auto" }}>{iconFor(st, r.id)}</span>
+          <span style={{ fontSize: "0.95em", flex: "0 0 auto", display: "inline-flex", alignItems: "center" }}>
+            {iconNode(r.icon, st, r.id)}
+          </span>
         ) : null;
 
         /* Row layout: [far-left zone] [name cluster, rowAlign] [far-right
