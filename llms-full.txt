@@ -4557,9 +4557,10 @@ follows the house by itself.
 3. Battery flows take a second **battery level entity** (`%`, or 0-1) for the
    percentage line; grid and battery flows have an **Invert sensor sign**
    toggle for sensors whose sign convention is backwards.
-4. Colours under **Colours**: import, export, solar, battery charge and
-   discharge, and the fallback consumer colour - **Default** resets any of
-   them.
+4. Colours sit on each flow: its band colour (grid adds **Export colour**,
+   battery adds **Charge colour**) plus **Name colour** and **Value colour**
+   for its label. The Home bar colour, the untracked band colour and the Home
+   label's vertical offset live under **Appearance**.
 
 ### Options
 
@@ -4574,17 +4575,21 @@ follows the house by itself.
 | `sourceLabelFirst` / `consumerLabelFirst` | on | Name before value on the source / consumer labels; off swaps them. |
 | `showSourceIcons` / `showConsumerIcons` | on | HA entity icons beside the labels. |
 | `iconOnlySources` / `iconOnlyConsumers` | off | Icons instead of names - hides the text. |
-| `importColor` / `exportColor` / `solarColor` | - | Band colours for grid import, grid export and solar. |
-| `batteryOutColor` / `batteryInColor` | - | Battery discharge / charge band colours. |
-| `consumerColor` | - | The colour of a flow that sets none of its own. |
+| flow `color` | type colour | The flow's band colour: grid import, solar, battery discharge or a consumer band. |
+| flow `exportColor` (grid) | - | Grid export band colour. |
+| flow `chargeColor` (battery) | - | Battery charge band colour. |
+| flow `nameColor` / `valueColor` | - | Name / value label colours on that flow's node. |
+| `homeBarColor` | white | The central Home bar colour. |
+| `otherColor` | grey | The untracked remainder band colour. |
+| `homeLabelOffsetY` | 0 px | Nudges the Home label up (negative) or down (positive). |
 | flow `invert` (grid / battery) | off | Flips the flow sensor's sign. |
 | flow `levelId` (battery) | none | Battery level entity for the percentage line. |
 
 ### What it draws
 
 The left side stacks the sources - grid while importing, solar, battery - the
-centre is the white Home bar, the right side is one node per consumer plus
-`Other`. A grid that exports swaps sides: it appears on the right as `↑`, and
+centre is the Home bar (white unless **Home bar colour** says otherwise), and
+the right side is one node per consumer in flows order, plus `Other`. A grid that exports swaps sides: it appears on the right as `↑`, and
 the node boxes are nudged apart so they never overlap. The battery node spans
 charge and discharge at once, with its percentage line underneath.
 

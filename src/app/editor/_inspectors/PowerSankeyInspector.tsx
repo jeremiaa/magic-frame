@@ -23,6 +23,13 @@ type Flow = {
   levelId?: string;
   /** Grid and battery flows: flip the sensor's sign convention. */
   invert?: boolean;
+  /** Grid flows: the export band colour (import band uses `color`). */
+  exportColor?: string;
+  /** Battery flows: the charge band colour (discharge band uses `color`). */
+  chargeColor?: string;
+  /** Name / value label colours on this flow's node. */
+  nameColor?: string;
+  valueColor?: string;
 };
 
 const FLOW_TYPES: FlowType[] = ["grid", "solar", "battery", "consumer"];
@@ -34,8 +41,9 @@ const FLOW_LABELS: Record<FlowType, string> = {
   consumer: "Consumer",
 };
 
-// Keep in sync with the widget's runtime colour fallbacks (importColor,
-// solarColor, battOut, C.consumer) so the preview dot matches the band.
+// Keep in sync with the widget's runtime colour fallbacks (the first grid /
+// solar / battery flow's `color`, consumer default) so the preview dot
+// matches the band.
 const FLOW_COLORS: Record<FlowType, string> = {
   grid: "#7986cb",
   solar: "#ffca28",
@@ -170,6 +178,35 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
     </label>
   );
 
+  // Per-flow colour (writes into flows[idx][key]; undefined = type default)
+  const renderFlowColour = (idx: number, key: keyof Flow, label: string, fallback: string) => {
+    const val = flows[idx]?.[key] as string | undefined;
+    return (
+      <div>
+        <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{label}</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={val || fallback}
+            onChange={(e) => updateFlow(idx, key, e.target.value)}
+            className="h-9 w-14 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg cursor-pointer"
+          />
+          {val ? (
+            <button
+              type="button"
+              onClick={() => updateFlow(idx, key, undefined)}
+              className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
+            >
+              {t("Default")}
+            </button>
+          ) : (
+            <span className="text-xs text-[var(--mf-fg)]/40">{t("Default (no colour)")}</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* ── 1. Title ──────────────────────────────────────────────────────── */}
@@ -270,27 +307,24 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
                   className={INPUT}
                 />
 
-                <div>
-                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Colour")}</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={flow.color || dotColor}
-                      onChange={(e) => updateFlow(idx, "color", e.target.value)}
-                      className="h-9 w-14 bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg cursor-pointer"
-                    />
-                    {flow.color ? (
-                      <button
-                        type="button"
-                        onClick={() => updateFlow(idx, "color", undefined)}
-                        className="text-xs text-[var(--mf-fg)]/50 hover:text-[var(--mf-fg)]"
-                      >
-                        {t("Default")}
-                      </button>
-                    ) : (
-                      <span className="text-xs text-[var(--mf-fg)]/40">{t("Default (no colour)")}</span>
-                    )}
-                  </div>
+                <div className="space-y-3">
+                  <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Colours")}</p>
+                  {flow.type === "grid" && (
+                    <>
+                      {renderFlowColour(idx, "color", t("Import colour"), "#7986cb")}
+                      {renderFlowColour(idx, "exportColor", t("Export colour"), "#66bb6a")}
+                    </>
+                  )}
+                  {flow.type === "solar" && renderFlowColour(idx, "color", t("Band colour"), "#ffca28")}
+                  {flow.type === "battery" && (
+                    <>
+                      {renderFlowColour(idx, "color", t("Discharge colour"), "#26c6da")}
+                      {renderFlowColour(idx, "chargeColor", t("Charge colour"), "#ab47bc")}
+                    </>
+                  )}
+                  {flow.type === "consumer" && renderFlowColour(idx, "color", t("Band colour"), "#90a4ae")}
+                  {renderFlowColour(idx, "nameColor", t("Name colour"), "#8a9099")}
+                  {renderFlowColour(idx, "valueColor", t("Value colour"), "#ffffff")}
                 </div>
               </div>
             </AccordionCard>
@@ -317,6 +351,10 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
           placeholder={t("Home node label")}
           className={INPUT}
         />
+
+        {renderRange("homeLabelOffsetY", t("Home label vertical offset"), -80, 80, 1, 0, "px")}
+        {renderColorPicker("homeBarColor", t("Home bar colour"), "#ffffff")}
+        {renderColorPicker("otherColor", t("Other band colour"), "#90a4ae")}
 
         <input
           type="text"
@@ -351,16 +389,6 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
         {renderRange("minFlowW", t("Minimum flow (W)"), 0, 100, 1, 5, "W")}
       </div>
 
-      {/* ── 6. Colour pickers ─────────────────────────────────────────────── */}
-      <div className="border-t border-[var(--mf-bdr)]/10 pt-4 space-y-3">
-        <p className="text-xs text-[var(--mf-fg)]/40 uppercase tracking-wider px-1">{t("Colours")}</p>
-        {renderColorPicker("importColor", t("Grid import colour"), "#7986cb")}
-        {renderColorPicker("exportColor", t("Grid export colour"), "#66bb6a")}
-        {renderColorPicker("solarColor", t("Solar colour"), "#ffca28")}
-        {renderColorPicker("batteryOutColor", t("Battery discharge colour"), "#26c6da")}
-        {renderColorPicker("batteryInColor", t("Battery charge colour"), "#ab47bc")}
-        {renderColorPicker("consumerColor", t("Consumer colour (default)"), "#90a4ae")}
-      </div>
 
     </div>
   );

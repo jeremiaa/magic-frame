@@ -102,6 +102,29 @@ try {
     check("bands: all paths start with M and close with Z", L5.bands.every((b) => /^M /.test(b.d) && b.d.trim().endsWith("Z")));
     check("bands: paths carry finite coordinates", L5.bands.every((b) => !/(NaN|Infinity|-Infinity)/.test(b.d)));
 
+    // 6. consumers render in flows-array order (never sorted by value)
+    const cons3 = [
+      { entityId: "sensor.a", label: "A", colour: "#111111", v: 300 },
+      { entityId: "sensor.b", label: "B", colour: "#222222", v: 100 },
+      { entityId: "sensor.c", label: "C", colour: "#333333", v: 200 },
+    ];
+    const L6 = computeLayout(size, C, { ...Fbase, gi: 600, homeLoad: 600, cons: cons3 }, "Other", "Home", "sensor.grid");
+    const conNs = L6.conNodes.filter((n) => n.key.startsWith("con"));
+    check("order: consumer nodes follow the flows array", conNs.map((n) => n.key).join(",") === "con0,con1,con2");
+    check("order: consumers stack top-to-bottom in array order", conNs[0].top < conNs[1].top && conNs[1].top < conNs[2].top);
+    check("order: each consumer band keeps its own colour", L6.bands.find((b) => b.key === "con0-band").colour === "#111111" && L6.bands.find((b) => b.key === "con2-band").colour === "#333333");
+
+    // 7. Home bar colour comes from C.home, white when absent
+    const L7 = computeLayout(size, { ...C, home: "#ff0000" }, { ...Fbase, gi: 500, homeLoad: 500 }, "Other", "Home", "sensor.grid");
+    check("home bar: colour follows C.home", L7.nodeBars.find((n) => n.key === "home").colour === "#ff0000");
+    check("home bar: white fallback when C.home unset", L3.nodeBars.find((n) => n.key === "home").colour === "#ffffff");
+
+    // 8. band colours follow the C dict (per-flow colours land in C upstream)
+    check("other: band colour follows C.consumer", L1.bands.find((b) => b.key === "other-band").colour === C.consumer);
+    check("exporting: grid-out band uses C.export", L2.bands.find((b) => b.key === "grid-out-band").colour === C.export);
+    check("battery: discharge band uses C.battOut", L4.bands.find((b) => b.key === "battery-in").colour === C.battOut);
+    check("battery: charge band uses C.battIn", L4.bands.find((b) => b.key === "battery-out").colour === C.battIn);
+
     console.log(fail === 0 ? "ALL PASS (" + ok + ")" : "FAILURES: " + fail);
     process.exit(fail === 0 ? 0 : 1);
   `;

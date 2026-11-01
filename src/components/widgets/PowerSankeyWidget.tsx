@@ -120,6 +120,13 @@ interface FlowDef {
   levelId?: string;
   /** Grid and battery flows: flip the sensor's sign convention. */
   invert?: boolean;
+  /** Grid flows: the export band colour (import band uses `color`). */
+  exportColor?: string;
+  /** Battery flows: the charge band colour (discharge band uses `color`). */
+  chargeColor?: string;
+  /** Name / value label colours on this flow's node. */
+  nameColor?: string;
+  valueColor?: string;
 }
 
 interface Sized { w: number; h: number }
@@ -369,7 +376,7 @@ export function computeLayout(
     bands,
     nodeBars: [
       ...srcNodes.map((n) => ({ key: n.key, x: leftBarX, y: n.top, h: n.h, colour: n.colour })),
-      { key: "home", x: homeBarX, y: homeTop, h: homeH, colour: "#ffffff" },
+      { key: "home", x: homeBarX, y: homeTop, h: homeH, colour: C.home || "#ffffff" },
       ...conNodes.map((n) => ({ key: n.key, x: rightBarX, y: n.top, h: n.h, colour: n.colour })),
     ],
     leftBarX, homeBarX, rightBarX, bw,
@@ -390,16 +397,36 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const textMain = isLight ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)";
   const textSub = isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.55)";
 
+  // Flows are the single source of truth: the first grid, solar and battery
+  // flow each feeds the left side; consumer flows draw their own bands on the
+  // right, in flows-array order. There are no legacy sensor fields - old
+  // configs must be re-created as typed flows.
+  const flows: FlowDef[] = Array.isArray(config?.flows) ? config.flows : [];
+  const gridFlow = flows.find((f) => f.type === "grid");
+  const solarFlow = flows.find((f) => f.type === "solar");
+  const battFlow = flows.find((f) => f.type === "battery");
+  const gridId = (gridFlow?.entityId || "").trim();
+  const solarId = (solarFlow?.entityId || "").trim();
+  const battPwrId = (battFlow?.entityId || "").trim();
+  const battLvlId = (battFlow?.levelId || "").trim();
+  const invertGrid = gridFlow?.invert === true;
+  const invertBattery = battFlow?.invert === true;
+
+  // Colours live on the flows: grid carries import + export, battery carries
+  // discharge + charge, and every flow carries its own band, name and value
+  // colour. The Home bar and the untracked remainder stay on the widget.
   const C: Record<string, string> = {
-    import: config?.importColor || "#7986cb",
-    export: config?.exportColor || "#66bb6a",
-    solar: config?.solarColor || "#ffca28",
-    battOut: config?.batteryOutColor || "#26c6da",
-    battIn: config?.batteryInColor || "#ab47bc",
-    consumer: config?.consumerColor || "#90a4ae",
+    import: gridFlow?.color || "#7986cb",
+    export: gridFlow?.exportColor || "#66bb6a",
+    solar: solarFlow?.color || "#ffca28",
+    battOut: battFlow?.color || "#26c6da",
+    battIn: battFlow?.chargeColor || "#ab47bc",
+    consumer: config?.otherColor || "#90a4ae",
+    home: config?.homeBarColor || "#ffffff",
   };
 
   const homeLabel = config?.homeLabel || "Home";
+  const homeLabelOffsetY = Math.max(-80, Math.min(80, Number(config?.homeLabelOffsetY) || 0));
   const otherLabel = config?.otherLabel || "Other";
   const showOther = config?.showOther !== false;
   const minFlow = isFinite(Number(config?.minFlowW)) ? Number(config?.minFlowW) : 5;
@@ -412,21 +439,6 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const conShowIcons = config?.showConsumerIcons !== false;
   const conMode: 0 | 1 | 2 = conIconOnly ? 1 : conShowIcons ? 2 : 0;
   const battScale = Math.max(0.5, Math.min(4, Number(config?.batteryIconScale) ||1));
-
-  // Flows are the single source of truth: the first grid, solar and battery
-  // flow each feed the left side; consumer flows draw their own bands on the
-  // right. There are no legacy sensor fields - old configs must be re-created
-  // as typed flows.
-  const flows: FlowDef[] = Array.isArray(config?.flows) ? config.flows : [];
-  const gridFlow = flows.find((f) => f.type === "grid");
-  const solarFlow = flows.find((f) => f.type === "solar");
-  const battFlow = flows.find((f) => f.type === "battery");
-  const gridId = (gridFlow?.entityId || "").trim();
-  const solarId = (solarFlow?.entityId || "").trim();
-  const battPwrId = (battFlow?.entityId || "").trim();
-  const battLvlId = (battFlow?.levelId || "").trim();
-  const invertGrid = gridFlow?.invert === true;
-  const invertBattery = battFlow?.invert === true;
 
   const allIds = useMemo(() => {
     const ids = [gridId, solarId, battPwrId, battLvlId];
@@ -517,7 +529,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       return {
         entityId: f.entityId,
         label: f.label || friendlyName(st, f.entityId),
-        colour: f.color || C.consumer,
+        colour: f.color || "#90a4ae",
         v,
       };
     });
@@ -525,7 +537,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     const otherV = showOther && flows.length > 0 ? Math.max(0, homeLoad - consSum) : 0;
 
     return { gi, ge, solar, bd, bc, battLevel, homeLoad, cons, otherV, hasGrid, hasBattery };
-  }, [statesDict, gridId, solarId, battPwrId, battLvlId, flows, minFlow, showOther, C.consumer, invertGrid, invertBattery, allIds]);
+  }, [statesDict, gridId, solarId, battPwrId, battLvlId, flows, minFlow, showOther, invertGrid, invertBattery, allIds]);
 
   const L = useMemo((): Layout | null => {
     if (!size || !F) return null;
@@ -552,6 +564,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   }
 
   const anyFlow = F ? (F.gi + F.ge + F.solar + F.bd + F.bc + F.homeLoad) > 0 : false;
+  const consumerFlows = flows.filter((f) => f.type === "consumer");
 
   /* ---- inline render helpers ---- */
 
@@ -573,6 +586,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     }
     return { text: fallbackName };
   };
+
+  const flowForSrc = (key: string): FlowDef | undefined =>
+    key === "grid" ? gridFlow : key === "solar" ? solarFlow : key === "battery" ? battFlow : undefined;
 
   const srcLabel = (n: SrcNode): { text: string; big?: boolean; scale?: number; style?: React.CSSProperties }[] => {
     let value: string;
@@ -600,8 +616,11 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       nameKey = battPwrId || battLvlId;
       fallbackIcon = "🔋";
     }
+    const srcFlow = flowForSrc(n.key);
     const nameLn = nameLine(statesDict[nameKey], nameKey, name, fallbackIcon, srcMode);
-    const valueLn = { text: value, big: true };
+    if (srcFlow?.nameColor) nameLn.style = { ...nameLn.style, color: srcFlow.nameColor };
+    const valueLn: { text: string; big?: boolean; scale?: number; style?: React.CSSProperties } = { text: value, big: true };
+    if (srcFlow?.valueColor) valueLn.style = { color: srcFlow.valueColor };
     const lines: { text: string; big?: boolean; scale?: number; style?: React.CSSProperties }[] = sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn];
     if (n.key === "battery" && F!.battLevel != null) {
       const battIcon = iconFor(statesDict[battLvlId || nameKey], battLvlId || nameKey, "🔋");
@@ -697,13 +716,18 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
               const rightScale = rightScaleFor(count);
               const isGrid = n.key === "grid-out";
               const valueText = isGrid ? `↑ ${fmtW(n.v)}` : fmtW(n.v);
+              const flow =
+                n.key === "grid-out" ? gridFlow
+                : n.key.startsWith("con") ? consumerFlows[Number(n.key.slice(3))]
+                : undefined;
               const nameLn = isGrid
                 ? nameLine(statesDict[gridId], gridId, "Grid", "⚡", srcMode)
                 : nameLine(statesDict[n.entityId || ""], n.entityId || "", n.label, null, conMode);
+              if (flow?.nameColor) nameLn.style = { ...nameLn.style, color: flow.nameColor };
               const valueLn: { text: string; big?: boolean; style?: React.CSSProperties } = {
                 text: valueText,
                 big: true,
-                style: { color: n.colour },
+                style: { color: flow?.valueColor || n.colour },
               };
               const lines: { text: string; big?: boolean; scale?: number; style?: React.CSSProperties }[] = isGrid
                 ? (sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn])
@@ -754,9 +778,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
               const labelHest = 24;
               const belowRoom = size.h - (L.home.y + L.home.h + 4);
               const below = belowRoom > labelHest + 4;
-              const top = below
-                ? L.home.y + L.home.h + 4
-                : Math.max(6, L.home.y - labelHest - 4);
+              const top = Math.max(0,
+                (below ? L.home.y + L.home.h + 4 : Math.max(6, L.home.y - labelHest - 4)) +
+                homeLabelOffsetY);
               return (
                 <div
                   key="lbl-home"

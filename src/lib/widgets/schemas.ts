@@ -396,6 +396,10 @@ const powerSankeyConfig = baseConfig
       type: z.enum(["grid", "solar", "battery", "consumer"]),
       levelId: z.string().optional(),
       invert: z.boolean().optional(),
+      exportColor: z.string().optional(),
+      chargeColor: z.string().optional(),
+      nameColor: z.string().optional(),
+      valueColor: z.string().optional(),
     })).optional(),
     homeLabel: z.string().optional(),
     otherLabel: z.string().optional(),
@@ -408,12 +412,9 @@ const powerSankeyConfig = baseConfig
     showConsumerIcons: z.boolean().optional(),
     iconOnlyConsumers: z.boolean().optional(),
     batteryIconScale: z.number().optional(),
-    importColor: z.string().optional(),
-    exportColor: z.string().optional(),
-    solarColor: z.string().optional(),
-    batteryOutColor: z.string().optional(),
-    batteryInColor: z.string().optional(),
-    consumerColor: z.string().optional(),
+    otherColor: z.string().optional(),
+    homeBarColor: z.string().optional(),
+    homeLabelOffsetY: z.number().optional(),
   })
   .passthrough();
 
