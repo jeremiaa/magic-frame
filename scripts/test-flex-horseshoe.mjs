@@ -31,7 +31,7 @@ function ring(o: Partial<ResolvedRing>): ResolvedRing {
     showRowIcon: true, showRowName: true, showRowValue: true,
     iconPlacement: "before-name", valuePlacement: "far-right", rowAlign: "left",
     icon: "",
-    iconColor: null, rowValueColor: null, rowScale: 1,
+    iconColor: null, rowValueColor: null, rowNameColor: null, rowScale: 1,
     ...o,
   };
 }

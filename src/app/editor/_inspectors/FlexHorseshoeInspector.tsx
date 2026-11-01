@@ -38,6 +38,7 @@ type EntityCfg = {
   icon?: string;
   iconColor?: string;
   rowValueColor?: string;
+  rowNameColor?: string;
   rowScale?: number;
   valuePlacement?: string;
   rowAlign?: string;
@@ -560,6 +561,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     {renderEntityColour(idx, "iconColor", t("Icon colour"), t("Automatic (widget text)"))}
                     {renderEntityColour(idx, "rowValueColor", t("Value colour"), t("Automatic (value colour)"))}
+                    {renderEntityColour(idx, "rowNameColor", t("Name colour"), t("Automatic (dimmed text)"))}
                   </div>
                   {renderEntityRange(idx, "rowScale", t("Row scale (icon, name, value)"), 0.5, 2, 0.1, 1)}
                 </div>

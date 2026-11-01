@@ -465,6 +465,9 @@ const flexHorseshoeConfig = baseConfig
           // explicit colour for this entity's row value; blank = the
           // automatic chain (entity colour → value colour → fixed colour)
           rowValueColor: z.string().optional(),
+          // explicit colour for this entity's row name; blank = dimmed
+          // widget text (the previous look)
+          rowNameColor: z.string().optional(),
           // scale multiplier for the entity row's icon, name and value
           rowScale: z.number().optional(),
         })

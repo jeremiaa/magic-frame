@@ -71,6 +71,9 @@ export interface EntityCfg {
   /** explicit colour for this entity's row value; blank = the automatic
    *  chain (entity colour → value colour → fixed colour) */
   rowValueColor?: string;
+  /** explicit colour for this entity's row name; blank = widget text colour
+   *  at reduced opacity (the previous look) */
+  rowNameColor?: string;
   /** scale multiplier for the entity row's icon, name and value (default 1) */
   rowScale?: number;
 }
@@ -348,6 +351,8 @@ export interface ResolvedRing {
   iconColor: string | null;
   /** resolved explicit row value colour (null = automatic chain) */
   rowValueColor: string | null;
+  /** resolved explicit row name colour (null = dimmed widget text) */
+  rowNameColor: string | null;
   /** resolved row scale multiplier (icon + name + value) */
   rowScale: number;
 }
@@ -743,6 +748,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         icon: iconCfg.trim(),
         iconColor: (e as EntityCfg).iconColor || null,
         rowValueColor: (e as EntityCfg).rowValueColor || null,
+        rowNameColor: (e as EntityCfg).rowNameColor || null,
         rowScale: clampNum((e as EntityCfg).rowScale, 0.5, 2, 1),
       });
     });
@@ -875,7 +881,9 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
           <span
             style={{
               fontSize: `${0.62 * r.rowScale}em`,
-              opacity: 0.75,
+              // explicit colour renders exactly as picked; without one the
+              // name stays the dimmed (0.75) widget text of the old look
+              ...(r.rowNameColor ? { color: r.rowNameColor } : { opacity: 0.75 }),
               overflow: "hidden",
               textOverflow: "ellipsis",
               minWidth: 0,
