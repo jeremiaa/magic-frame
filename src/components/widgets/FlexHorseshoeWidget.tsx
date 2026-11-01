@@ -859,7 +859,22 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
           </span>
         ) : null;
         const iconEl = r.showRowIcon ? (
-          <span style={{ fontSize: "0.95em", flex: "0 0 auto", display: "inline-flex", alignItems: "center" }}>
+          // alignSelf center: the row aligns items on the text baseline, and a
+          // flex item that is itself a flex container falls back to its bottom
+          // margin edge there — which parked the whole icon above the baseline,
+          // visibly raised. Centring it on the row's cross axis lines it up
+          // with the text/value instead. lineHeight 1 keeps the emoji fallback
+          // from inheriting the row's 1.5 line-height and stretching the row.
+          <span
+            style={{
+              fontSize: "0.95em",
+              flex: "0 0 auto",
+              display: "inline-flex",
+              alignItems: "center",
+              alignSelf: "center",
+              lineHeight: 1,
+            }}
+          >
             {iconNode(r.icon, st, r.id)}
           </span>
         ) : null;
