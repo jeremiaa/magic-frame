@@ -14,19 +14,21 @@ type Props = {
 
 type RingStyleType = "fixed" | "colorstop" | "interpolated" | "segments" | "gradient";
 
-type Ring = {
-  entityId: string;
-  min: number;
-  max: number;
-  style: RingStyleType;
-  stops?: string;
-  thicknessPct?: number;
-};
-
-type EntityRow = {
+/** Entity = gauge ring. Max two: first (mandatory) = outside, second = inside. */
+type EntityCfg = {
   entityId: string;
   label?: string;
   color?: string;
+  min?: number;
+  max?: number;
+  style?: RingStyleType;
+  stops?: string;
+  thicknessPct?: number;
+  showRing?: boolean;
+  showMarker?: boolean;
+  unitOverride?: string;
+  showUnit?: boolean;
+  decimals?: number;
 };
 
 const RING_STYLES: RingStyleType[] = ["fixed", "colorstop", "interpolated", "segments", "gradient"];
@@ -47,6 +49,13 @@ const RING_COLORS: Record<RingStyleType, string> = {
   gradient: "#ab47bc",
 };
 
+const VALUE_PLACEMENTS: { value: string; label: string }[] = [
+  { value: "right", label: "Right (row end)" },
+  { value: "afterName", label: "After name" },
+  { value: "beforeName", label: "Before name" },
+  { value: "left", label: "Left (row start)" },
+];
+
 const INPUT =
   "w-full bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 text-[var(--mf-fg)] text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500";
 
@@ -54,12 +63,13 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
   const t = useT();
   const cfg = (widget.config as any) ?? {};
 
-  // ── Entities card-list ─────────────────────────────────────────────────
-  const entities: EntityRow[] = Array.isArray(cfg.entities) ? cfg.entities : [];
+  // ── Entities card-list (max 2) ──────────────────────────────────────────
+  const entities: EntityCfg[] = Array.isArray(cfg.entities) ? cfg.entities : [];
   const [openEntity, setOpenEntity] = useState<number | null>(null);
 
-  const setEntities = (next: EntityRow[]) => updateConfig(widget.i, "entities", next);
+  const setEntities = (next: EntityCfg[]) => updateConfig(widget.i, "entities", next);
   const addEntity = () => {
+    if (entities.length >= 2) return;
     setEntities([...entities, { entityId: "" }]);
     setOpenEntity(entities.length);
   };
@@ -67,7 +77,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
     setEntities(entities.filter((_, i) => i !== idx));
     if (openEntity === idx) setOpenEntity(null);
   };
-  const updateEntity = (idx: number, key: keyof EntityRow, value: any) =>
+  const updateEntity = (idx: number, key: keyof EntityCfg, value: any) =>
     setEntities(entities.map((e, i) => (i === idx ? { ...e, [key]: value } : e)));
   const moveEntity = (idx: number, dir: number) => {
     const target = idx + dir;
@@ -75,29 +85,6 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
     const next = [...entities];
     [next[idx], next[target]] = [next[target], next[idx]];
     setEntities(next);
-  };
-
-  // ── Rings card-list ────────────────────────────────────────────────────
-  const rings: Ring[] = Array.isArray(cfg.rings) ? cfg.rings : [];
-  const [openRing, setOpenRing] = useState<number | null>(null);
-
-  const setRings = (next: Ring[]) => updateConfig(widget.i, "rings", next);
-  const addRing = () => {
-    setRings([...rings, { entityId: "", min: 0, max: 100, style: "colorstop" }]);
-    setOpenRing(rings.length);
-  };
-  const removeRing = (idx: number) => {
-    setRings(rings.filter((_, i) => i !== idx));
-    if (openRing === idx) setOpenRing(null);
-  };
-  const updateRing = (idx: number, key: keyof Ring, value: any) =>
-    setRings(rings.map((r, i) => (i === idx ? { ...r, [key]: value } : r)));
-  const moveRing = (idx: number, dir: number) => {
-    const target = idx + dir;
-    if (target < 0 || target >= rings.length) return;
-    const next = [...rings];
-    [next[idx], next[target]] = [next[target], next[idx]];
-    setRings(next);
   };
 
   // ── Render helpers ─────────────────────────────────────────────────────
@@ -171,7 +158,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
             onChange={(e) => updateConfig(widget.i, key, e.target.checked)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:transition-all peer-checked:bg-blue-500"></div>
         </div>
         <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
           {label}
@@ -180,16 +167,76 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
     );
   };
 
-  const renderNumber = (key: string, label: string, defaultValue: number) => {
-    const raw = cfg[key] ?? defaultValue;
+  const renderSelect = (
+    key: string,
+    label: string,
+    options: { value: string; label: string }[],
+    defaultValue: string,
+    numeric: boolean = false,
+  ) => (
+    <div>
+      <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{label}</label>
+      <select
+        value={String(cfg[key] ?? defaultValue)}
+        onChange={(e) => updateConfig(widget.i, key, numeric ? parseInt(e.target.value) : e.target.value)}
+        className={INPUT}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {t(o.label)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  // Per-entity switch (writes into entities[idx][key])
+  const renderEntitySwitch = (idx: number, key: keyof EntityCfg, label: string, defaultOn: boolean) => {
+    const ent = entities[idx];
+    const checked = defaultOn ? ent[key] !== false : ent[key] === true;
+    return (
+      <label className="flex items-center gap-3 cursor-pointer group">
+        <div className="relative">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => updateEntity(idx, key, e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:transition-all peer-checked:bg-blue-500"></div>
+        </div>
+        <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
+          {label}
+        </span>
+      </label>
+    );
+  };
+
+  // Per-entity range (writes into entities[idx][key])
+  const renderEntityRange = (
+    idx: number,
+    key: keyof EntityCfg,
+    label: string,
+    min: number,
+    max: number,
+    step: number,
+    defaultValue: number,
+  ) => {
+    const raw = (entities[idx][key] as number) ?? defaultValue;
     return (
       <div>
-        <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{label}</label>
+        <label className="text-xs text-[var(--mf-fg)]/50 mb-1.5 flex justify-between">
+          <span>{label}</span>
+          <span className="text-blue-400">{raw}</span>
+        </label>
         <input
-          type="number"
+          type="range"
+          min={min}
+          max={max}
+          step={step}
           value={raw}
-          onChange={(e) => updateConfig(widget.i, key, parseFloat(e.target.value))}
-          className={INPUT}
+          onChange={(e) => updateEntity(idx, key, parseFloat(e.target.value))}
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-[var(--mf-elev)]/10"
         />
       </div>
     );
@@ -229,30 +276,58 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           className={INPUT}
         />
       </div>
+      <div className="grid grid-cols-2 gap-2">
+        {renderSelect(
+          "titleAlign",
+          "Title justification",
+          [
+            { value: "left", label: "Left" },
+            { value: "center", label: "Center" },
+            { value: "right", label: "Right" },
+          ],
+          "left",
+        )}
+        {renderSelect(
+          "titlePosition",
+          "Title position",
+          [
+            { value: "top", label: "Top" },
+            { value: "bottom", label: "Bottom" },
+          ],
+          "top",
+        )}
+      </div>
 
-      {/* ── 2. Entities card-list ─────────────────────────────────────────── */}
+      {/* ── 2. Entities (max two: first = outside, second = inside) ───────── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Entities")}</label>
           <button
             onClick={addEntity}
-            className="flex items-center gap-1.5 text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg px-2.5 py-1.5 transition-colors"
+            disabled={entities.length >= 2}
+            className="flex items-center gap-1.5 text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Plus size={14} />
             {t("Add entity")}
           </button>
         </div>
+        <p className="text-xs text-[var(--mf-fg)]/40 px-1">
+          {t("Maximum two entities. The first (mandatory) entity is the main one drawn on the outside ring; the second (optional) is drawn on the inside. Each entity is one gauge ring.")}
+        </p>
         {entities.length === 0 && (
-          <p className="text-xs text-[var(--mf-fg)]/40 px-1">{t("No entities yet — rows below the gauge come from this list. Entities used by rings are shown automatically.")}</p>
+          <p className="text-xs text-[var(--mf-fg)]/40 px-1">
+            {t("No entities yet — add one to draw a horseshoe gauge.")}
+          </p>
         )}
         {entities.map((ent, idx) => {
           const title = ent.label?.trim() || ent.entityId || `${t("Entity")} ${idx + 1}`;
+          const dotColor = RING_COLORS[ent.style || "fixed"] || "#4dd0e1";
           return (
             <AccordionCard
               key={idx}
               open={openEntity === idx}
               onToggle={() => setOpenEntity(openEntity === idx ? null : idx)}
-              dotColor={ent.color}
+              dotColor={dotColor}
               title={title}
               onDelete={() => removeEntity(idx)}
               headerExtra={headerExtra(idx, entities.length, moveEntity)}
@@ -271,8 +346,62 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                   placeholder={t("Label (empty = HA name)")}
                   className={INPUT}
                 />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Min")}</label>
+                    <input
+                      type="number"
+                      value={ent.min ?? 0}
+                      onChange={(e) => updateEntity(idx, "min", parseFloat(e.target.value))}
+                      className={INPUT}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Max")}</label>
+                    <input
+                      type="number"
+                      value={ent.max ?? 100}
+                      onChange={(e) => updateEntity(idx, "max", parseFloat(e.target.value))}
+                      className={INPUT}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Colour")}</label>
+                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Colour style")}</label>
+                  <select
+                    value={ent.style || "fixed"}
+                    onChange={(e) => updateEntity(idx, "style", e.target.value)}
+                    className={INPUT}
+                  >
+                    {RING_STYLES.map((s) => (
+                      <option key={s} value={s}>{RING_STYLE_LABELS[s]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {ent.style && ent.style !== "fixed" && (
+                  <div>
+                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
+                      {t("Colour stops")}
+                    </label>
+                    <input
+                      type="text"
+                      value={ent.stops || ""}
+                      onChange={(e) => updateEntity(idx, "stops", e.target.value)}
+                      placeholder="0:#2196f3,20:#4caf50,30:#ff9800"
+                      className={`${INPUT} font-mono text-xs`}
+                    />
+                    <p className="text-xs text-[var(--mf-fg)]/40 mt-1">
+                      {t("value:colour pairs, comma separated, ascending values")}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
+                    {t("Colour")}
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -293,150 +422,118 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                     )}
                   </div>
                 </div>
-              </div>
-            </AccordionCard>
-          );
-        })}
-      </div>
-
-      {/* ── 3. Rings card-list ────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Gauge rings")}</label>
-          <button
-            onClick={addRing}
-            className="flex items-center gap-1.5 text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg px-2.5 py-1.5 transition-colors"
-          >
-            <Plus size={14} />
-            {t("Add ring")}
-          </button>
-        </div>
-        <p className="text-xs text-[var(--mf-fg)]/40 px-1">
-          {t("Rings are drawn from the outside in — the first ring's value shows large in the centre.")}
-        </p>
-        {rings.map((ring, idx) => {
-          const title = ring.entityId || `${t("Ring")} ${idx + 1}`;
-          const dotColor = RING_COLORS[ring.style] || "#4dd0e1";
-          return (
-            <AccordionCard
-              key={idx}
-              open={openRing === idx}
-              onToggle={() => setOpenRing(openRing === idx ? null : idx)}
-              dotColor={dotColor}
-              title={title}
-              onDelete={() => removeRing(idx)}
-              headerExtra={headerExtra(idx, rings.length, moveRing)}
-            >
-              <div className="space-y-3">
-                <HAEntityInput
-                  value={ring.entityId || ""}
-                  onChange={(v) => updateRing(idx, "entityId", v)}
-                  placeholder="sensor.living_room_temperature"
-                  clearable
-                />
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Min")}</label>
-                    <input
-                      type="number"
-                      value={ring.min ?? 0}
-                      onChange={(e) => updateRing(idx, "min", parseFloat(e.target.value))}
-                      className={INPUT}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Max")}</label>
-                    <input
-                      type="number"
-                      value={ring.max ?? 100}
-                      onChange={(e) => updateRing(idx, "max", parseFloat(e.target.value))}
-                      className={INPUT}
-                    />
-                  </div>
-                </div>
 
                 <div>
-                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Colour style")}</label>
-                  <select
-                    value={ring.style || "colorstop"}
-                    onChange={(e) => updateRing(idx, "style", e.target.value)}
-                    className={INPUT}
-                  >
-                    {RING_STYLES.map((s) => (
-                      <option key={s} value={s}>{RING_STYLE_LABELS[s]}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {ring.style && ring.style !== "fixed" && (
-                  <div>
-                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
-                      {t("Colour stops")}
-                    </label>
-                    <input
-                      type="text"
-                      value={ring.stops || ""}
-                      onChange={(e) => updateRing(idx, "stops", e.target.value)}
-                      placeholder="0:#2196f3,20:#4caf50,30:#ff9800,40:#f44336"
-                      className={`${INPUT} font-mono text-xs`}
-                    />
-                    <p className="text-xs text-[var(--mf-fg)]/40 mt-1">
-                      {t("value:colour pairs, comma separated, ascending values")}
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">{t("Thickness (% of radius)")}</label>
+                  <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
+                    {t("Ring thickness (% of radius)")}
+                  </label>
                   <input
                     type="number"
-                    value={ring.thicknessPct ?? ""}
+                    value={ent.thicknessPct ?? ""}
                     placeholder={t("Default")}
                     onChange={(e) =>
-                      updateRing(idx, "thicknessPct", e.target.value === "" ? undefined : parseFloat(e.target.value))
+                      updateEntity(idx, "thicknessPct", e.target.value === "" ? undefined : parseFloat(e.target.value))
                     }
                     className={INPUT}
                   />
                 </div>
+
+                <div className="flex flex-wrap gap-4">
+                  {renderEntitySwitch(idx, "showRing", t("Horseshoe arc"), true)}
+                  {renderEntitySwitch(idx, "showMarker", t("Value marker"), false)}
+                </div>
+
+                <div className="border-t border-[var(--mf-bdr)]/10 pt-3 space-y-3">
+                  <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Value")}</label>
+                  <div className="flex flex-wrap gap-4">
+                    {renderEntitySwitch(idx, "showUnit", t("Show unit"), true)}
+                  </div>
+                  <div>
+                    <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
+                      {t("Unit override (empty = HA unit)")}
+                    </label>
+                    <input
+                      type="text"
+                      value={ent.unitOverride || ""}
+                      onChange={(e) => updateEntity(idx, "unitOverride", e.target.value)}
+                      placeholder="°C, kW, %…"
+                      className={INPUT}
+                    />
+                  </div>
+                  {renderEntityRange(idx, "decimals", t("Decimals"), 0, 3, 1, 1)}
+                </div>
               </div>
             </AccordionCard>
           );
         })}
       </div>
 
-      {/* ── 4. Geometry ───────────────────────────────────────────────────── */}
+      {/* ── 3. Entity rows ────────────────────────────────────────────────── */}
+      <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Entity rows")}</label>
+        <div className="flex flex-wrap gap-4">
+          {renderSwitch("showEntityList", t("Show entity rows"), true)}
+          {renderSwitch("showEntityName", t("Show entity name"), true)}
+          {renderSwitch("showIcons", t("Entity icons"), true)}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {renderSelect(
+            "valuePlacement",
+            "Value justification",
+            VALUE_PLACEMENTS,
+            "right",
+          )}
+          {renderSelect(
+            "entityListPosition",
+            "Name/list position",
+            [
+              { value: "below", label: "Below horseshoe" },
+              { value: "above", label: "Above horseshoe" },
+            ],
+            "below",
+          )}
+        </div>
+      </div>
+
+      {/* ── 4. Big centre value ───────────────────────────────────────────── */}
+      <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Big centre value")}</label>
+        <div className="flex flex-wrap gap-4">
+          {renderSwitch("showCentreValue", t("Show centre value"), true)}
+          {renderSwitch("showCentreIcon", t("Entity icon above value"), false)}
+          {renderSwitch("centreShowUnit", t("Show unit"), true)}
+        </div>
+        {renderSelect(
+          "centreEntity",
+          "Centre value entity",
+          [
+            { value: "0", label: "First entity (outside)" },
+            { value: "1", label: "Second entity (inside)" },
+          ],
+          "0",
+          true,
+        )}
+        {renderRange("centreScale", t("Centre value size"), 0.5, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
+      </div>
+
+      {/* ── 5. Geometry ───────────────────────────────────────────────────── */}
       <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
         <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Geometry")}</label>
         {renderRange("arcDegrees", t("Arc degrees"), 90, 360, 5, 260, "°")}
-        {renderRange("ringWidth", t("Ring width"), 4, 60, 1, 18, "%")}
+        {renderRange("ringWidth", t("Ring width (default)"), 4, 60, 1, 18, "%")}
         {renderRange("ringGap", t("Ring gap"), 0, 30, 1, 5, "%")}
       </div>
 
-      {/* ── 5. Ticks & marker ─────────────────────────────────────────────── */}
+      {/* ── 6. Ticks ──────────────────────────────────────────────────────── */}
       <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
-        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Ticks & marker")}</label>
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Ticks")}</label>
         <div className="flex flex-wrap gap-4">
           {renderSwitch("showTicks", t("Tick marks"))}
-          {renderSwitch("showMarker", t("Value marker"))}
         </div>
         {renderRange("tickCount", t("Tick count"), 2, 60, 1, 11)}
         {renderRange("tickSize", t("Tick size"), 1, 30, 1, 6, "%")}
         {renderColorPicker("tickColor", t("Tick colour"), "#8a9099")}
         {renderColorPicker("markerColor", t("Marker colour"), "#ffffff")}
-      </div>
-
-      {/* ── 6. Values ─────────────────────────────────────────────────────── */}
-      <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
-        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Values")}</label>
-        <div className="flex flex-wrap gap-4">
-          {renderSwitch("showCentreValue", t("Big centre value"), true)}
-          {renderSwitch("showUnit", t("Show units"), true)}
-          {renderSwitch("showEntityList", t("Entity rows"), true)}
-          {renderSwitch("showIcons", t("Entity icons"), true)}
-        </div>
-        {renderRange("centreScale", t("Centre value size"), 0.5, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
-        {renderRange("decimals", t("Decimals"), 0, 3, 1, 1)}
       </div>
 
       {/* ── 7. Colours ────────────────────────────────────────────────────── */}

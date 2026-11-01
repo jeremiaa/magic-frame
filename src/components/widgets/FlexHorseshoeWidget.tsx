@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState, useRef, useMemo } from "react";
+import { useLayoutEffect, useState, useRef, useMemo, type ReactElement } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 
@@ -14,20 +14,36 @@ const BAD_STATES = new Set(["unavailable", "unknown", "none", ""]);
 
 export type RingStyle = "fixed" | "colorstop" | "interpolated" | "segments" | "gradient";
 
-export interface EntityDef {
+/**
+ * Entity = gauge ring. Max TWO entities:
+ *   entity 0 (mandatory) = MAIN entity, drawn on the OUTSIDE ring
+ *   entity 1 (optional)  = second entity, drawn on the INSIDE ring
+ */
+export interface EntityCfg {
   entityId: string; // supports entity_id@attribute
   label?: string;
   color?: string;
+  min?: number;
+  max?: number;
+  style?: RingStyle;
+  /** "0:#2196f3,60:#ff9800" — ordered numeric value → hex colour pairs */
+  stops?: string;
+  thicknessPct?: number; // ring width, % of the outer radius
+  showRing?: boolean; // draw the horseshoe arc (default on)
+  showMarker?: boolean; // draw the tick/value marker dot
+  unitOverride?: string; // "" = no override
+  showUnit?: boolean;
+  decimals?: number;
 }
 
-export interface RingDef {
+/** Legacy config shape: rings were configured separately from entities. */
+interface LegacyRingDef {
   entityId: string;
   min: number;
   max: number;
   style: RingStyle;
-  /** "0:#2196f3,60:#ff9800" — ordered numeric value → hex colour pairs */
   stops?: string;
-  thicknessPct?: number; // of the outer radius
+  thicknessPct?: number;
 }
 
 /** "sensor.x@attribute" -> { id, attr } */
@@ -187,9 +203,11 @@ function valueFrac(min: number, max: number, v: number): number {
   return Math.max(0, Math.min(1, (v - min) / span));
 }
 
-interface ResolvedRing {
+export interface ResolvedRing {
+  idx: number; // entity index (0 = outer/main, 1 = inner)
   id: string;
   attr: string | null;
+  label: string;
   min: number;
   max: number;
   style: RingStyle;
@@ -197,14 +215,21 @@ interface ResolvedRing {
   thicknessPct: number | null;
   value: number | null;
   unit: string;
+  showUnit: boolean;
+  decimals: number;
+  showRing: boolean;
+  showMarker: boolean;
+  entColor: string | null;
   fallbackColour: string | null;
 }
 
+/** A stroked arc piece. Rendered with fill="none" + stroke so that the
+ *  ring width (strokeWidth) actually controls the thickness of the arc. */
 interface Arc {
   key: string;
   d: string;
   fill: string;
-  fillOpacity: number;
+  opacity: number;
   strokeWidth?: number;
   strokeLinecap?: "round";
 }
@@ -212,7 +237,7 @@ interface Arc {
 /**
  * Layout: pure function from resolved rings + box size to drawable pieces.
  */
-function computeLayout(
+export function computeLayout(
   P: {
     w: number;
     h: number;
@@ -227,12 +252,11 @@ function computeLayout(
     showTicks: boolean;
     tickCount: number;
     tickSize: number;
-    showMarker: boolean;
     markerColor: string;
     showCentre: boolean;
-    showUnit: boolean;
+    centreEntity: number;
+    centreShowUnit: boolean;
     centreScale: number;
-    decimals: number;
   },
 ): {
   cx: number;
@@ -252,10 +276,12 @@ function computeLayout(
   const tickLen = P.showTicks ? Math.max(3, (Math.min(w, h) / 2) * (P.tickSize / 100)) : 0;
   const r0 = Math.max(10, Math.min(w, h) / 2 - pad - (tickLen > 0 ? tickLen + 2 : 0));
 
-  // Stack rings from the outside in.
+  // Stack rings from the outside in. Rings with neither horseshoe nor marker
+  // are invisible and don't consume radial space.
   const geoms: { ring: ResolvedRing; r: number; thick: number }[] = [];
   let r = r0;
   for (const ring of P.rings) {
+    if (!ring.showRing && !(ring.showMarker && ring.value != null)) continue;
     const thick = Math.max(4, r0 * ((ring.thicknessPct != null ? ring.thicknessPct : P.ringWidthPct) / 100));
     if (r - thick / 2 <= 2) break; // no room left — stop stacking
     geoms.push({ ring, r, thick });
@@ -264,106 +290,111 @@ function computeLayout(
 
   const arcs: Arc[] = [];
   const markers: { key: string; x: number; y: number; r: number; fill: string }[] = [];
-  let centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number } | null = null;
   let innerR = r0;
 
-  geoms.forEach((g, i) => {
+  geoms.forEach((g) => {
     const { ring, r: rr, thick } = g;
     innerR = Math.min(innerR, rr - thick);
     const v = ring.value;
     const has = v != null;
 
-    // full track
-    arcs.push({
-      key: "track-" + i,
-      d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep),
-      fill: P.trackColor,
-      fillOpacity: 0.38,
-      strokeWidth: thick,
-    });
-
-    if (!has) return;
-
-    const frac = valueFrac(ring.min, ring.max, v);
-    const rgbStops = stopsToRgb(ring.stopsList);
-    const stroke = { strokeWidth: thick, strokeLinecap: "round" as const };
-
-    if (ring.style === "segments" && rgbStops.length) {
-      // The whole scale painted in solid stop-colour ranges.
-      for (let s = 0; s < rgbStops.length; s++) {
-        const v0 = rgbStops[s][0];
-        const v1 = s + 1 < rgbStops.length ? rgbStops[s + 1][0] : ring.max;
-        const span = ring.max - ring.min || 1;
-        const a0 = startDeg + (sweep * (v0 - ring.min)) / span;
-        const a1 = startDeg + (sweep * (Math.min(v1, ring.max) - ring.min)) / span;
-        if (a1 - a0 < 0.5) continue;
-        arcs.push({
-          key: `seg-${i}-${s}`,
-          d: arcPath(P.cx, P.cy, rr, a0, a1),
-          fill: rgbStr([rgbStops[s][1], rgbStops[s][2], rgbStops[s][3]]),
-          fillOpacity: 1,
-          ...stroke,
-        });
-      }
-    } else if (ring.style === "gradient" && rgbStops.length) {
-      // Smooth gradient along the progress: many thin interpolated slices.
-      const N = 64;
-      for (let s = 0; s < N; s++) {
-        const f0 = (frac * s) / N;
-        const f1 = (frac * (s + 1)) / N;
-        if (f1 - f0 <= 0) continue;
-        const a0 = startDeg + sweep * f0;
-        const a1 = startDeg + sweep * f1;
-        const v0 = ring.min + (ring.max - ring.min) * f0;
-        const v1 = ring.min + (ring.max - ring.min) * f1;
-        const c1 = lerpStops(rgbStops, v1);
-        arcs.push({
-          key: `grad-${i}-${s}`,
-          d: arcPath(P.cx, P.cy, rr, a0, a1),
-          fill: c1 ? rgbStr(c1) : P.fixedColor,
-          fillOpacity: 1,
-          strokeWidth: thick,
-        });
-      }
-    } else if (frac > 0) {
-      // fixed / colorstop / interpolated: one progress arc in a single colour
-      let fill = P.fixedColor;
-      if (ring.style === "colorstop" && rgbStops.length) {
-        const c = stopColour(rgbStops, v as number);
-        if (c) fill = rgbStr(c);
-      } else if (ring.style === "interpolated" && rgbStops.length) {
-        const c = lerpStops(rgbStops, v as number);
-        if (c) fill = rgbStr(c);
-      } else if (ring.fallbackColour) {
-        fill = ring.fallbackColour;
-      }
+    if (ring.showRing) {
+      // full track
       arcs.push({
-        key: "prog-" + i,
-        d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep * frac),
-        fill,
-        fillOpacity: 1,
-        ...stroke,
+        key: "track-" + ring.idx,
+        d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep),
+        fill: P.trackColor,
+        opacity: 0.38,
+        strokeWidth: thick,
       });
+
+      if (has) {
+        const frac = valueFrac(ring.min, ring.max, v as number);
+        const rgbStops = stopsToRgb(ring.stopsList);
+        const stroke = { strokeWidth: thick, strokeLinecap: "round" as const };
+
+        if (ring.style === "segments" && rgbStops.length) {
+          // The whole scale painted in solid stop-colour ranges.
+          for (let s = 0; s < rgbStops.length; s++) {
+            const v0 = rgbStops[s][0];
+            const v1 = s + 1 < rgbStops.length ? rgbStops[s + 1][0] : ring.max;
+            const span = ring.max - ring.min || 1;
+            const a0 = startDeg + (sweep * (v0 - ring.min)) / span;
+            const a1 = startDeg + (sweep * (Math.min(v1, ring.max) - ring.min)) / span;
+            if (a1 - a0 < 0.5) continue;
+            arcs.push({
+              key: `seg-${ring.idx}-${s}`,
+              d: arcPath(P.cx, P.cy, rr, a0, a1),
+              fill: rgbStr([rgbStops[s][1], rgbStops[s][2], rgbStops[s][3]]),
+              opacity: 1,
+              ...stroke,
+            });
+          }
+        } else if (ring.style === "gradient" && rgbStops.length) {
+          // Smooth gradient along the progress: many thin interpolated slices.
+          const N = 64;
+          for (let s = 0; s < N; s++) {
+            const f0 = (frac * s) / N;
+            const f1 = (frac * (s + 1)) / N;
+            if (f1 - f0 <= 0) continue;
+            const a0 = startDeg + sweep * f0;
+            const a1 = startDeg + sweep * f1;
+            const v1 = ring.min + (ring.max - ring.min) * f1;
+            const c1 = lerpStops(rgbStops, v1);
+            arcs.push({
+              key: `grad-${ring.idx}-${s}`,
+              d: arcPath(P.cx, P.cy, rr, a0, a1),
+              fill: c1 ? rgbStr(c1) : P.fixedColor,
+              opacity: 1,
+              strokeWidth: thick,
+            });
+          }
+        } else if (frac > 0) {
+          // fixed / colorstop / interpolated: one progress arc in a single colour
+          let fill = ring.fallbackColour || P.fixedColor;
+          if (ring.style === "colorstop" && rgbStops.length) {
+            const c = stopColour(rgbStops, v as number);
+            if (c) fill = rgbStr(c);
+          } else if (ring.style === "interpolated" && rgbStops.length) {
+            const c = lerpStops(rgbStops, v as number);
+            if (c) fill = rgbStr(c);
+          }
+          arcs.push({
+            key: "prog-" + ring.idx,
+            d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep * frac),
+            fill,
+            opacity: 1,
+            ...stroke,
+          });
+        }
+      }
     }
 
-    // value marker dot at the current angle
-    if (P.showMarker && frac > 0 && frac < 1) {
+    // tick/value marker dot at the current angle
+    if (ring.showMarker && has) {
+      const frac = valueFrac(ring.min, ring.max, v as number);
       const [mx, my] = polar(P.cx, P.cy, rr, startDeg + sweep * frac);
-      markers.push({ key: "mark-" + i, x: mx, y: my, r: Math.max(2.5, thick * 0.22), fill: P.markerColor });
-    }
-
-    // centre value from the FIRST ring only
-    if (i === 0 && P.showCentre) {
-      const c = has ? valueColour(ring, v as number) : null;
-      centre = {
-        valueText: has ? (v as number).toFixed(P.decimals) : "—",
-        unitText: P.showUnit ? ring.unit : "",
-        colour: c,
-        valuePx: Math.max(10, Math.min(72, innerR * 0.62)) * P.centreScale,
-        unitPx: Math.max(8, Math.min(28, innerR * 0.26)) * P.centreScale,
-      };
+      markers.push({ key: "mark-" + ring.idx, x: mx, y: my, r: Math.max(2.5, thick * 0.22), fill: P.markerColor });
     }
   });
+
+  // Big centre value: the user-chosen entity (default: first entity)
+  let centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number } | null =
+    null;
+  const cIdx = Math.max(0, Math.min(1, Math.round(P.centreEntity)));
+  const cRing = P.rings[cIdx] ?? P.rings[0];
+  if (P.showCentre && cRing) {
+    const v = cRing.value;
+    const has = v != null;
+    const c = has ? valueColour(cRing, v as number) : null;
+    centre = {
+      valueText: has ? (v as number).toFixed(cRing.decimals) : "—",
+      unitText: P.centreShowUnit && cRing.showUnit ? cRing.unit : "",
+      colour: c,
+      valuePx: Math.max(10, Math.min(72, innerR * 0.62)) * P.centreScale,
+      unitPx: Math.max(8, Math.min(28, innerR * 0.26)) * P.centreScale,
+    };
+  }
 
   // tick marks outside the outermost ring
   const ticks: { key: string; x1: number; y1: number; x2: number; y2: number }[] = [];
@@ -390,16 +421,13 @@ const ICON_KEYWORDS: [RegExp, string][] = [
   [/humid/, "💧"],
   [/pressure|baro/, "🌀"],
   [/co2|carbon|air-quality|airquality|particulate|pm2|pm10|pollen|dust/, "🫧"],
-  [/power|watt|energy|electric|meter|grid/, "⚡"],
+  [/power|watt|energy|electric|grid/, "⚡"],
   [/gas/, "🔥"],
   [/water|rain|moisture/, "🌊"],
   [/wind|gust/, "🌬️"],
-  [/uv|illuminance|light|lux|brightness/, "💡"],
+  [/uv|illuminance|light|brightness/, "💡"],
   [/door|window|opening|garage/, "🚪"],
   [/motion|occupancy|presence/, "👤"],
-  [/\bev\b|car|vehicle/, "🚗"],
-  [/outdoor|outside|exterior/, "🌤️"],
-  [/indoor|inside|room|area/, "🏠"],
 ];
 
 function iconFor(st: any, entityId: string): string {
@@ -434,31 +462,49 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const ringGapPct = Math.max(0, Math.min(30, Number(config?.ringGap) || 5));
   const tickCount = Math.max(2, Math.min(60, Number(config?.tickCount) || 11));
   const tickSize = Math.max(1, Math.min(30, Number(config?.tickSize) || 6));
-  const decimals = Math.max(0, Math.min(3, Math.round(Number(config?.decimals ?? 1))));
   const centreScale = Math.max(0.3, Math.min(4, Number(config?.centreScale) || 1));
   const showTicks = config?.showTicks === true;
-  const showMarker = config?.showMarker === true;
-  const showCentreValue = config?.showCentreValue !== false;
-  const showUnit = config?.showUnit !== false;
+
+  // Title: justification + position
+  const title: string = String(config?.title || "");
+  const titleAlign = ["left", "center", "right"].includes(config?.titleAlign) ? config.titleAlign : "left";
+  const titlePosition = config?.titlePosition === "bottom" ? "bottom" : "top";
+
+  // Entity rows
   const showEntityList = config?.showEntityList !== false;
   const showIcons = config?.showIcons !== false;
+  const showEntityName = config?.showEntityName !== false;
+  const valuePlacement = ["left", "beforeName", "afterName", "right"].includes(config?.valuePlacement)
+    ? config.valuePlacement
+    : "right";
+  const entityListPosition = config?.entityListPosition === "above" ? "above" : "below";
 
-  const entities: EntityDef[] = Array.isArray(config?.entities) ? config.entities : [];
-  const ringDefs: RingDef[] = Array.isArray(config?.rings) ? config.rings : [];
+  // Big centre value
+  const showCentreValue = config?.showCentreValue !== false;
+  const centreEntity = Number(config?.centreEntity) === 1 ? 1 : 0;
+  const showCentreIcon = config?.showCentreIcon === true;
+  const centreShowUnit = config?.centreShowUnit !== false;
+
+  const ents: EntityCfg[] = Array.isArray(config?.entities)
+    ? (config.entities as EntityCfg[]).slice(0, 2)
+    : [];
+  // Legacy configs stored ring defs separately from entity rows.
+  const legacyRings: LegacyRingDef[] =
+    ents.length === 0 && Array.isArray(config?.rings) ? (config.rings as LegacyRingDef[]) : [];
 
   // entity ids for the shared HA stream (rows + rings)
   const ids = useMemo(() => {
     const set = new Set<string>();
-    for (const e of entities) {
+    for (const e of ents) {
       const { id } = parseEntityRef(e.entityId || "");
       if (id) set.add(id);
     }
-    for (const r of ringDefs) {
+    for (const r of legacyRings) {
       const { id } = parseEntityRef(r.entityId || "");
       if (id) set.add(id);
     }
     return [...set];
-  }, [entities, ringDefs]);
+  }, [ents, legacyRings]);
 
   const live = useHaLiveStates(ids, ids.length > 0);
   const statesDict: Record<string, any> = live?.states ?? {};
@@ -489,66 +535,45 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
     return () => cancelAnimationFrame(raf);
   });
 
-  /* ---- resolve live rows ---- */
-
-  const rows = useMemo(() => {
-    // rows = configured entities PLUS any ring entity not already listed
-    const seen = new Set<string>();
-    const out: {
-      key: string;
-      id: string;
-      attr: string | null;
-      label: string;
-      color?: string;
-      value: number | null;
-      unit: string;
-      raw: string | null;
-    }[] = [];
-    const push = (entityId: string, label: string, color?: string, ring?: RingDef) => {
-      const { id, attr } = parseEntityRef(entityId);
-      if (!id || seen.has(id + (attr ? "@" + attr : ""))) return;
-      seen.add(id + (attr ? "@" + attr : ""));
-      const st = statesDict[id];
-      const v = toNumber(st, attr);
-      out.push({
-        key: id + (attr ? "@" + attr : ""),
-        id,
-        attr,
-        label: label || friendlyName(st, id),
-        color,
-        value: v,
-        unit: unitOf(st, attr),
-        raw: st ? String(attr ? (st.attributes ? st.attributes[attr] : "") : st.state) : null,
-      });
-    };
-    for (const e of entities) push(e.entityId, e.label || "", e.color);
-    for (const r of ringDefs) push(r.entityId, "", undefined, r);
-    return out;
-  }, [entities, ringDefs, statesDict]);
+  /* ---- resolve one ring per entity (legacy: one per old ring def) ---- */
 
   const resolvedRings: ResolvedRing[] = useMemo(() => {
-    return ringDefs.map((r) => {
-      const { id, attr } = parseEntityRef(r.entityId || entities[0]?.entityId || "");
+    const sources: (EntityCfg | LegacyRingDef)[] =
+      ents.length > 0 ? ents : legacyRings;
+    // Legacy fallbacks from the old global settings (config-level, passthrough).
+    const legacyShowUnit = config?.showUnit !== false;
+    const legacyDecimals = Math.max(0, Math.min(3, Math.round(Number(config?.decimals ?? 1))));
+    const out: ResolvedRing[] = [];
+    sources.forEach((e, i) => {
+      const { id, attr } = parseEntityRef(e.entityId || "");
+      if (!id) return;
       const st = statesDict[id];
-      const v = toNumber(st, attr);
-      const stopsList = parseStops(r.stops);
-      return {
+      const stopsList = parseStops(e.stops);
+      const style = e.style || (stopsList.length ? "colorstop" : "fixed");
+      const unitOverride = String((e as EntityCfg).unitOverride ?? "").trim();
+      const unit = unitOverride || unitOf(st, attr);
+      out.push({
+        idx: i,
         id,
         attr,
-        min: isFinite(Number(r.min)) ? Number(r.min) : 0,
-        max: isFinite(Number(r.max)) ? Number(r.max) : 100,
-        style: r.style || (stopsList.length ? "colorstop" : "fixed"),
+        label: (e as EntityCfg).label || friendlyName(st, id),
+        min: isFinite(Number(e.min)) ? Number(e.min) : 0,
+        max: isFinite(Number(e.max)) ? Number(e.max) : 100,
+        style,
         stopsList,
-        thicknessPct: isFinite(Number(r.thicknessPct)) && Number(r.thicknessPct) > 0 ? Number(r.thicknessPct) : null,
-        value: v,
-        unit: unitOf(st, attr),
-        fallbackColour:
-          (r.style === "fixed" || stopsList.length === 0
-            ? entities.find((e) => parseEntityRef(e.entityId).id === id)?.color || fixedColor
-            : null),
-      };
+        thicknessPct: isFinite(Number(e.thicknessPct)) && Number(e.thicknessPct) > 0 ? Number(e.thicknessPct) : null,
+        value: toNumber(st, attr),
+        unit,
+        showUnit: (e as EntityCfg).showUnit ?? legacyShowUnit,
+        decimals: Math.max(0, Math.min(3, Math.round(Number((e as EntityCfg).decimals ?? legacyDecimals)))),
+        showRing: (e as EntityCfg).showRing !== false,
+        showMarker: (e as EntityCfg).showMarker === true,
+        entColor: (e as EntityCfg).color || null,
+        fallbackColour: (e as EntityCfg).color || fixedColor,
+      });
     });
-  }, [ringDefs, entities, statesDict, fixedColor]);
+    return out;
+  }, [ents, legacyRings, statesDict, fixedColor, config]);
 
   const L = useMemo(() => {
     if (!size || size.w < 20 || size.h < 20) return null;
@@ -566,16 +591,15 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       showTicks,
       tickCount,
       tickSize,
-      showMarker,
       markerColor,
       showCentre: showCentreValue,
-      showUnit,
+      centreEntity,
+      centreShowUnit,
       centreScale,
-      decimals,
     });
-  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, showMarker, markerColor, showCentreValue, centreScale, decimals]);
+  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale]);
 
-  const configured = entities.length > 0 || ringDefs.length > 0;
+  const configured = ents.length > 0 || legacyRings.length > 0;
 
   if (!configured) {
     return (
@@ -592,7 +616,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         <div style={{ fontSize: "0.85em", fontWeight: 700, opacity: 0.75, textAlign: "center", padding: "0.5em" }}>
           🧲 Flex Horseshoe
           <div style={{ fontWeight: 400, fontSize: "0.8em", marginTop: "0.4em" }}>
-            Add entities and gauge rings in the Content tab.
+            Add up to two entities in the Content tab.
           </div>
         </div>
       </div>
@@ -612,39 +636,81 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
     );
   }
 
-  const fmt = (v: number) => v.toFixed(decimals);
+  /* ---- big centre value ---- */
 
-  // Entity rows under the gauge. Font shrinks when many rows share the tile.
-  const rowScale = rows.length <= 5 ? 1 : Math.max(0.7, 5 / rows.length);
+  const cIdx = resolvedRings[centreEntity] ? centreEntity : 0;
+  const cRing = resolvedRings[cIdx];
+  const centreIcon = showCentreIcon && cRing ? iconFor(statesDict[cRing.id], cRing.id) : "";
 
-  const listEl = showEntityList ? (
+  /* ---- entity rows ---- */
+
+  const listEl = showEntityList && resolvedRings.length > 0 ? (
     <div
       style={{
         flex: "0 0 auto",
-        padding: "0.2em 0.7em 0.35em",
+        padding: entityListPosition === "above" ? "0.2em 0.7em 0.2em" : "0.2em 0.7em 0.35em",
         maxHeight: "45%",
         overflow: "hidden",
-        fontSize: `${rowScale}em`,
       }}
     >
-      {rows.map((e) => {
-        const ringFor = resolvedRings.find((r) => r.id === e.id);
-        const dotColour =
-          e.color ||
-            (ringFor && e.value != null
-              ? valueColour(ringFor, e.value as number)
-              : null) ||
-            fixedColor;
-        const numeric = e.value != null;
-        const rawLower = String(e.raw ?? "").toLowerCase();
+      {resolvedRings.map((r) => {
+        const st = statesDict[r.id];
+        const numeric = r.value != null;
+        const dotColour = numeric
+          ? r.entColor || valueColour(r, r.value as number) || fixedColor
+          : undefined;
+        const unitText = r.showUnit ? r.unit : "";
+        const rawLower = String(
+          st ? String(r.attr ? (st.attributes ? st.attributes[r.attr] : "") : st.state) : "",
+        ).toLowerCase();
         const valText = numeric
-          ? fmt(e.value as number) + (showUnit && e.unit ? " " + e.unit : "")
-          : e.raw != null && e.raw !== "" && !BAD_STATES.has(rawLower)
-            ? String(e.raw)
+          ? (r.value as number).toFixed(r.decimals) + (unitText ? " " + unitText : "")
+          : st && String(r.attr ? (st.attributes ? st.attributes[r.attr] : "") : st.state) !== "" && !BAD_STATES.has(rawLower)
+            ? String(r.attr ? (st.attributes ? st.attributes[r.attr] : "") : st.state)
             : "—";
+
+        const valEl = (
+          <span style={{ fontSize: "0.68em", fontWeight: 700, color: dotColour, whiteSpace: "nowrap", flex: "0 0 auto" }}>
+            {valText}
+          </span>
+        );
+        const nameEl = showEntityName ? (
+          <span
+            style={{
+              fontSize: "0.62em",
+              opacity: 0.75,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              minWidth: 0,
+              flexShrink: 1,
+            }}
+          >
+            {r.label}
+          </span>
+        ) : null;
+        const iconEl = showIcons ? (
+          <span style={{ fontSize: "0.95em", flex: "0 0 auto" }}>{iconFor(st, r.id)}</span>
+        ) : null;
+        const spacer = <span style={{ flex: 1, minWidth: "0.45em" }} />;
+
+        let children: (ReactElement | null)[];
+        switch (valuePlacement) {
+          case "left":
+            children = [valEl, spacer, iconEl, nameEl];
+            break;
+          case "beforeName":
+            children = [iconEl, valEl, nameEl, spacer];
+            break;
+          case "afterName":
+            children = [iconEl, nameEl, valEl, spacer];
+            break;
+          default: // right
+            children = [iconEl, nameEl, spacer, valEl];
+        }
+
         return (
           <div
-            key={e.key}
+            key={r.id + (r.attr ? "@" + r.attr : "")}
             style={{
               display: "flex",
               alignItems: "baseline",
@@ -655,87 +721,109 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               color: textMain,
             }}
           >
-            <span style={{ fontSize: "0.95em", flex: "0 0 auto" }}>{showIcons ? iconFor(statesDict[e.id], e.id) : ""}</span>
-            <span style={{ fontSize: "0.62em", opacity: 0.75, overflow: "hidden", textOverflow: "ellipsis" }}>{e.label}</span>
-            <span style={{ flex: 1 }} />
-            <span style={{ fontSize: "0.68em", fontWeight: 700, color: numeric ? dotColour : undefined, whiteSpace: "nowrap" }}>
-              {valText}
-            </span>
+            {children.filter(Boolean)}
           </div>
         );
       })}
     </div>
   ) : null;
 
+  const titleEl = title ? (
+    <div
+      style={{
+        fontSize: "0.75em",
+        fontWeight: 700,
+        flex: "0 0 auto",
+        padding: titlePosition === "top" ? "0.3em 0.7em 0" : "0 0.7em 0.3em",
+        textAlign: titleAlign as any,
+      }}
+    >
+      {title}
+    </div>
+  ) : null;
+
+  const gaugeBox = (
+    <div ref={boxRef} style={{ position: "relative", flex: "1 1 auto", minHeight: 0, overflow: "hidden" }}>
+      {!L ? (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7em", opacity: 0.5 }}>
+          …
+        </div>
+      ) : (
+        <>
+          <svg width={size!.w} height={size!.h} style={{ position: "absolute", left: 0, top: 0 }}>
+            {L.arcs.map((a) => (
+              <path
+                key={a.key}
+                d={a.d}
+                fill="none"
+                stroke={a.fill}
+                strokeOpacity={a.opacity}
+                strokeWidth={a.strokeWidth}
+                strokeLinecap={a.strokeLinecap}
+              />
+            ))}
+            {L.ticks.map((t) => (
+              <line
+                key={t.key}
+                x1={t.x1}
+                y1={t.y1}
+                x2={t.x2}
+                y2={t.y2}
+                stroke={tickColor}
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                opacity={0.8}
+              />
+            ))}
+            {L.markers.map((m) => (
+              <circle key={m.key} cx={m.x} cy={m.y} r={m.r} fill={m.fill} stroke="rgba(0,0,0,0.35)" strokeWidth={1} />
+            ))}
+          </svg>
+          {L.centre ? (
+            <div
+              style={{
+                position: "absolute",
+                left: L.cx,
+                top: L.cy,
+                transform: "translate(-50%, -50%)",
+                textAlign: "center",
+                lineHeight: 1.05,
+                whiteSpace: "nowrap",
+                pointerEvents: "none",
+              }}
+            >
+              {centreIcon ? (
+                <div style={{ fontSize: `${Math.max(10, Math.min(30, L.centre.valuePx * 0.38))}px`, marginBottom: "0.15em" }}>
+                  {centreIcon}
+                </div>
+              ) : null}
+              <div style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
+                {L.centre.valueText}
+              </div>
+              {L.centre.unitText ? (
+                <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65 }}>{L.centre.unitText}</div>
+              ) : null}
+            </div>
+          ) : null}
+          {!connected ? (
+            <div style={{ position: "absolute", right: 6, top: 4, fontSize: "0.55em", opacity: 0.5 }}>offline</div>
+          ) : null}
+        </>
+      )}
+    </div>
+  );
+
+  // Compose the tile: title top/bottom, entity rows above/below the gauge.
+  const children: ReactElement[] = [];
+  if (titleEl && titlePosition === "top") children.push(titleEl);
+  if (listEl && entityListPosition === "above") children.push(listEl);
+  children.push(gaugeBox);
+  if (listEl && entityListPosition === "below") children.push(listEl);
+  if (titleEl && titlePosition === "bottom") children.push(titleEl);
+
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", color: textMain }}>
-      {config?.title ? (
-        <div style={{ fontSize: "0.75em", fontWeight: 700, padding: "0.3em 0.5em 0", flex: "0 0 auto" }}>{config.title}</div>
-      ) : null}
-      <div ref={boxRef} style={{ position: "relative", flex: "1 1 auto", minHeight: 0, overflow: "hidden" }}>
-        {!L ? (
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7em", opacity: 0.5 }}>
-            …
-          </div>
-        ) : (
-          <>
-            <svg width={size!.w} height={size!.h} style={{ position: "absolute", left: 0, top: 0 }}>
-              {L.arcs.map((a) => (
-                <path
-                  key={a.key}
-                  d={a.d}
-                  fill={a.fill}
-                  fillOpacity={a.fillOpacity}
-                  stroke="none"
-                  strokeWidth={a.strokeWidth}
-                  strokeLinecap={a.strokeLinecap}
-                />
-              ))}
-              {L.ticks.map((t) => (
-                <line
-                  key={t.key}
-                  x1={t.x1}
-                  y1={t.y1}
-                  x2={t.x2}
-                  y2={t.y2}
-                  stroke={tickColor}
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  opacity={0.8}
-                />
-              ))}
-              {L.markers.map((m) => (
-                <circle key={m.key} cx={m.x} cy={m.y} r={m.r} fill={m.fill} stroke="rgba(0,0,0,0.35)" strokeWidth={1} />
-              ))}
-            </svg>
-            {L.centre ? (
-              <div
-                style={{
-                  position: "absolute",
-                  left: L.cx,
-                  top: L.cy,
-                  transform: "translate(-50%, -50%)",
-                  textAlign: "center",
-                  lineHeight: 1.05,
-                  whiteSpace: "nowrap",
-                  pointerEvents: "none",
-                }}
-              >
-                <div style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
-                  {L.centre.valueText}
-                </div>
-                {L.centre.unitText ? (
-                  <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65 }}>{L.centre.unitText}</div>
-                ) : null}
-              </div>
-            ) : null}
-            {!connected ? (
-              <div style={{ position: "absolute", right: 6, top: 4, fontSize: "0.55em", opacity: 0.5 }}>offline</div>
-            ) : null}
-          </>
-        )}
-      </div>
-      {listEl}
+      {children}
     </div>
   );
 }

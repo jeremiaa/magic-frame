@@ -420,23 +420,57 @@ const powerSankeyConfig = baseConfig
 const flexHorseshoeConfig = baseConfig
   .extend({
     title: z.string().optional(),
-    entities: z.array(
-      z.object({
-        entityId: z.string(),
-        label: z.string().optional(),
-        color: z.string().optional(),
-      })
-    ).optional(),
-    rings: z.array(
-      z.object({
-        entityId: z.string(),
-        min: z.number(),
-        max: z.number(),
-        style: z.enum(["fixed", "colorstop", "interpolated", "segments", "gradient"]),
-        stops: z.string().optional(),
-        thicknessPct: z.number().optional(),
-      })
-    ).optional(),
+    titleAlign: z.enum(["left", "center", "right"]).optional(),
+    titlePosition: z.enum(["top", "bottom"]).optional(),
+    // Max two entities. The first (mandatory) entity is the MAIN entity drawn
+    // on the OUTSIDE ring; the second (optional) entity is drawn on the
+    // INSIDE ring. Every entity carries its own gauge settings.
+    entities: z
+      .array(
+        z.object({
+          entityId: z.string(),
+          label: z.string().optional(),
+          color: z.string().optional(),
+          min: z.number().optional(),
+          max: z.number().optional(),
+          style: z
+            .enum(["fixed", "colorstop", "interpolated", "segments", "gradient"])
+            .optional(),
+          stops: z.string().optional(),
+          thicknessPct: z.number().optional(),
+          showRing: z.boolean().optional(), // horseshoe arc (default on)
+          showMarker: z.boolean().optional(), // tick/value marker dot
+          unitOverride: z.string().optional(),
+          showUnit: z.boolean().optional(),
+          decimals: z.number().optional(),
+        })
+      )
+      .optional(),
+    // Legacy: rings were configured separately from entities before the
+    // entity-per-ring rework. Kept so old configs still validate.
+    rings: z
+      .array(
+        z.object({
+          entityId: z.string(),
+          min: z.number(),
+          max: z.number(),
+          style: z.enum(["fixed", "colorstop", "interpolated", "segments", "gradient"]),
+          stops: z.string().optional(),
+          thicknessPct: z.number().optional(),
+        })
+      )
+      .optional(),
+    // Entity rows under/over the gauge
+    showEntityList: z.boolean().optional(),
+    entityListPosition: z.enum(["above", "below"]).optional(),
+    showEntityName: z.boolean().optional(),
+    valuePlacement: z.enum(["left", "beforeName", "afterName", "right"]).optional(),
+    // Big centre value
+    showCentreValue: z.boolean().optional(),
+    centreEntity: z.union([z.literal(0), z.literal(1)]).optional(),
+    showCentreIcon: z.boolean().optional(),
+    centreShowUnit: z.boolean().optional(),
+    centreScale: z.number().optional(),
     arcDegrees: z.number().optional(),
     ringWidth: z.number().optional(),
     ringGap: z.number().optional(),
@@ -444,14 +478,7 @@ const flexHorseshoeConfig = baseConfig
     tickCount: z.number().optional(),
     tickSize: z.number().optional(),
     tickColor: z.string().optional(),
-    showMarker: z.boolean().optional(),
     markerColor: z.string().optional(),
-    showCentreValue: z.boolean().optional(),
-    showUnit: z.boolean().optional(),
-    centreScale: z.number().optional(),
-    showEntityList: z.boolean().optional(),
-    showIcons: z.boolean().optional(),
-    decimals: z.number().optional(),
     trackColor: z.string().optional(),
     fixedColor: z.string().optional(),
   })
