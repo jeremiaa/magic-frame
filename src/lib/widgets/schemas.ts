@@ -11,8 +11,8 @@ export const WIDGET_TYPES = [
   "MessagesWidget.tsx",
   "ShoppingListWidget.tsx",
   "TodosWidget.tsx",
-  "SchoolRotationWidget.tsx",
   "PowerSankeyWidget.tsx",
+  "SchoolRotationWidget.tsx",
   "FlexHorseshoeWidget.tsx",
 ] as const;
 
@@ -745,8 +745,10 @@ export const widgetLayoutItemSchema = z.union([
     .object({ type: z.literal("TextWidget.tsx"), config: textConfig })
     .merge(commonWidgetFields()),
   z
-    .object({ type: z.literal("SchoolRotationWidget.tsx"), config: schoolRotationConfig })
     .object({ type: z.literal("PowerSankeyWidget.tsx"), config: powerSankeyConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("SchoolRotationWidget.tsx"), config: schoolRotationConfig })
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("FlexHorseshoeWidget.tsx"), config: flexHorseshoeConfig })
@@ -800,6 +802,7 @@ export const WIDGET_CONFIG_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "QrWidget.tsx": qrConfig,
   "StatusWidget.tsx": statusConfig,
   "TextWidget.tsx": textConfig,
+  "PowerSankeyWidget.tsx": powerSankeyConfig,
   "SchoolRotationWidget.tsx": schoolRotationConfig,
   "FlexHorseshoeWidget.tsx": flexHorseshoeConfig,
 };
