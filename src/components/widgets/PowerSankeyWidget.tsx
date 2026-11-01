@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 
 /* ------------------------------------------------------------------ */
-/* Pure helpers — module scope, no hooks, no React.                    */
+/* Pure helpers - module scope, no hooks, no React.                    */
 /* ------------------------------------------------------------------ */
 
 const BAD_STATES = new Set(["unavailable", "unknown", "none", ""]);
@@ -86,7 +86,7 @@ function bandPath(x1: number, y0a: number, y1a: number, x2: number, y0b: number,
 }
 
 /* ------------------------------------------------------------------ */
-/* Overlap resolver — forward+backward+forward pass                    */
+/* Overlap resolver - forward+backward+forward pass                    */
 /* ------------------------------------------------------------------ */
 
 function resolveOverlaps(centres: number[], heights: number[], top: number, bottom: number, gap: number): number[] {

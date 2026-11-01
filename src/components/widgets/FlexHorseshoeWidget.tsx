@@ -6,7 +6,7 @@ import { useHaLiveStates } from "@/lib/ha/useHaLiveStates";
 import { Icon } from "./WidgetIcon";
 
 /* ------------------------------------------------------------------ */
-/* Pure helpers — module scope, no hooks, no React.                    */
+/* Pure helpers - module scope, no hooks, no React.                    */
 /* Ported from the Flex Horseshoe custom module (custom:flex-horseshoe) */
 /* and made type-safe for the core widget.                             */
 /* ------------------------------------------------------------------ */
@@ -44,7 +44,7 @@ export interface EntityCfg {
   min?: number;
   max?: number;
   style?: RingStyle;
-  /** "0:#2196f3,60:#ff9800" — ordered numeric value → hex colour pairs */
+  /** "0:#2196f3,60:#ff9800" - ordered numeric value → hex colour pairs */
   stops?: string;
   thicknessPct?: number; // ring width, % of the outer radius
   showRing?: boolean; // draw the horseshoe arc (default on)
@@ -280,7 +280,7 @@ export type RowSlot = "icon" | "value" | "name";
  * justifies the entire row.
  *
  * Zone arrays list slots outermost→innermost (left) / innermost→outermost
- * (right), so the value ends up as the outermost element on either edge —
+ * (right), so the value ends up as the outermost element on either edge -
  * matching the legacy layouts.
  */
 export interface RowZones {
@@ -417,7 +417,7 @@ export function computeLayout(
   for (const ring of P.rings) {
     if (!ring.showRing && !(ring.showMarker && ring.value != null)) continue;
     const thick = Math.max(4, r0 * ((ring.thicknessPct != null ? ring.thicknessPct : P.ringWidthPct) / 100));
-    if (r - thick / 2 <= 2) break; // no room left — stop stacking
+    if (r - thick / 2 <= 2) break; // no room left - stop stacking
     geoms.push({ ring, r, thick });
     r -= thick + Math.max(2, r0 * (P.ringGapPct / 100));
   }
@@ -522,7 +522,7 @@ export function computeLayout(
     const has = v != null;
     const c = has ? valueColour(cRing, v as number) : null;
     centre = {
-      valueText: has ? (v as number).toFixed(cRing.decimals) : "—",
+      valueText: has ? (v as number).toFixed(cRing.decimals) : "-",
       unitText: P.centreShowUnit && cRing.showUnit ? cRing.unit : "",
       colour: c,
       valuePx: Math.max(10, Math.min(72, innerR * 0.62)) * P.centreScale,
@@ -619,7 +619,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   // Entity rows: visibility (icon/name/value), icon & value placement and the
   // row justification now live inside each entity (showRowIcon, showRowName,
   // showRowValue, iconPlacement, valuePlacement, rowAlign). A row renders
-  // whenever any of those three visibility flags is on — there is no global
+  // whenever any of those three visibility flags is on - there is no global
   // "show rows" toggle any more. The legacy global keys (showEntityList,
   // showEntityName, showIcons, valuePlacement) are honoured as per-entity
   // fallbacks during resolution. Only the rows-above/below choice stays here.
@@ -666,7 +666,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const boxRef = useRef<HTMLDivElement>(null);
 
   // Measure the content box. Runs EVERY render (no dep array) with an
-  // equality guard — the early-return trap: early-return states render
+  // equality guard - the early-return trap: early-return states render
   // without the ref div, so a mount-only effect never re-measures once
   // data/config makes the SVG appear.
   useLayoutEffect(() => {
@@ -860,7 +860,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
           ? (r.value as number).toFixed(r.decimals) + (unitText ? " " + unitText : "")
           : st && String(r.attr ? (st.attributes ? st.attributes[r.attr] : "") : st.state) !== "" && !BAD_STATES.has(rawLower)
             ? String(r.attr ? (st.attributes ? st.attributes[r.attr] : "") : st.state)
-            : "—";
+            : "-";
 
         const valEl = r.showRowValue ? (
           <span
@@ -896,7 +896,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         const iconEl = r.showRowIcon ? (
           // alignSelf center: the row aligns items on the text baseline, and a
           // flex item that is itself a flex container falls back to its bottom
-          // margin edge there — which parked the whole icon above the baseline,
+          // margin edge there - which parked the whole icon above the baseline,
           // visibly raised. Centring it on the row's cross axis lines it up
           // with the text/value instead. lineHeight 1 keeps the emoji fallback
           // from inheriting the row's 1.5 line-height and stretching the row.
@@ -918,7 +918,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         ) : null;
 
         /* Row layout: [far-left zone] [name cluster, rowAlign] [far-right
-         * zone] — pure logic lives in buildRowZones, this maps slots to the
+         * zone] - pure logic lives in buildRowZones, this maps slots to the
          * rendered elements. */
         const zones = buildRowZones({
           showRowIcon: r.showRowIcon,
@@ -1100,7 +1100,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
 
   return (
     // Honours the shared Text & colour tab: the view wrapper sets config.color
-    // on the tile, but hard-setting textMain here would stomp it — the title
+    // on the tile, but hard-setting textMain here would stomp it - the title
     // (and everything inheriting the root) would ignore the user's colour.
     // textMain stays as the fallback for tiles with no colour configured.
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", color: config?.color || textMain }}>

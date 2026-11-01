@@ -132,7 +132,7 @@ Both of these disappear in **Randlos** (Edge-to-edge) mode; see
 
 ## The widget catalogue
 
-The left column lists every widget you can add — 22 types, described in
+The left column lists every widget you can add - 22 types, described in
 [Widgets](widgets.md):
 
 Uhr (Clock), Wetter (Weather), Kalender (Calendar), HA Entity, Buttons,

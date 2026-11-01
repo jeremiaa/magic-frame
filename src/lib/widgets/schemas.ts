@@ -445,7 +445,7 @@ const flexHorseshoeConfig = baseConfig
           unitOverride: z.string().optional(),
           showUnit: z.boolean().optional(),
           decimals: z.number().optional(),
-          // entity-row display — per entity. A row renders when any of the
+          // entity-row display - per entity. A row renders when any of the
           // three visibility flags is on.
           showRowIcon: z.boolean().optional(),
           showRowName: z.boolean().optional(),
@@ -488,7 +488,7 @@ const flexHorseshoeConfig = baseConfig
       )
       .optional(),
     // Rows above/below the gauge. Per-entity row visibility (showRowIcon/
-    // showRowName/showRowValue — a row shows if any is on), icon/value
+    // showRowName/showRowValue - a row shows if any is on), icon/value
     // placement and row justification all live inside each entity above.
     // Legacy keys (showEntityList/showEntityName/showIcons/valuePlacement)
     // still validate via passthrough and are honoured as per-entity fallbacks.

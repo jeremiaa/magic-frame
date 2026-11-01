@@ -164,7 +164,7 @@ export function PowerSankeyInspector({ widget, updateConfig }: Props) {
       {/* ── 2. Flows card-list ────────────────────────────────────────────── */}
       <div className="space-y-3">
         {flows.length === 0 && (
-          <p className="text-xs text-[var(--mf-fg)]/40 px-1">{t("Noch keine Flüsse — unten hinzufügen.")}</p>
+          <p className="text-xs text-[var(--mf-fg)]/40 px-1">{t("Noch keine Flüsse - unten hinzufügen.")}</p>
         )}
         {flows.map((flow, idx) => {
           const typeLabel = FLOW_LABELS[flow.type] || flow.type;

@@ -165,7 +165,7 @@ check("centreShowUnit=false suppresses unit even when entity allows it", () => {
 // ---- 11. centre null value shows em dash ----
 check("centre value of null renders em dash", () => {
   const L = computeLayout({ ...base, rings: [ring({ value: null })] });
-  assert.equal(L.centre!.valueText, "—");
+  assert.equal(L.centre!.valueText, "-");
   assert.equal(L.centre!.unitText, "kW");
 });
 

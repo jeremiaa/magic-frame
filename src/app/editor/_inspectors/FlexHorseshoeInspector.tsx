@@ -30,7 +30,7 @@ type EntityCfg = {
   unitOverride?: string;
   showUnit?: boolean;
   decimals?: number;
-  // entity-row display — per entity
+  // entity-row display - per entity
   showRowIcon?: boolean;
   showRowName?: boolean;
   showRowValue?: boolean;
@@ -388,7 +388,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
         </p>
         {entities.length === 0 && (
           <p className="text-xs text-[var(--mf-fg)]/40 px-1">
-            {t("No entities yet — add one to draw a horseshoe gauge.")}
+            {t("No entities yet - add one to draw a horseshoe gauge.")}
           </p>
         )}
         {entities.map((ent, idx) => {

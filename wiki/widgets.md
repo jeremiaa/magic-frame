@@ -31,10 +31,10 @@ described in [The editor](the-editor.md).
 | To-dos (`Todos`) | `TodosWidget.tsx` | Tasks, optionally filtered to one person | [Family widgets](widgets-family.md) |
 | Text | `TextWidget.tsx` | A heading or caption that labels the widgets around it | [Labelling a view](#labelling-a-view), below |
 | School Rotation (`Schulrotation`) | `SchoolRotationWidget.tsx` | A rotating school day schedule per child, with holiday support and weekly reminders | [Family widgets](widgets-family.md) |
-| Power Sankey | `PowerSankeyWidget.tsx` | A live power flow diagram — solar, battery, grid and consumer bands drawn from Home Assistant sensors | [Home Assistant widgets](widgets-home-assistant.md) |
-| Flex Horseshoe | `FlexHorseshoeWidget.tsx` | A horseshoe gauge of concentric arcs — colour stops, ticks, a marker and one row per entity | [Home Assistant widgets](widgets-home-assistant.md) |
+| Power Sankey | `PowerSankeyWidget.tsx` | A live power flow diagram - solar, battery, grid and consumer bands drawn from Home Assistant sensors | [Home Assistant widgets](widgets-home-assistant.md) |
+| Flex Horseshoe | `FlexHorseshoeWidget.tsx` | A horseshoe gauge of concentric arcs - colour stops, ticks, a marker and one row per entity | [Home Assistant widgets](widgets-home-assistant.md) |
 
-Anything beyond these 22 is a **custom module** — a widget somebody else wrote,
+Anything beyond these 22 is a **custom module** - a widget somebody else wrote,
 installed under `Editor → Modules`. Its type id starts with `custom:` instead
 of ending in `.tsx`. See [Custom modules](custom-modules.md).
 
