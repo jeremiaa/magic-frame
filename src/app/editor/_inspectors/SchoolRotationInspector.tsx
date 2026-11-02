@@ -60,6 +60,9 @@ function editKids(raw: unknown): EditKid[] | null {
     });
 }
 
+// Rotation days land in the form as number-text ("3") instead of a weekday —
+// that way EditReminder.day stays a plain string everywhere, and the
+// <select> below can carry either kind as its value.
 function editReminders(raw: unknown): EditReminder[] | null {
   const list = readArray(raw);
   if (!list) return null;
@@ -67,7 +70,12 @@ function editReminders(raw: unknown): EditReminder[] | null {
     .filter((r): r is Record<string, any> => !!r && typeof r === "object" && !Array.isArray(r))
     .map((r) => {
       const lower = typeof r.day === "string" ? r.day.trim().toLowerCase() : "";
-      const day = (WEEKDAYS as readonly string[]).includes(lower) ? lower : "monday";
+      const num = typeof r.day === "number" ? r.day : typeof r.day === "string" ? Number(r.day.trim()) : NaN;
+      const day = (WEEKDAYS as readonly string[]).includes(lower)
+        ? lower
+        : Number.isInteger(num) && num >= 1
+          ? String(num)
+          : "monday";
       return {
         day,
         text: typeof r.text === "string" ? r.text : "",
@@ -78,6 +86,11 @@ function editReminders(raw: unknown): EditReminder[] | null {
 }
 
 const capitalized = (day: string) => day.charAt(0).toUpperCase() + day.slice(1);
+
+// Weekday -> text as before; rotation day -> number, so remindersFor checks
+// it against todayRotation instead of the calendar day.
+const serializeDay = (day: string): string | number =>
+  (WEEKDAYS as readonly string[]).includes(day) ? capitalized(day) : Number(day);
 
 export default function SchoolRotationInspector({ widget, updateConfig }: Props) {
   const t = useT();
@@ -95,7 +108,7 @@ export default function SchoolRotationInspector({ widget, updateConfig }: Props)
       "reminders",
       JSON.stringify(
         next.map((r) => ({
-          day: capitalized(r.day),
+          day: serializeDay(r.day),
           text: r.text,
           ...(r.icon ? { icon: r.icon } : {}),
           ...(r.kid ? { kid: r.kid } : {}),
@@ -238,9 +251,16 @@ export default function SchoolRotationInspector({ widget, updateConfig }: Props)
                     onChange={(e) => saveReminders(reminders.map((x, i) => (i === ri ? { ...x, day: e.target.value } : x)))}
                     className={SMALL_INPUT}
                   >
-                    {WEEKDAYS.map((d) => (
-                      <option key={d} value={d}>{t(WEEKDAY_LABELS[d])}</option>
-                    ))}
+                    <optgroup label={t("Wochentag")}>
+                      {WEEKDAYS.map((d) => (
+                        <option key={d} value={d}>{t(WEEKDAY_LABELS[d])}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label={t("Rotationstag")}>
+                      {Array.from({ length: cycle }, (_, i) => i + 1).map((n) => (
+                        <option key={n} value={n}>{t(`Tag ${n}`)}</option>
+                      ))}
+                    </optgroup>
                   </select>
                   <select
                     value={r.kid}
@@ -287,7 +307,9 @@ export default function SchoolRotationInspector({ widget, updateConfig }: Props)
             >
               <Plus size={14} /> {t("Erinnerung hinzufügen")}
             </button>
-            <p className={hint}>{t("Erscheint an diesem Wochentag, aber nur, wenn Schule ist.")}</p>
+            <p className={hint}>
+              {t("Erscheint am gewählten Wochentag, oder am gewählten Rotationstag — aber nur, wenn Schule ist.")}
+            </p>
           </>
         )}
       </div>
