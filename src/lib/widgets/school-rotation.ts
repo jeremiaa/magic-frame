@@ -8,7 +8,11 @@
 // gebracht; was sich nicht deuten lässt, fällt still weg.
 
 export type ChildSchedule = { name: string; days: Record<string, string[]> };
-export type Reminder = { day: Weekday; text: string; icon?: string; kid?: string };
+// `day` is either a weekday (fixed calendar days, e.g. "every Friday bring
+// the book bag") or a rotation-day number (tied to the cycle, e.g. "the day
+// before library" — stays correct even when breaks shift the cycle relative
+// to the calendar).
+export type Reminder = { day: Weekday | number; text: string; icon?: string; kid?: string };
 
 // Gespeichert werden die englischen Namen — so stand es im Beispiel-Modul, und
 // so bleiben herüberkopierte Einstellungen gültig. Deutsche werden verstanden.
@@ -77,15 +81,24 @@ function weekday(v: unknown): Weekday | null {
   return GERMAN_DAYS[k] ?? null;
 }
 
+// Rotation day from the config: a number or a number as text ("3"), always
+// >= 1. We don't validate against the cycle length here — the tile doesn't
+// know the configured cycle yet while parsing, and a too-high day simply
+// never matches later instead of breaking the tile.
+function rotationDay(v: unknown): number | null {
+  const n = typeof v === "number" ? v : typeof v === "string" ? Number(v.trim()) : NaN;
+  return Number.isInteger(n) && n >= 1 ? n : null;
+}
+
 export function parseReminders(raw: unknown): Reminder[] {
   const { ok, value } = parseJson(raw);
   if (!ok || !Array.isArray(value)) return [];
   const out: Reminder[] = [];
   for (const r of value) {
     if (!isObj(r)) continue;
-    const day = weekday(r.day);
+    const day = weekday(r.day) ?? rotationDay(r.day);
     const text = typeof r.text === "string" ? r.text.trim() : "";
-    if (!day || !text) continue;
+    if (day === null || !text) continue;
     out.push({
       day,
       text,
@@ -96,8 +109,14 @@ export function parseReminders(raw: unknown): Reminder[] {
   return out;
 }
 
-export function remindersFor(reminders: Reminder[], date: Date): Reminder[] {
-  return reminders.filter((r) => DAY_INDEX[r.day] === date.getDay());
+// `todayRotation` comes from getScheduleInfo — null on non-school days
+// (weekends, breaks), but that's harmless since the tile doesn't even call
+// remindersFor on those days in the first place.
+export function remindersFor(reminders: Reminder[], date: Date, todayRotation: number | null): Reminder[] {
+  return reminders.filter((r) => {
+    const { day } = r;
+    return typeof day === "number" ? day === todayRotation : DAY_INDEX[day] === date.getDay();
+  });
 }
 
 /** Zahl aus der Konfiguration, auf einen sinnvollen Bereich begrenzt. */
