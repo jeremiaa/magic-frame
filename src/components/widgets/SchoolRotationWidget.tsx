@@ -173,7 +173,7 @@ export default function SchoolRotationWidget({ config }: { config?: SchoolRotati
     });
   }
 
-  const activeReminders = isSchool ? remindersFor(reminders, today) : [];
+  const activeReminders = isSchool ? remindersFor(reminders, today, info.todayRotation) : [];
 
   return (
     <div className="w-full h-full flex flex-col" style={{ gap: "0.2em", padding: "0.3em" }}>
