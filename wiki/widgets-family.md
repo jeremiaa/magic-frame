@@ -276,10 +276,16 @@ Two ways, and they add up:
 ### Weekly reminders
 
 Under **Weekly reminders** (`Wöchentliche Erinnerungen`), each reminder has a
-weekday, a text, an optional emoji and optionally one child — "Friday: bring the
-gym bag" for Mia. It appears on that weekday, but only when there is school, as an
+day, a text, an optional emoji and optionally one child — "Friday: bring the
+gym bag" for Mia. It appears on that day, but only when there is school, as an
 amber line under the day's activities. A reminder for a child takes that child's
 colour.
+
+A reminder's day is either a **weekday** (fixed to the calendar, like the gym
+bag above) or a **rotation day** (tied to the cycle, like "the day before
+library"). Rotation-day reminders stay correct even when breaks shift the
+cycle relative to the calendar, where a fixed weekday would eventually point
+at the wrong day.
 
 ### On the screen
 
@@ -304,7 +310,7 @@ colour.
 | `schedules` | — | The children, as JSON text: `[{"name":"Mia","days":{"1":"Gym, Music","2":["Art"]}}]`. A day can be a list or text with commas. |
 | `noSchoolCalendar` | — | A `calendar.*` entity whose all-day events pause the count. |
 | `noSchoolDates` | — | More days without school, one `YYYY-MM-DD reason` per line. |
-| `reminders` | — | JSON text: `[{"day":"Friday","text":"Gym bag","icon":"🎒","kid":"Mia"}]`. German weekday names work too. |
+| `reminders` | — | JSON text: `[{"day":"Friday","text":"Gym bag","icon":"🎒","kid":"Mia"}]`. German weekday names work too. `day` can also be a rotation-day number instead of a weekday, e.g. `{"day":3,"text":"Return library books","icon":"📚"}`. |
 | `showUpcoming`, `upcomingCount` | on, 3 | The list of following school days and how many. |
 | `accentColor` | blue | The colour of the day badge and the dates. |
 
