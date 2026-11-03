@@ -4587,11 +4587,20 @@ follows the house by itself.
 
 ### What it draws
 
-The left side stacks the sources - grid while importing, solar, battery - the
-centre is the Home bar (white unless **Home bar colour** says otherwise), and
-the right side is one node per consumer in flows order, plus `Other`. A grid that exports swaps sides: it appears on the right as `↑`, and
-the node boxes are nudged apart so they never overlap. The battery node spans
-charge and discharge at once, with its percentage line underneath.
+The left side stacks the sources - grid while importing, solar, battery while
+discharging - the centre is the Home bar (white unless **Home bar colour** says
+otherwise), and the right side is one node per consumer in flows order, plus
+`Other`. A grid that exports swaps sides: it appears on the right as `↑`. A
+battery that is charging swaps sides too: it draws on the right as a charge
+band with its `↑` value and percentage line, exactly like a consumer, while
+discharging keeps it on the left. The node boxes are nudged apart so they never
+overlap.
+
+Every label honours the widget's font settings: the Style tab's font weight and
+text shadow apply to each label, the text colour drives the value colour, and
+the labels render at full brightness. The side gutters size themselves to the
+measured label text, so with responsive text or a large font size the diagram
+narrows to fit instead of cropping the labels.
 
 Values format as `W` under 1000 and `kW` - one decimal under 10 - and sensors
 reporting `kW` or `MW` are converted. A sensor that is `unavailable`, `unknown`

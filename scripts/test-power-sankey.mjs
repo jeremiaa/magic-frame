@@ -89,12 +89,32 @@ try {
     check("zero flow: no bands", L3.bands.length === 0);
     check("zero flow: only the home bar remains", L3.nodeBars.length === 1 && L3.nodeBars[0].key === "home");
 
-    // 4. battery charging and discharging at once
+    // 4. battery charging draws on the RIGHT, discharging on the left
     const L4 = computeLayout(size, C, { ...Fbase, bd: 300, bc: 500, battLevel: 64, homeLoad: 300, cons: [], otherV: 300 },
       "Other", "Home", "sensor.grid");
-    check("battery: node on the left", L4.srcNodes.some((n) => n.key === "battery"));
+    check("battery: discharge node on the left", L4.srcNodes.some((n) => n.key === "battery"));
     check("battery: discharge band drawn", L4.bands.some((b) => b.key === "battery-in"));
-    check("battery: charge band drawn", L4.bands.some((b) => b.key === "battery-out"));
+    check("battery: charge node on the right", L4.conNodes.some((n) => n.key === "battery-charge" && n.isBattCharge));
+    check("battery: charge band drawn on the right", L4.bands.some((b) => b.key === "battery-charge-band"));
+    check("battery: no charge band on the left", !L4.bands.some((b) => b.key === "battery-out"));
+    check("battery: right order is battery-charge then other", L4.conNodes.map((n) => n.key).join(",") === "battery-charge,other");
+
+    // 4b. charging only: nothing on the left, charge on the right
+    const L4b = computeLayout(size, C, { ...Fbase, bd: 0, bc: 800, homeLoad: 200, cons: [], otherV: 200 },
+      "Other", "Home", "sensor.grid");
+    check("charge only: no battery node on the left", !L4b.srcNodes.some((n) => n.key === "battery"));
+    check("charge only: battery-charge on the right", L4b.conNodes.some((n) => n.key === "battery-charge"));
+
+    // 4c. measured label widths drive the side gutters
+    const Lp = computeLayout(size, C, { ...Fbase, gi: 1000, homeLoad: 1000,
+      cons: [{ entityId: "sensor.s", label: "S", colour: "#c", v: 400 }], otherV: 600 },
+      "Other", "Home", "sensor.grid", { src: 120, con: 60 });
+    check("label gutters: left hugs measured src width", Math.abs(Lp.leftBarX - (8 + 128)) < 0.001);
+    check("label gutters: right hugs measured con width", Math.abs(Lp.rightBarX - (400 - 8 - 68 - Lp.bw)) < 0.001);
+    const Ld = computeLayout(size, C, { ...Fbase, gi: 1000, homeLoad: 1000, cons: [], otherV: 1000 },
+      "Other", "Home", "sensor.grid");
+    const fallback = Math.min(Math.max(400 * 0.22, 70), 150, Math.max(20, (400 - 16 - 6 * Ld.bw) / 2));
+    check("label gutters: fixed-formula fallback without measurements", Math.abs(Ld.leftBarX - (8 + fallback)) < 0.001);
 
     // 5. every band path is a closed cubic curve
     const L5 = computeLayout(size, C, { ...Fbase, gi: 500, solar: 500, homeLoad: 1000, cons: [{ entityId: "s", label: "S", colour: "#c", v: 400 }], otherV: 600 },
@@ -123,7 +143,7 @@ try {
     check("other: band colour follows C.consumer", L1.bands.find((b) => b.key === "other-band").colour === C.consumer);
     check("exporting: grid-out band uses C.export", L2.bands.find((b) => b.key === "grid-out-band").colour === C.export);
     check("battery: discharge band uses C.battOut", L4.bands.find((b) => b.key === "battery-in").colour === C.battOut);
-    check("battery: charge band uses C.battIn", L4.bands.find((b) => b.key === "battery-out").colour === C.battIn);
+    check("battery: charge band uses C.battIn", L4.bands.find((b) => b.key === "battery-charge-band").colour === C.battIn);
 
     console.log(fail === 0 ? "ALL PASS (" + ok + ")" : "FAILURES: " + fail);
     process.exit(fail === 0 ? 0 : 1);

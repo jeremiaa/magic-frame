@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useMemo } from "react";
 import { useGlassStyle } from "@/lib/ui/glass";
 
 /* ------------------------------------------------------------------ */
@@ -150,11 +150,15 @@ interface SrcNode {
 interface ConNode {
   key: string; label: string; v: number; colour: string; entityId?: string;
   h: number; centre: number; top: number; isGridExport?: boolean;
+  /** Battery charging node: drawn on the right, fed by the Home bar. */
+  isBattCharge?: boolean;
 }
 
 interface Bar { key: string; x: number; y: number; h: number; colour: string; }
 
 interface Band { key: string; d: string; colour: string; }
+
+interface LabelLine { text: string; big?: boolean; scale?: number; style?: React.CSSProperties; }
 
 interface Layout {
   bands: Band[]; nodeBars: Bar[];
@@ -167,10 +171,6 @@ interface Layout {
 /* Layout engine                                                        */
 /* ------------------------------------------------------------------ */
 
-function singleFlowNode(n: SrcNode): boolean {
-  return !n.flows.export;
-}
-
 export function computeLayout(
   size: Sized,
   C: Record<string, string>,
@@ -178,6 +178,13 @@ export function computeLayout(
   otherLabel: string,
   homeLabel: string,
   gridId: string,
+  /**
+   * Measured label text widths in px (src = left labels, con = right).
+   * When present the side gutters hug the real label sizes instead of a
+   * fixed guess, so responsive font sizes never crop the text. Falls back
+   * to the old fixed formula until the probe has measured once.
+   */
+  labelPx?: { src: number; con: number } | null,
 ): Layout | null {
   const { w, h } = size;
   const MIN_BAND = 2;
@@ -187,36 +194,49 @@ export function computeLayout(
 
   const pad = 8;
   const bw = Math.max(5, Math.min(12, w * 0.012));
-  const labelSpace = Math.min(
+  // Per-side budget: both gutters plus the three bars must fit the box,
+  // or the bars would cross in the middle.
+  const fitMax = Math.max(24, (w - 2 * pad - 3 * bw) / 2);
+  const fallbackSpace = Math.min(
     Math.max(w * 0.22, 70),
     150,
     Math.max(20, (w - 2 * pad - 6 * bw) / 2),
   );
-  const leftBarX = pad + labelSpace;
+  const labelSpaceL = labelPx
+    ? Math.min(Math.max(labelPx.src + 8, 40), Math.max(40, fitMax))
+    : fallbackSpace;
+  const labelSpaceR = labelPx
+    ? Math.min(Math.max(labelPx.con + 8, 40), Math.max(40, fitMax))
+    : fallbackSpace;
+  const leftBarX = pad + labelSpaceL;
   const homeBarX = w / 2 - bw / 2;
-  const rightBarX = w - pad - labelSpace - bw;
+  const rightBarX = w - pad - labelSpaceR - bw;
   const contentTop = pad;
   const contentBottom = h - pad;
   const contentH = contentBottom - contentTop;
 
-  const leftW = F.gi + F.solar + F.bd + F.bc;
+  const leftW = F.gi + F.solar + F.bd;
   const rightW =
     (gridOnRight ? F.ge : 0) +
+    (F.hasBattery ? F.bc : 0) +
     F.cons.reduce((a, c) => a + c.v, 0) +
     F.otherV;
   const maxFlow = Math.max(leftW, rightW, 1);
   const s = (contentH - 30) / maxFlow;
   const th = (v: number) => (v > 0 ? Math.max(v * s, MIN_BAND) : 0);
 
+  // Discharge feeds the Home bar from the left; charging pulls FROM the
+  // Home bar on the right, exactly like a consumer. A battery doing both
+  // at once (AC-coupled bypass) shows on both sides.
   const homeLeftFlows = [
     { v: F.gi, c: C.import, k: "grid-in" },
     { v: F.solar, c: C.solar, k: "solar" },
     { v: F.bd, c: C.battOut, k: "batt-out" },
-    { v: F.bc, c: C.battIn, k: "batt-in" },
   ].filter((f) => f.v > 0);
 
   const homeRightFlows = [
     ...(gridOnRight ? [{ v: F.ge, c: C.export, k: "grid-out" }] : []),
+    ...(F.hasBattery && F.bc > 0 ? [{ v: F.bc, c: C.battIn, k: "battery-charge" }] : []),
     ...F.cons.map((c, i) => ({ v: c.v, c: c.colour, k: "con" + i })),
     ...(F.otherV > 0 ? [{ v: F.otherV, c: C.consumer, k: "other" }] : []),
   ];
@@ -265,16 +285,14 @@ export function computeLayout(
       top: 0,
     });
   }
-  if (F.hasBattery && (F.bd > 0 || F.bc > 0)) {
+  if (F.hasBattery && F.bd > 0) {
     const bdR = attachL["batt-out"];
-    const bcR = attachL["batt-in"];
     srcNodes.push({
       key: "battery",
       colour: C.battOut,
-      h: Math.max(th(F.bd) + th(F.bc), MIN_NODE),
-      centre:
-        bdR && bcR ? (bdR[0] + bcR[1]) / 2 : midOf(bdR) ?? midOf(bcR) ?? contentTop + contentH * 0.8,
-      flows: { import: bdR ?? null, export: bcR ?? null },
+      h: Math.max(th(F.bd), MIN_NODE),
+      centre: midOf(bdR) ?? contentTop + contentH * 0.8,
+      flows: { import: bdR ?? null, export: null },
       top: 0,
     });
   }
@@ -300,6 +318,18 @@ export function computeLayout(
       centre: midOf(attachR["grid-out"])!,
       top: 0,
       isGridExport: true,
+    });
+  }
+  if (F.hasBattery && F.bc > 0) {
+    conNodes.push({
+      key: "battery-charge",
+      label: "Battery",
+      v: F.bc,
+      colour: C.battIn,
+      h: Math.max(th(F.bc), MIN_NODE),
+      centre: midOf(attachR["battery-charge"])!,
+      top: 0,
+      isBattCharge: true,
     });
   }
   for (let i = 0; i < F.cons.length; i++) {
@@ -340,26 +370,10 @@ export function computeLayout(
   for (const n of srcNodes) {
     if (n.flows.import) {
       const [hy0, hy1] = n.flows.import;
-      const t = th(n.key === "grid" ? F.gi : n.key === "solar" ? F.solar : F.bd);
-      const srcSpan: [number, number] = singleFlowNode(n)
-        ? [n.top, n.top + n.h]
-        : [n.top, n.top + t];
       bands.push({
         key: n.key + "-in",
-        d: bandPath(leftBarX + bw, srcSpan[0], srcSpan[1], homeBarX, hy0, hy1),
+        d: bandPath(leftBarX + bw, n.top, n.top + n.h, homeBarX, hy0, hy1),
         colour: n.key === "grid" ? C.import : n.key === "solar" ? C.solar : C.battOut,
-      });
-    }
-    if (n.flows.export) {
-      const [hy0, hy1] = n.flows.export;
-      const t = th(n.key === "grid" ? F.ge : F.bc);
-      const srcSpan: [number, number] = singleFlowNode(n)
-        ? [n.top, n.top + n.h]
-        : [n.top + n.h - t, n.top + n.h];
-      bands.push({
-        key: n.key + "-out",
-        d: bandPath(homeBarX, hy0, hy1, leftBarX + bw, srcSpan[0], srcSpan[1]),
-        colour: n.key === "grid" ? C.export : C.battIn,
       });
     }
   }
@@ -394,8 +408,25 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const glass = useGlassStyle(config);
   const isLight = glass.isLight;
 
-  const textMain = isLight ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)";
-  const textSub = isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.55)";
+  // Labels honour the Style tab: base text colour, font weight and text
+  // shadow all apply, and nothing dims the configured colours further.
+  const textMain = config?.color || (isLight ? "rgba(0,0,0,0.92)" : "rgba(255,255,255,1)");
+  const textSub = isLight ? "rgba(0,0,0,0.72)" : "rgba(255,255,255,0.85)";
+  const cfgWeight =
+    config?.fontWeight != null && String(config.fontWeight).trim() !== ""
+      ? parseInt(String(config.fontWeight), 10)
+      : NaN;
+  const bigWeight = Number.isFinite(cfgWeight) ? cfgWeight : 700;
+  const smallWeight = Number.isFinite(cfgWeight) ? cfgWeight : 400;
+  const shadowNum = (v: unknown) => (v == null || v === "" ? 0 : Number(v));
+  const tsBlur = shadowNum(config?.textShadowBlur);
+  const tsX = shadowNum(config?.textShadowX);
+  const tsYCond = shadowNum(config?.textShadowY);
+  const tsY = config?.textShadowY == null ? 4 : shadowNum(config?.textShadowY);
+  const textShadow =
+    tsBlur > 0 || tsX !== 0 || tsYCond !== 0
+      ? `${tsX}px ${tsY}px ${tsBlur}px rgba(0,0,0,0.8)`
+      : "none";
 
   // Flows are the single source of truth: the first grid, solar and battery
   // flow each feeds the left side; consumer flows draw their own bands on the
@@ -451,6 +482,10 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const [error, setError] = useState("");
   const [size, setSize] = useState< Sized | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  // Widest measured label text per side (px). The layout hugs these so
+  // responsive font sizes never crop; null until the probe measures once.
+  const [labelPx, setLabelPx] = useState<{ src: number; con: number } | null>(null);
+  const probeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!allIds) {
@@ -490,6 +525,38 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     });
     ro.observe(el);
     return () => ro.disconnect();
+  }, []);
+
+  // Measure the hidden label probe after every render: the gutters follow
+  // the real text widths. No deps on purpose - state updates above bail
+  // out when nothing changed, so this settles instead of looping.
+  useLayoutEffect(() => {
+    const el = probeRef.current;
+    if (!el) return;
+    let src = 0;
+    let con = 0;
+    el.querySelectorAll<HTMLElement>("span[data-side]").forEach((s) => {
+      const wpx = s.getBoundingClientRect().width;
+      if (s.dataset.side === "src") src = Math.max(src, wpx);
+      else con = Math.max(con, wpx);
+    });
+    setLabelPx((prev) =>
+      prev && Math.abs(prev.src - src) < 0.5 && Math.abs(prev.con - con) < 0.5
+        ? prev
+        : { src, con });
+  });
+
+  // Webfont swap changes label widths after first paint - remeasure once
+  // the fonts settle.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const fonts = (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts;
+    if (!fonts?.ready) return;
+    let alive = true;
+    fonts.ready.then(() => {
+      if (alive) setLabelPx(null);
+    });
+    return () => { alive = false; };
   }, []);
 
   const F = useMemo((): ComputedFlow | null => {
@@ -541,8 +608,8 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
 
   const L = useMemo((): Layout | null => {
     if (!size || !F) return null;
-    return computeLayout(size, C, F, otherLabel, homeLabel, gridId);
-  }, [size, F, C, otherLabel, homeLabel, gridId]);
+    return computeLayout(size, C, F, otherLabel, homeLabel, gridId, labelPx);
+  }, [size, F, C, otherLabel, homeLabel, gridId, labelPx]);
 
   if (!allIds) {
     return (
@@ -604,14 +671,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       nameKey = solarId;
       fallbackIcon = "☀️";
     } else {
-      value =
-        F!.bd > 0 && F!.bc > 0
-          ? `↓ ${fmtW(F!.bd)}  ↑ ${fmtW(F!.bc)}`
-          : F!.bd > 0
-            ? fmtW(F!.bd)
-            : F!.bc > 0
-              ? `↑ ${fmtW(F!.bc)}`
-              : "0 W";
+      // Charging draws on the right of the Home bar, so the left battery
+      // label only ever reports its discharge.
+      value = F!.bd > 0 ? fmtW(F!.bd) : "0 W";
       name = "Battery";
       nameKey = battPwrId || battLvlId;
       fallbackIcon = "🔋";
@@ -627,7 +689,6 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
       lines.push({
         text: `${battIcon} ${Math.round(F!.battLevel)} %`,
         scale: battScale,
-        style: { opacity: 0.8 },
       });
     }
     return lines;
@@ -638,6 +699,61 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     const availH = L.contentH ? L.contentH - 24 : (size?.h || 200);
     const perNode = availH / Math.max(count, 1);
     return count <=4 ? 1 : Math.max(0.55, Math.min(1, perNode / 40));
+  };
+
+  // Shared label-line css: weight, shadow and colour follow the Style tab,
+  // at full brightness.
+  const srcLineCss = (ln: LabelLine): React.CSSProperties => ({
+    fontSize: `${(ln.big ? 0.78 : 0.6) * (ln.scale ?? 1)}em`,
+    fontWeight: ln.big ? bigWeight : smallWeight,
+    color: ln.big ? textMain : textSub,
+    lineHeight: 1.2,
+    whiteSpace: "nowrap",
+    textShadow,
+    ...ln.style,
+  });
+
+  const conLineCss = (ln: LabelLine, rightScale: number): React.CSSProperties => ({
+    fontSize: `${(ln.big ? 0.78 : 0.6) * rightScale * (ln.scale ?? 1)}em`,
+    fontWeight: ln.big ? bigWeight : smallWeight,
+    color: ln.big ? textMain : textSub,
+    lineHeight: 1.2,
+    whiteSpace: "nowrap",
+    textShadow,
+    ...ln.style,
+  });
+
+  // Label lines for a right-side node - shared by the visible labels and
+  // the hidden width probe. The charging battery carries its percentage
+  // line here, like the discharging one does on the left.
+  const conLabelLines = (n: ConNode): LabelLine[] => {
+    const isGrid = n.key === "grid-out";
+    const isBatt = n.key === "battery-charge";
+    const valueText = isGrid || isBatt ? `↑ ${fmtW(n.v)}` : fmtW(n.v);
+    const flow =
+      isBatt ? battFlow
+      : isGrid ? gridFlow
+      : n.key.startsWith("con") ? consumerFlows[Number(n.key.slice(3))]
+      : undefined;
+    const nameLn = isBatt
+      ? nameLine(statesDict[battPwrId || battLvlId], battPwrId || battLvlId, "Battery", "🔋", srcMode)
+      : isGrid
+        ? nameLine(statesDict[gridId], gridId, "Grid", "⚡", srcMode)
+        : nameLine(statesDict[n.entityId || ""], n.entityId || "", n.label, null, conMode);
+    if (flow?.nameColor) nameLn.style = { ...nameLn.style, color: flow.nameColor };
+    const valueLn: LabelLine = {
+      text: valueText,
+      big: true,
+      style: { color: flow?.valueColor || n.colour },
+    };
+    const lines: LabelLine[] = isGrid || isBatt
+      ? (sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn])
+      : (consumerLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn]);
+    if (isBatt && F?.battLevel != null) {
+      const battIcon = iconFor(statesDict[battLvlId || battPwrId], battLvlId || battPwrId, "🔋");
+      lines.push({ text: `${battIcon} ${Math.round(F.battLevel)} %`, scale: battScale });
+    }
+    return lines;
   };
 
   return (
@@ -687,52 +803,19 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                   transform: "translateY(-50%)",
                 }}
               >
-                {srcLabel(n).map((ln, i) => {
-                  const base = ln.big ?0.78 : 0.6;
-                  const fs = ln.scale ? `${base * ln.scale}em` : `${base}em`;
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        fontSize: fs,
-                        fontWeight: ln.big ?700 : 400,
-                        color: ln.big ? textMain : textSub,
-                        opacity: ln.big ?1 : 0.65,
-                        lineHeight: 1.2,
-                        whiteSpace: "nowrap",
-                        ...ln.style,
-                      }}
-                    >
-                      {ln.text}
-                    </div>
-                  );
-                })}
+                {srcLabel(n).map((ln, i) => (
+                  <div key={i} style={srcLineCss(ln)}>
+                    {ln.text}
+                  </div>
+                ))}
               </div>
             ))}
 
             {/* consumer (right) labels: left-aligned, right of their bars */}
-            {L.conNodes.map((n, idx, arr) => {
-              const count = arr.length;
+            {L.conNodes.map((n) => {
+              const count = L.conNodes.length;
               const rightScale = rightScaleFor(count);
-              const isGrid = n.key === "grid-out";
-              const valueText = isGrid ? `↑ ${fmtW(n.v)}` : fmtW(n.v);
-              const flow =
-                n.key === "grid-out" ? gridFlow
-                : n.key.startsWith("con") ? consumerFlows[Number(n.key.slice(3))]
-                : undefined;
-              const nameLn = isGrid
-                ? nameLine(statesDict[gridId], gridId, "Grid", "⚡", srcMode)
-                : nameLine(statesDict[n.entityId || ""], n.entityId || "", n.label, null, conMode);
-              if (flow?.nameColor) nameLn.style = { ...nameLn.style, color: flow.nameColor };
-              const valueLn: { text: string; big?: boolean; style?: React.CSSProperties } = {
-                text: valueText,
-                big: true,
-                style: { color: flow?.valueColor || n.colour },
-              };
-              const lines: { text: string; big?: boolean; scale?: number; style?: React.CSSProperties }[] = isGrid
-                ? (sourceLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn])
-                : (consumerLabelFirst ? [nameLn, valueLn] : [valueLn, nameLn]);
-
+              const lines = conLabelLines(n);
               const availH = L.contentH ? L.contentH - 24 : (size?.h || 200);
               const perNode = availH / Math.max(count, 1);
 
@@ -749,26 +832,11 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                     overflow: "hidden",
                   }}
                 >
-                  {lines.map((ln, i) => {
-                    const base = ln.big ? 0.78 :0.6;
-                    const fs = `${base * rightScale}em`;
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          fontSize: fs,
-                          fontWeight: ln.big ? 700 :400,
-                          color: ln.big ? textMain : textSub,
-                          opacity: ln.big ? 1 :0.65,
-                          lineHeight: 1.2,
-                          whiteSpace: "nowrap",
-                          ...ln.style,
-                        }}
-                      >
-                        {ln.text}
-                      </div>
-                    );
-                  })}
+                  {lines.map((ln, i) => (
+                    <div key={i} style={conLineCss(ln, rightScale)}>
+                      {ln.text}
+                    </div>
+                  ))}
                 </div>
               );
             })}
@@ -791,21 +859,50 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                     transform: "translateX(-50%)",
                   }}
                 >
-                  <div style={{ fontSize: "0.6em", color: textSub, lineHeight: 1.2, whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: "0.6em", fontWeight: smallWeight, color: textSub, lineHeight: 1.2, whiteSpace: "nowrap", textShadow }}>
                     {homeLabel}
                   </div>
-                  <div style={{ fontSize: "0.78em", fontWeight: 700, color: textMain, lineHeight: 1.2, whiteSpace: "nowrap" }}>
+                  <div style={{ fontSize: "0.78em", fontWeight: bigWeight, color: textMain, lineHeight: 1.2, whiteSpace: "nowrap", textShadow }}>
                     {fmtW(F!.homeLoad)}
                   </div>
                 </div>
               );
             })()}
 
+            {/* Label-width probe: the same label lines as above, hidden
+                and non-interactive. Measured after every render so the
+                side gutters hug the real text - nothing crops, not even
+                with responsive font sizes. */}
+            <div
+              ref={probeRef}
+              aria-hidden="true"
+              style={{ position: "absolute", left: 0, top: 0, visibility: "hidden", pointerEvents: "none" }}
+            >
+              {L.srcNodes.map((n) =>
+                srcLabel(n).map((ln, i) => (
+                  <span key={n.key + "-" + i} data-side="src" style={{ ...srcLineCss(ln), position: "absolute" }}>
+                    {ln.text}
+                  </span>
+                )),
+              )}
+              {L.conNodes.map((n) =>
+                conLabelLines(n).map((ln, i) => (
+                  <span
+                    key={n.key + "-" + i}
+                    data-side="con"
+                    style={{ ...conLineCss(ln, rightScaleFor(L.conNodes.length)), position: "absolute" }}
+                  >
+                    {ln.text}
+                  </span>
+                )),
+              )}
+            </div>
+
             {/* no-flow hint */}
             {!anyFlow && (
               <div
                 className="absolute left-1/2 bottom-[0.3em] translate-x-[-50%] text-[0.6em] whitespace-nowrap"
-                style={{ color: textSub, opacity: 0.55 }}
+                style={{ color: textSub, opacity: 0.7 }}
               >
                 No power flowing
               </div>
