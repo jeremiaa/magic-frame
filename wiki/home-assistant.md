@@ -139,7 +139,8 @@ why Magic Frame cannot be run as two copies.
   widget froze the whole page.
 - **`/api/ha/state?ids=…` is the fallback**, a plain question-and-answer request
   that reads the entities once. Widgets use it when live sync is switched off,
-  and it is what polls a media player for the wallpaper's album artwork.
+  and it is what polls a media player for the wallpaper's album artwork,
+  and the wallpaper's Home Assistant entity source for its URL.
 
 If the connection to Home Assistant drops, the server tries again after two
 seconds, then four, then eight, up to a minute between attempts, for as long as

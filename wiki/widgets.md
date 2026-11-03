@@ -1,7 +1,7 @@
 # Widgets
 
 A **widget** is one tile on a view — the clock, the weather, a photo, a light
-switch. There are 20 kinds. This page is the catalogue, and then the settings
+switch. There are 22 kinds. This page is the catalogue, and then the settings
 that every one of them has, whatever kind it is.
 
 A **view** is one screenful shown at one address; you build it in the editor,
@@ -31,14 +31,16 @@ described in [The editor](the-editor.md).
 | To-dos (`Todos`) | `TodosWidget.tsx` | Tasks, optionally filtered to one person | [Family widgets](widgets-family.md) |
 | Text | `TextWidget.tsx` | A heading or caption that labels the widgets around it | [Labelling a view](#labelling-a-view), below |
 | School Rotation (`Schulrotation`) | `SchoolRotationWidget.tsx` | A rotating school day schedule per child, with holiday support and weekly reminders | [Family widgets](widgets-family.md) |
+| Power Sankey | `PowerSankeyWidget.tsx` | A live power flow diagram - solar, battery, grid and consumer bands drawn from Home Assistant sensors | [Home Assistant widgets](widgets-home-assistant.md) |
+| Flex Horseshoe | `FlexHorseshoeWidget.tsx` | A horseshoe gauge of concentric arcs - colour stops, ticks, a marker and one row per entity | [Home Assistant widgets](widgets-home-assistant.md) |
 
-Anything beyond these 20 is a **custom module** — a widget somebody else wrote,
+Anything beyond these 22 is a **custom module** - a widget somebody else wrote,
 installed under `Editor → Modules`. Its type id starts with `custom:` instead
 of ending in `.tsx`. See [Custom modules](custom-modules.md).
 
 ## Adding one
 
-![The 'Add widget' palette down the left of the editor, each of the 20 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
+![The 'Add widget' palette down the left of the editor, each of the 22 widgets a row with its icon and a plus.](img/widgets-add-palette.png)
 
 1. Open `/editor`, sign in, and click the view you want to change.
 2. Down the left of the canvas is the **Add widget** (`Widget hinzufügen`)
@@ -68,7 +70,7 @@ get renamed once released: renaming one would break every layout that uses it.
 
 Select a widget in the editor and the inspector opens with three tabs:
 **Layout**, **Text & colour** (`Text & Farbe`) and **Content** (`Inhalt`). The
-first two are the same for all 20 widgets; the Content tab is what the
+first two are the same for all 22 widgets; the Content tab is what the
 individual widget pages document.
 
 ### Layout

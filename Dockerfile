@@ -9,6 +9,7 @@ RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
+ENV NODE_OPTIONS="--max-old-space-size=384"
 # Leer für das normale Abbild. Nur das Add-on-Abbild wird mit dem Platzhalter
 # gebaut, den scripts/mf-basepath.mjs beim Containerstart durch den echten
 # Ingress-Pfad ersetzt. Siehe next.config.ts.
@@ -20,7 +21,7 @@ COPY . .
 # Generate prisma client before build
 RUN echo "DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy" > .env
 RUN npx prisma generate
-RUN npm run build
+RUN NODE_OPTIONS=--max-old-space-size=1024 npm run build
 
 # Production image
 FROM base AS runner

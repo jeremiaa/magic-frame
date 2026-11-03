@@ -11,7 +11,9 @@ export const WIDGET_TYPES = [
   "MessagesWidget.tsx",
   "ShoppingListWidget.tsx",
   "TodosWidget.tsx",
+  "PowerSankeyWidget.tsx",
   "SchoolRotationWidget.tsx",
+  "FlexHorseshoeWidget.tsx",
 ] as const;
 
 const baseConfig = z
@@ -73,6 +75,8 @@ const weatherConfig = baseConfig.extend({
   lon: z.string().optional(),
   location: z.string().optional(),
   forecastLayout: z.enum(["horizontal", "vertical"]).optional(),
+  // where the weather content sits inside the tile (default centre = old look)
+  align: z.enum(["left", "center", "right"]).optional(),
   iconSet: z.string().optional(),
   // Meteocons (MIT): Stil fill/line + optionale SMIL-Animation. Nur relevant
   // wenn iconSet === "meteocons"; Defaults = fill / statisch.
@@ -380,6 +384,185 @@ const textConfig = baseConfig
   })
   .passthrough();
 
+const powerSankeyConfig = baseConfig
+  .extend({
+    title: z.string().optional(),
+    // Flows are the single source of truth: the first grid, solar and battery
+    // flow feed the sources; consumer flows draw their own right-side bands.
+    flows: z.array(z.object({
+      entityId: z.string(),
+      label: z.string().optional(),
+      color: z.string().optional(),
+      type: z.enum(["grid", "solar", "battery", "consumer"]),
+      levelId: z.string().optional(),
+      invert: z.boolean().optional(),
+      exportColor: z.string().optional(),
+      chargeColor: z.string().optional(),
+      nameColor: z.string().optional(),
+      valueColor: z.string().optional(),
+    })).optional(),
+    homeLabel: z.string().optional(),
+    otherLabel: z.string().optional(),
+    showOther: z.boolean().optional(),
+    minFlowW: z.number().optional(),
+    sourceLabelFirst: z.boolean().optional(),
+    consumerLabelFirst: z.boolean().optional(),
+    showSourceIcons: z.boolean().optional(),
+    iconOnlySources: z.boolean().optional(),
+    showConsumerIcons: z.boolean().optional(),
+    iconOnlyConsumers: z.boolean().optional(),
+    batteryIconScale: z.number().optional(),
+    otherColor: z.string().optional(),
+    homeBarColor: z.string().optional(),
+    homeLabelOffsetY: z.number().optional(),
+  })
+  .passthrough();
+
+const flexHorseshoeConfig = baseConfig
+  .extend({
+    title: z.string().optional(),
+    titleAlign: z.enum(["left", "center", "right"]).optional(),
+    titlePosition: z.enum(["top", "bottom"]).optional(),
+    // Max two entities. The first (mandatory) entity is the MAIN entity drawn
+    // on the OUTSIDE ring; the second (optional) entity is drawn on the
+    // INSIDE ring. Every entity carries its own gauge settings.
+    entities: z
+      .array(
+        z.object({
+          entityId: z.string(),
+          label: z.string().optional(),
+          color: z.string().optional(),
+          min: z.number().optional(),
+          max: z.number().optional(),
+          style: z
+            .enum(["fixed", "colorstop", "interpolated", "segments", "gradient"])
+            .optional(),
+          stops: z.string().optional(),
+          thicknessPct: z.number().optional(),
+          showRing: z.boolean().optional(), // horseshoe arc (default on)
+          showMarker: z.boolean().optional(), // tick/value marker dot
+          unitOverride: z.string().optional(),
+          showUnit: z.boolean().optional(),
+          decimals: z.number().optional(),
+          // entity-row display - per entity. A row renders when any of the
+          // three visibility flags is on.
+          showRowIcon: z.boolean().optional(),
+          showRowName: z.boolean().optional(),
+          showRowValue: z.boolean().optional(),
+          // far-left/far-right pin to the row edges; before-name/after-name
+          // sit beside the name inside the row-justified cluster.
+          iconPlacement: z.enum(["far-left", "before-name", "after-name", "far-right"]).optional(),
+          valuePlacement: z.enum(["far-left", "before-name", "after-name", "far-right"]).optional(),
+          // justification of the row's content (its name cluster)
+          rowAlign: z.enum(["left", "center", "right"]).optional(),
+          // custom mdi icon (same picker as the Sensor widget); blank/omitted
+          // = use the icon Home Assistant provides (attributes.icon)
+          icon: z.string().optional(),
+          // colour for the entity's MDI/Lucide icon (emoji ignores it);
+          // blank = inherit the widget text colour
+          iconColor: z.string().optional(),
+          // explicit colour for this entity's row value; blank = the
+          // automatic chain (entity colour → value colour → fixed colour)
+          rowValueColor: z.string().optional(),
+          // explicit colour for this entity's row name; blank = dimmed
+          // widget text (the previous look)
+          rowNameColor: z.string().optional(),
+          // scale multiplier for the entity row's icon, name and value
+          rowScale: z.number().optional(),
+          // attention state (active-on-sensor): while the watched entity holds
+          // the active state the icon takes attentionColor (blank = the icon's
+          // own colour) and an optional status text shows anywhere on the tile
+          attentionOn: z.boolean().optional(),
+          attentionEntity: z.string().optional(),
+          attentionState: z.string().optional(),
+          attentionColor: z.string().optional(),
+          attentionShowText: z.boolean().optional(),
+          attentionTextMode: z.enum(["state", "custom"]).optional(),
+          attentionText: z.string().optional(),
+          attentionTextAlign: z.enum(["left", "center", "right"]).optional(),
+          attentionTextX: z.number().optional(),
+          attentionTextY: z.number().optional(),
+          attentionTextPulse: z.boolean().optional(),
+        })
+      )
+      .optional(),
+    // Legacy: rings were configured separately from entities before the
+    // entity-per-ring rework. Kept so old configs still validate.
+    rings: z
+      .array(
+        z.object({
+          entityId: z.string(),
+          min: z.number(),
+          max: z.number(),
+          style: z.enum(["fixed", "colorstop", "interpolated", "segments", "gradient"]),
+          stops: z.string().optional(),
+          thicknessPct: z.number().optional(),
+        })
+      )
+      .optional(),
+    // Rows above/below the gauge. Per-entity row visibility (showRowIcon/
+    // showRowName/showRowValue - a row shows if any is on), icon/value
+    // placement and row justification all live inside each entity above.
+    // Legacy keys (showEntityList/showEntityName/showIcons/valuePlacement)
+    // still validate via passthrough and are honoured as per-entity fallbacks.
+    entityListPosition: z.enum(["above", "below"]).optional(),
+    // Big centre value
+    showCentreValue: z.boolean().optional(),
+    centreEntity: z.union([z.literal(0), z.literal(1)]).optional(),
+    showCentreIcon: z.boolean().optional(),
+    centreShowUnit: z.boolean().optional(),
+    // unit placement around the big centre value: below/above stack it,
+    // before/after render it inline beside the value
+    centreUnitPosition: z.enum(["below", "above", "before", "after"]).optional(),
+    // vertical offset of the unit relative to the value row, in em
+    // (positive raises, negative lowers; 0 = on the baseline)
+    centreUnitOffset: z.number().optional(),
+    // distance of the entity rows from the arc, in em (positive pushes the
+    // rows further away, negative pulls them closer / over the horseshoe)
+    entityListOffset: z.number().optional(),
+    centreScale: z.number().optional(),
+    // per-item scale multipliers for the big centre block, on top of
+    // centreScale (icon / value text / unit), 0.1..3
+    centreIconScale: z.number().optional(),
+    centreValueScale: z.number().optional(),
+    centreUnitScale: z.number().optional(),
+    // vertical slide of the centre icon, 0..100 (50 = natural spot above
+    // the value; the ends shift half the gauge height)
+    centreIconY: z.number().optional(),
+    // vertical slide of the centre value + unit together, 0..100
+    // (50 = centred on the arc middle; the ends shift half the gauge height)
+    centreValueY: z.number().optional(),
+    // centre icon position: above (default) or below the value block
+    centreIconPos: z.enum(["above", "below"]).optional(),
+    // justify the centre entity icon left/centre/right in the value block
+    centreIconAlign: z.enum(["left", "center", "right"]).optional(),
+    // centre value colour: "value" = the arc/gradient colour at the value
+    // (default), "text" = the widget default text colour
+    centreColourMode: z.enum(["value", "text"]).optional(),
+    // whole-widget content fine-tune in px (title + rows + gauge)
+    contentOffsetX: z.number().optional(),
+    contentOffsetY: z.number().optional(),
+    // padding inside the tile, honoured by the view wrapper (px)
+    outerPadding: z.number().optional(),
+    // the shaded remainder of the scale behind the progress arc
+    showTrack: z.boolean().optional(),
+    trackOpacity: z.number().optional(),
+    // when true, the track arc follows the entity's gradient colours along
+    // the whole sweep (smooth styles only: gradient / interpolated)
+    trackGradient: z.boolean().optional(),
+    arcDegrees: z.number().optional(),
+    ringWidth: z.number().optional(),
+    ringGap: z.number().optional(),
+    showTicks: z.boolean().optional(),
+    tickCount: z.number().optional(),
+    tickSize: z.number().optional(),
+    tickColor: z.string().optional(),
+    markerColor: z.string().optional(),
+    trackColor: z.string().optional(),
+    fixedColor: z.string().optional(),
+  })
+  .passthrough();
+
 const mediaPlayerConfig = baseConfig
   .extend({
     // auto wählt nach Kachelform (breit → row, hoch → stack, quadratisch → cover)
@@ -604,7 +787,13 @@ export const widgetLayoutItemSchema = z.union([
     .object({ type: z.literal("TextWidget.tsx"), config: textConfig })
     .merge(commonWidgetFields()),
   z
+    .object({ type: z.literal("PowerSankeyWidget.tsx"), config: powerSankeyConfig })
+    .merge(commonWidgetFields()),
+  z
     .object({ type: z.literal("SchoolRotationWidget.tsx"), config: schoolRotationConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("FlexHorseshoeWidget.tsx"), config: flexHorseshoeConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);
@@ -655,7 +844,9 @@ export const WIDGET_CONFIG_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "QrWidget.tsx": qrConfig,
   "StatusWidget.tsx": statusConfig,
   "TextWidget.tsx": textConfig,
+  "PowerSankeyWidget.tsx": powerSankeyConfig,
   "SchoolRotationWidget.tsx": schoolRotationConfig,
+  "FlexHorseshoeWidget.tsx": flexHorseshoeConfig,
 };
 
 export const layoutSchema = z.array(widgetLayoutItemSchema);
@@ -666,6 +857,10 @@ export const wallpaperSchema = z
     query: z.string().optional(),
     // source "icloud" (#116): öffentlicher Link eines geteilten iCloud-Albums.
     icloudUrl: z.string().optional(),
+    // source "ha_entity": die Bild-URL steht im gewählten Attribut der
+    // Home-Assistant-Entity (leer = Zustand der Entity).
+    haEntityId: z.string().optional(),
+    haAttribute: z.string().optional(),
     intervalSec: z.number().optional(),
     showMetadata: z.boolean().optional(),
     // Wie das Bild skaliert wird (issue #17). cover = Fill (default, croppt),

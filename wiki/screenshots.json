@@ -3,7 +3,7 @@
     "width": 1280,
     "height": 800
   },
-  "note": "Every shot records the source files it shows. check-wiki.mjs fails when one of them changed after takenAt — retake with: node scripts/shoot-wiki.mjs <id>. Shots are taken against a seeded throwaway instance with invented content (scripts/seed-demo.mjs plus the two stubs), never against a real household.",
+  "note": "Every shot records the source files it shows. check-wiki.mjs fails when one of them changed after takenAt \u2014 retake with: node scripts/shoot-wiki.mjs <id>. Shots are taken against a seeded throwaway instance with invented content (scripts/seed-demo.mjs plus the two stubs), never against a real household.",
   "shots": [
     {
       "id": "concepts-anatomy",
@@ -26,8 +26,8 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "e8fa619b8204",
-        "src/components/WallpaperEngine.tsx": "93291abbaf50"
+        "src/app/view/[id]/page.tsx": "f202f6c3616d",
+        "src/components/WallpaperEngine.tsx": "103de46ecbbe"
       }
     },
     {
@@ -76,14 +76,14 @@
         }
       ],
       "takenAt": {
-        "src/components/widgets/WeatherWidget.tsx": "b7a751a53ba7",
+        "src/components/widgets/WeatherWidget.tsx": "734babd72c2d",
         "src/lib/weather/wmo.tsx": "9f33782c649f"
       }
     },
     {
       "id": "environment-tiles",
       "page": "widgets-time-weather.md",
-      "caption": "The Environment widget: one tile per value — air quality, particulates, pollen, UV and wind — each with its own icon.",
+      "caption": "The Environment widget: one tile per value \u2014 air quality, particulates, pollen, UV and wind \u2014 each with its own icon.",
       "shows": [
         "src/components/widgets/EnvironmentWidget.tsx"
       ],
@@ -131,7 +131,7 @@
     {
       "id": "timer-countdown",
       "page": "widgets-family.md",
-      "caption": "The Timer widget: two timers, one counting down with a green ring, and one finished — ringed orange and reading DONE.",
+      "caption": "The Timer widget: two timers, one counting down with a green ring, and one finished \u2014 ringed orange and reading DONE.",
       "shows": [
         "src/components/widgets/TimerWidget.tsx"
       ],
@@ -508,13 +508,13 @@
         }
       ],
       "takenAt": {
-        "src/components/WallpaperEngine.tsx": "93291abbaf50"
+        "src/components/WallpaperEngine.tsx": "103de46ecbbe"
       }
     },
     {
       "id": "getting-started-result",
       "page": "getting-started.md",
-      "caption": "The finished result: a wall tablet showing a rotating photo with a clock in the corner — what you will have at the end of this page.",
+      "caption": "The finished result: a wall tablet showing a rotating photo with a clock in the corner \u2014 what you will have at the end of this page.",
       "shows": [
         "src/app/view/[id]/page.tsx",
         "src/components/WallpaperEngine.tsx"
@@ -532,8 +532,8 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "e8fa619b8204",
-        "src/components/WallpaperEngine.tsx": "93291abbaf50"
+        "src/app/view/[id]/page.tsx": "f202f6c3616d",
+        "src/components/WallpaperEngine.tsx": "103de46ecbbe"
       }
     },
     {
@@ -556,7 +556,7 @@
         }
       ],
       "takenAt": {
-        "src/app/view/[id]/page.tsx": "e8fa619b8204"
+        "src/app/view/[id]/page.tsx": "f202f6c3616d"
       }
     },
     {
@@ -578,7 +578,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "a52bfab3881f"
+        "src/app/editor/(app)/page.tsx": "711d6fd4c9c5"
       }
     },
     {
@@ -600,7 +600,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/page.tsx": "a52bfab3881f"
+        "src/app/editor/(app)/page.tsx": "711d6fd4c9c5"
       }
     },
     {
@@ -622,13 +622,13 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
       "id": "widgets-add-palette",
       "page": "widgets.md",
-      "caption": "The 'Add widget' palette down the left of the editor, each of the 20 widgets a row with its icon and a plus.",
+      "caption": "The 'Add widget' palette down the left of the editor, each of the 22 widgets a row with its icon and a plus.",
       "shows": [
         "src/app/editor/_components/AddWidgetModal.tsx",
         "src/app/editor/(app)/views/[id]/page.tsx"
@@ -645,14 +645,14 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/_components/AddWidgetModal.tsx": "a33438054a4a",
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/_components/AddWidgetModal.tsx": "71c57404d0fe",
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
       "id": "home-assistant-integration-card",
       "page": "home-assistant.md",
-      "caption": "The Integrations page with the Home Assistant card filled in: an address in the URL field, the token field reading 'Saved — leave empty to keep it', and the line 'Connection configured.' beside the Save button.",
+      "caption": "The Integrations page with the Home Assistant card filled in: an address in the URL field, the token field reading 'Saved \u2014 leave empty to keep it', and the line 'Connection configured.' beside the Save button.",
       "shows": [
         "src/app/editor/(app)/integrations/page.tsx"
       ],
@@ -730,7 +730,7 @@
     {
       "id": "calendars-connected-accounts",
       "page": "calendars.md",
-      "caption": "The calendar accounts list with three accounts connected — two Google and one Microsoft 365 — each with its own Disconnect button.",
+      "caption": "The calendar accounts list with three accounts connected \u2014 two Google and one Microsoft 365 \u2014 each with its own Disconnect button.",
       "shows": [
         "src/lib/calendar-auth/store.ts",
         "src/app/editor/(app)/integrations/page.tsx"
@@ -1115,7 +1115,7 @@
         }
       ],
       "takenAt": {
-        "src/components/WallpaperEngine.tsx": "93291abbaf50"
+        "src/components/WallpaperEngine.tsx": "103de46ecbbe"
       }
     },
     {
@@ -1135,7 +1135,7 @@
         }
       ],
       "takenAt": {
-        "src/components/WallpaperEngine.tsx": "93291abbaf50"
+        "src/components/WallpaperEngine.tsx": "103de46ecbbe"
       }
     },
     {
@@ -1156,8 +1156,8 @@
         }
       ],
       "takenAt": {
-        "src/components/WallpaperEngine.tsx": "93291abbaf50",
-        "src/app/view/[id]/page.tsx": "e8fa619b8204"
+        "src/components/WallpaperEngine.tsx": "103de46ecbbe",
+        "src/app/view/[id]/page.tsx": "f202f6c3616d"
       }
     },
     {
@@ -1182,7 +1182,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
@@ -1207,7 +1207,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/views/[id]/page.tsx": "27ccecac0139"
+        "src/app/editor/(app)/views/[id]/page.tsx": "87c780d9b0cf"
       }
     },
     {
@@ -1279,13 +1279,13 @@
         }
       ],
       "takenAt": {
-        "src/components/widgets/WeatherWidget.tsx": "b7a751a53ba7"
+        "src/components/widgets/WeatherWidget.tsx": "734babd72c2d"
       }
     },
     {
       "id": "media-player-stack",
       "page": "widgets-media.md",
-      "caption": "Stack layout: the cover sits above the title, artist and progress instead of beside them — what a narrow, tall tile wants.",
+      "caption": "Stack layout: the cover sits above the title, artist and progress instead of beside them \u2014 what a narrow, tall tile wants.",
       "shows": [
         "src/components/widgets/MediaPlayerWidget.tsx"
       ],
@@ -1333,7 +1333,7 @@
     {
       "id": "media-player-vinyl",
       "page": "widgets-media.md",
-      "caption": "A round cover that turns while something is playing, with the same artwork blurred behind it as the tile background — `coverCorners: circle` plus `vinylSpin`.",
+      "caption": "A round cover that turns while something is playing, with the same artwork blurred behind it as the tile background \u2014 `coverCorners: circle` plus `vinylSpin`.",
       "shows": [
         "src/components/widgets/MediaPlayerWidget.tsx"
       ],

@@ -14,6 +14,7 @@ import {
   EyeOff,
   Image as ImageIcon,
   Gauge,
+  Disc3,
   Video,
   Music,
   X,
@@ -79,6 +80,8 @@ const WIDGET_CATALOG: {
   { type: "TodosWidget.tsx", label: "Todos", icon: <ClipboardList size={16} /> },
   { type: "ImageWidget.tsx", label: "Bild", icon: <ImageIcon size={16} /> },
   { type: "SensorWidget.tsx", label: "Sensor", icon: <Gauge size={16} /> },
+  { type: "PowerSankeyWidget.tsx", label: "Power Sankey", icon: <Zap size={16} /> },
+  { type: "FlexHorseshoeWidget.tsx", label: "Flex Horseshoe", icon: <Disc3 size={16} /> },
   { type: "EnvironmentWidget.tsx", label: "Umwelt", icon: <Leaf size={16} /> },
   { type: "CameraWidget.tsx", label: "Kamera", icon: <Video size={16} /> },
   { type: "MediaPlayerWidget.tsx", label: "Media Player", icon: <Music size={16} /> },
@@ -296,6 +299,42 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         <div className="w-full h-full flex flex-col items-center justify-center gap-[8%]">
           <div className="rounded-md" style={{ height: "34%", width: "52%", backgroundColor: dim }} />
           <div className="rounded-full" style={{ height: "8%", width: "38%", backgroundColor: dimmer }} />
+        </div>
+      );
+
+    case "PowerSankeyWidget.tsx":
+      // Sankey bands flowing into a centre block.
+      return (
+        <div className="w-full h-full flex items-center justify-center gap-[4%] px-[8%]">
+          <div className="flex flex-col gap-[6%] items-end" style={{ width: "24%" }}>
+            <div className="rounded-sm" style={{ height: "10%", width: "60%", backgroundColor: dim }} />
+            <div className="rounded-sm" style={{ height: "10%", width: "80%", backgroundColor: dimmer }} />
+            <div className="rounded-sm" style={{ height: "10%", width: "50%", backgroundColor: dim }} />
+          </div>
+          <div className="rounded-md" style={{ height: "36%", width: "10%", backgroundColor: dim }} />
+          <div className="flex flex-col gap-[6%]" style={{ width: "24%" }}>
+            <div className="rounded-sm" style={{ height: "10%", width: "70%", backgroundColor: dimmer }} />
+            <div className="rounded-sm" style={{ height: "10%", width: "55%", backgroundColor: dim }} />
+            <div className="rounded-sm" style={{ height: "10%", width: "85%", backgroundColor: dimmer }} />
+            <div className="rounded-sm" style={{ height: "10%", width: "45%", backgroundColor: dim }} />
+          </div>
+        </div>
+      );
+    case "FlexHorseshoeWidget.tsx":
+      // Horseshoe gauges: concentric arcs with a centre value.
+      return (
+        <div className="w-full h-full flex items-center justify-center">
+          <div
+            className="rounded-full"
+            style={{
+              width: "55%",
+              aspectRatio: "1",
+              borderRadius: "50%",
+              background: `conic-gradient(from 140deg, ${dim} 0deg, ${dimmer} 120deg, ${dim} 240deg, transparent 240deg)`,
+              maskImage: "radial-gradient(circle, transparent 58%, black 59%)",
+              WebkitMaskImage: "radial-gradient(circle, transparent 58%, black 59%)",
+            }}
+          />
         </div>
       );
 

@@ -25,6 +25,13 @@ const nextConfig: NextConfig = {
   // Build durchgeht; lokale Type-Checks im Editor + `npm run build` machen
   // weiterhin volle Strict-Validierung.
   typescript: { ignoreBuildErrors: true },
+  experimental: {
+    // Cap the static-generation worker pool (the build server is a
+    // memory-constrained LXC; Next.js otherwise spawns one worker per core
+    // and the OOM killer takes the build down mid page-data collection).
+    // 1 worker: 2 workers plus the Turbopack compile still exceed 2 GiB.
+    cpus: 1,
+  },
 };
 
 export default nextConfig;
