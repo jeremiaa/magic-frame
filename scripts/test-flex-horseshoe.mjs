@@ -46,7 +46,7 @@ const base = {
   showTicks: false, tickCount: 11, tickSize: 6,
   markerColor: "#ffffff",
   showCentre: true, centreEntity: 0, centreShowUnit: true, centreScale: 1,
-  centreIconScale: 1, centreValueScale: 1, centreUnitScale: 1, centreIconY: 50,
+  centreIconScale: 1, centreValueScale: 1, centreUnitScale: 1, centreIconY: 50, centreValueY: 50,
   showTrack: true, trackOpacity: 0.38,
   rings: [],
 };
@@ -522,6 +522,19 @@ check("centreIconY: 50 keeps the natural spot, ends shift half the gauge", () =>
   assert.equal(up.centre!.iconDy, -100); // h = 200: half up
   const down = computeLayout({ ...base, centreIconY: 100, rings: [r] });
   assert.equal(down.centre!.iconDy, 100); // half down
+});
+
+// ---- 25. centre value+unit vertical slider (centreValueY) ----
+check("centreValueY: 50 centred, ends shift half the gauge, icon independent", () => {
+  const r = ring({ value: 50 });
+  const mid = computeLayout({ ...base, rings: [r] });
+  assert.equal(mid.centre!.valueDy, 0);
+  const up = computeLayout({ ...base, centreValueY: 0, rings: [r] });
+  assert.equal(up.centre!.valueDy, -100); // h = 200: half up
+  assert.equal(up.centre!.iconDy, 0); // the value slider never moves the icon
+  const dn = computeLayout({ ...base, centreValueY: 100, centreIconY: 100, rings: [r] });
+  assert.equal(dn.centre!.valueDy, 100);
+  assert.equal(dn.centre!.iconDy, 100); // both sliders stack independently
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");

@@ -512,6 +512,9 @@ export function computeLayout(
     /** vertical position of the centre icon, 0..100 (50 = its natural spot
      *  above the value; the ends shift half the gauge height) */
     centreIconY: number;
+    /** vertical position of the centre value + unit block, 0..100 (50 =
+     *  centred on the arc middle; the ends shift half the gauge height) */
+    centreValueY: number;
     showTrack: boolean;
     /** track arc opacity, 0..1 (drawn only when showTrack) */
     trackOpacity: number;
@@ -527,7 +530,7 @@ export function computeLayout(
   arcs: Arc[];
   ticks: { key: string; x1: number; y1: number; x2: number; y2: number }[];
   markers: { key: string; x: number; y: number; r: number; fill: string }[];
-  centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number; iconPx: number; iconDy: number } | null;
+  centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number; iconPx: number; iconDy: number; valueDy: number } | null;
   ringCount: number;
   /** stroke width of the outermost drawn ring (for the rows anchor) */
   outerThick: number;
@@ -688,7 +691,7 @@ export function computeLayout(
   });
 
   // Big centre value: the user-chosen entity (default: first entity)
-  let centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number; iconPx: number; iconDy: number } | null =
+  let centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number; iconPx: number; iconDy: number; valueDy: number } | null =
     null;
   const cIdx = Math.max(0, Math.min(1, Math.round(P.centreEntity)));
   const cRing = P.rings[cIdx] ?? P.rings[0];
@@ -710,6 +713,9 @@ export function computeLayout(
       // 50 = the natural spot above the value; 0 / 100 slide the icon
       // half the gauge height up / down (relative shift, layout intact)
       iconDy: ((P.centreIconY - 50) / 100) * P.h,
+      // centreValueY shifts the value + unit block together the same way;
+      // the icon above is unaffected (it has its own slider)
+      valueDy: ((P.centreValueY - 50) / 100) * P.h,
     };
   }
 
@@ -852,6 +858,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const centreValueScale = clampNum(config?.centreValueScale, 0.1, 3, 1);
   const centreUnitScale = clampNum(config?.centreUnitScale, 0.1, 3, 1);
   const centreIconY = clampNum(config?.centreIconY, 0, 100, 50);
+  const centreValueY = clampNum(config?.centreValueY, 0, 100, 50);
 
   // Whole-widget content fine-tune: nudges everything the widget draws
   // (title, rows, gauge) in pixels, inside the tile.
@@ -1022,11 +1029,12 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       centreValueScale,
       centreUnitScale,
       centreIconY,
+      centreValueY,
       showTrack,
       trackOpacity,
       trackGradient,
     });
-  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, centreIconScale, centreValueScale, centreUnitScale, centreIconY, showTrack, trackOpacity, trackGradient]);
+  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, centreIconScale, centreValueScale, centreUnitScale, centreIconY, centreValueY, showTrack, trackOpacity, trackGradient]);
 
   const configured = ents.length > 0 || legacyRings.length > 0;
 
@@ -1391,6 +1399,9 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                   {centreIcon}
                 </div>
               ) : null}
+              {/* centreValueY slider: one vertical shift for the value +
+                  unit block; the icon keeps its own centreIconY slider */}
+              <div style={{ position: "relative", top: `${L.centre.valueDy}px` }}>
               {centreUnitPos === "above" && L.centre.unitText ? (
                 <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, marginBottom: "0.08em", position: "relative", top: `${unitDy}em` }}>{L.centre.unitText}</div>
               ) : null}
@@ -1418,6 +1429,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               {centreUnitPos === "below" && L.centre.unitText ? (
                 <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, position: "relative", top: `${unitDy}em` }}>{L.centre.unitText}</div>
               ) : null}
+              </div>
             </div>
           ) : null}
           {rowsOverlayBelow ? listEl : null}

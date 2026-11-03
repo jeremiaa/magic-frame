@@ -596,6 +596,7 @@ outside ring; the second draws the ring inside it.
 | `centreValueScale` | 1 | Scale multiplier on the centre value text, 0.1-3×. |
 | `centreUnitScale` | 1 | Scale multiplier on the centre unit, 0.1-3×. |
 | `centreIconY` | 50 | Vertical position of the centre icon, 0-100. 50 is its natural spot above the value; 0 / 100 shift it half the gauge height up / down. |
+| `centreValueY` | 50 | Vertical position of the centre value and unit together, 0-100. One slider moves both; 50 keeps them centred in the horseshoe, 0 / 100 shift them half the gauge height up / down. The icon keeps its own `centreIconY` slider. |
 | `arcDegrees` | 260 | The sweep, 90-360°; the gap is centred at the bottom. At 360 the horseshoe closes into a full circle. |
 | `ringWidth` | 18 % | Default ring thickness as a share of the radius, 4-60 %. Per-entity **Ring thickness** overrides it. |
 | `ringGap` | 5 % | Radial gap between stacked rings. |

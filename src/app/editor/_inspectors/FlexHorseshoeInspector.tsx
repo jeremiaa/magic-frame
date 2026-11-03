@@ -779,6 +779,10 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
         <p className="text-xs text-[var(--mf-fg)]/40">
           {t("50 keeps the icon just above the value. 0 lifts it half the gauge height, 100 lowers it half.")}
         </p>
+        {renderRange("centreValueY", t("Centre value + unit vertical position"), 0, 100, 1, 50, "%")}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("50 keeps the value and unit centred in the horseshoe. 0 lifts them half the gauge height, 100 lowers them half. One slider moves both together; the icon keeps its own slider above.")}
+        </p>
       </div>
 
       {/* ── 5. Geometry ───────────────────────────────────────────────────── */}
