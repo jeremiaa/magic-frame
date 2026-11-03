@@ -4600,7 +4600,9 @@ Every label honours the widget's font settings: the Style tab's font weight and
 text shadow apply to each label, the text colour drives the value colour, and
 the labels render at full brightness. The side gutters size themselves to the
 measured label text, so with responsive text or a large font size the diagram
-narrows to fit instead of cropping the labels.
+narrows to fit instead of cropping the labels. A side with many flows shrinks
+its node bars (and the label text into the slots between them) so the whole
+stack stays inside the tile - nothing renders past the bottom edge.
 
 Values format as `W` under 1000 and `kW` - one decimal under 10 - and sensors
 reporting `kW` or `MW` are converted. A sensor that is `unavailable`, `unknown`
