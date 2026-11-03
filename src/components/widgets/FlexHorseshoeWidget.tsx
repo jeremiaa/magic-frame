@@ -301,6 +301,13 @@ function normRowAlign(v: unknown, d: RowAlign): RowAlign {
 }
 
 /** Centre unit position validation with fallback (config values are user input). */
+export type CentreIconPos = "above" | "below";
+
+/** Centre icon position: above the value (default) or below the block. */
+export function normCentreIconPos(v: unknown): CentreIconPos {
+  return String(v || "").trim().toLowerCase() === "below" ? "below" : "above";
+}
+
 export function normCentreUnitPos(v: unknown, d: CentreUnitPos = "below"): CentreUnitPos {
   return CENTRE_UNIT_POS.includes(v as CentreUnitPos) ? (v as CentreUnitPos) : d;
 }
@@ -849,6 +856,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   // where the centre value's colour comes from: the value colour along the
   // arc/gradient (default) or the widget's default text colour.
   const centreIconAlign = normAlign(config?.centreIconAlign, "center");
+  const centreIconPos = normCentreIconPos(config?.centreIconPos);
   const centreColourMode = config?.centreColourMode === "text" ? "text" : "value";
 
   // Per-item centre scales (0.1-3, default 1) multiply on top of the master
@@ -1373,7 +1381,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                 pointerEvents: "none",
               }}
             >
-              {centreIcon ? (
+              {centreIcon && centreIconPos === "above" ? (
                 <div
                   style={{
                     fontSize: `${L.centre.iconPx}px`,
@@ -1430,6 +1438,28 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                 <div style={{ fontSize: `${L.centre.unitPx}px`, opacity: 0.65, position: "relative", top: `${unitDy}em` }}>{L.centre.unitText}</div>
               ) : null}
               </div>
+              {/* same icon, drawn under the value + unit block instead; the
+                  centreIconY slider and justification apply identically */}
+              {centreIcon && centreIconPos === "below" ? (
+                <div
+                  style={{
+                    fontSize: `${L.centre.iconPx}px`,
+                    marginTop: "0.15em",
+                    position: "relative",
+                    top: `${L.centre.iconDy}px`,
+                    ...(cRing?.effectiveIconColor ? { color: cRing.effectiveIconColor } : {}),
+                    display: "flex",
+                    justifyContent:
+                      centreIconAlign === "left"
+                        ? "flex-start"
+                        : centreIconAlign === "right"
+                          ? "flex-end"
+                          : "center",
+                  }}
+                >
+                  {centreIcon}
+                </div>
+              ) : null}
             </div>
           ) : null}
           {rowsOverlayBelow ? listEl : null}

@@ -532,6 +532,8 @@ const flexHorseshoeConfig = baseConfig
     // vertical slide of the centre value + unit together, 0..100
     // (50 = centred on the arc middle; the ends shift half the gauge height)
     centreValueY: z.number().optional(),
+    // centre icon position: above (default) or below the value block
+    centreIconPos: z.enum(["above", "below"]).optional(),
     // justify the centre entity icon left/centre/right in the value block
     centreIconAlign: z.enum(["left", "center", "right"]).optional(),
     // centre value colour: "value" = the arc/gradient colour at the value

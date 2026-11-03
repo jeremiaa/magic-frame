@@ -706,9 +706,18 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
         <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Big centre value")}</label>
         <div className="flex flex-wrap gap-4">
           {renderSwitch("showCentreValue", t("Show centre value"), true)}
-          {renderSwitch("showCentreIcon", t("Entity icon above value"), false)}
+          {renderSwitch("showCentreIcon", t("Show entity icon"), false)}
           {renderSwitch("centreShowUnit", t("Show unit"), true)}
         </div>
+        {renderSelect(
+          "centreIconPos",
+          "Centre icon position",
+          [
+            { value: "above", label: "Above value" },
+            { value: "below", label: "Below value" },
+          ],
+          "above",
+        )}
         {renderSelect(
           "centreEntity",
           "Centre value entity",

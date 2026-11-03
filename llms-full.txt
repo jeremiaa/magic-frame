@@ -4645,7 +4645,8 @@ outside ring; the second draws the ring inside it.
 | `entityListOffset` | 0 em | Moves the rows away from (positive) or into (negative) the arc, −3 to 3 em. |
 | `showCentreValue` | on | The big value in the middle. |
 | `centreEntity` | first | Which entity the centre shows - first (outside ring) or second (inside). |
-| `showCentreIcon` | off | That entity's icon above the centre value. |
+| `showCentreIcon` | off | Show that entity's icon in the centre block. |
+| `centreIconPos` | `above` | Icon above or below the centre value (dropdown). |
 | `centreShowUnit` | on | The unit after the value - the entity's own **Show unit** must also be on. |
 | `centreUnitPosition` | `below` | Unit below / above the value, or inline before / after it. |
 | `centreUnitOffset` | 0 em | Raises (positive) or lowers (negative) the unit, −2 to 2 em. |

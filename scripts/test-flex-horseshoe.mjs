@@ -20,7 +20,7 @@ const root = join(here, "..");
 
 const RUNNER = /* ts */ `
 import {
-  computeLayout, buildRowZones, normCentreUnitPos, clampNum,
+  computeLayout, buildRowZones, normCentreUnitPos, normCentreIconPos, clampNum,
   resolveAttention, hexA, normAlign,
   type ResolvedRing,
 } from "@/components/widgets/FlexHorseshoeWidget";
@@ -535,6 +535,14 @@ check("centreValueY: 50 centred, ends shift half the gauge, icon independent", (
   const dn = computeLayout({ ...base, centreValueY: 100, centreIconY: 100, rings: [r] });
   assert.equal(dn.centre!.valueDy, 100);
   assert.equal(dn.centre!.iconDy, 100); // both sliders stack independently
+});
+
+// ---- 26. centre icon position normalisation (centreIconPos) ----
+check("normCentreIconPos validates above/below", () => {
+  assert.equal(normCentreIconPos(undefined), "above");
+  assert.equal(normCentreIconPos("below"), "below");
+  assert.equal(normCentreIconPos("BELOW"), "below");
+  assert.equal(normCentreIconPos("junk"), "above");
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");
