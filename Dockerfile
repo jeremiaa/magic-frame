@@ -21,7 +21,7 @@ COPY . .
 # Generate prisma client before build
 RUN echo "DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy" > .env
 RUN npx prisma generate
-RUN npm run build
+RUN NODE_OPTIONS=--max-old-space-size=1024 npm run build
 
 # Production image
 FROM base AS runner
