@@ -331,7 +331,47 @@ check("trackVisibility passes through as the track arc opacity", () => {
   assert.equal(L2.arcs.find((a: any) => a.key === "track-0")!.opacity, 0);
 });
 
-// ---- 20. the arc never crops off the widget (stroke reservation) ----
+// ---- 20. gradient-follow track toggle (trackGradient) ----
+const smoothStops = [{ v: 0, colour: "#ff0000" }, { v: 100, colour: "#0000ff" }];
+
+check("trackGradient=true with gradient style paints 64 slices, no solid track", () => {
+  const L = computeLayout({
+    ...base,
+    trackGradient: true,
+    rings: [ring({ value: 30, style: "gradient", stopsList: smoothStops })],
+  });
+  const slices = L.arcs.filter((a) => a.key.startsWith("trackgrad-"));
+  assert.equal(slices.length, 64, "expected 64 gradient slices");
+  assert.ok(!L.arcs.some((a) => a.key === "track-0"), "solid track must be replaced by slices");
+  assert.ok(slices.every((a) => a.opacity === base.trackOpacity), "slices use the track opacity");
+  assert.ok(slices[0].fill !== slices[63].fill, "slice colours vary along the scale");
+});
+
+check("trackGradient=true with interpolated style also slices", () => {
+  const L = computeLayout({
+    ...base,
+    trackGradient: true,
+    rings: [ring({ value: 30, style: "interpolated", stopsList: smoothStops })],
+  });
+  assert.equal(L.arcs.filter((a) => a.key.startsWith("trackgrad-")).length, 64);
+});
+
+check("trackGradient=true with fixed style stays a single solid track", () => {
+  const L = computeLayout({ ...base, trackGradient: true, rings: [ring({ value: 30 })] });
+  assert.ok(L.arcs.some((a) => a.key === "track-0"), "solid track remains for non-smooth styles");
+  assert.equal(L.arcs.filter((a) => a.key.startsWith("trackgrad-")).length, 0);
+});
+
+check("trackGradient=false with gradient style stays a single solid track", () => {
+  const L = computeLayout({
+    ...base,
+    rings: [ring({ value: 30, style: "gradient", stopsList: smoothStops })],
+  });
+  assert.ok(L.arcs.some((a) => a.key === "track-0"), "solid track remains when toggle is off");
+  assert.equal(L.arcs.filter((a) => a.key.startsWith("trackgrad-")).length, 0);
+});
+
+// ---- 21. the arc never crops off the widget (stroke reservation) ----
 check("outer stroke fits the box: r0 + thick/2 <= rBase, ticks or not", () => {
   for (const cfg of [
     { ...base, rings: [ring({})] },

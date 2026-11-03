@@ -534,6 +534,9 @@ const flexHorseshoeConfig = baseConfig
     // the shaded remainder of the scale behind the progress arc
     showTrack: z.boolean().optional(),
     trackOpacity: z.number().optional(),
+    // when true, the track arc follows the entity's gradient colours along
+    // the whole sweep (smooth styles only: gradient / interpolated)
+    trackGradient: z.boolean().optional(),
     arcDegrees: z.number().optional(),
     ringWidth: z.number().optional(),
     ringGap: z.number().optional(),

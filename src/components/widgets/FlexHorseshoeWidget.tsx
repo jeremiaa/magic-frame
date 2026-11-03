@@ -508,6 +508,10 @@ export function computeLayout(
     showTrack: boolean;
     /** track arc opacity, 0..1 (drawn only when showTrack) */
     trackOpacity: number;
+    /** when true, the track arc follows the entity's gradient colours along
+     *  the whole sweep (gradient/interpolated styles) instead of one solid
+     *  track colour */
+    trackGradient: boolean;
   },
 ): {
   cx: number;
@@ -570,13 +574,40 @@ export function computeLayout(
     if (ring.showRing) {
       // full track: the shaded remainder of the scale behind the progress
       if (P.showTrack) {
-        arcs.push({
-          key: "track-" + ring.idx,
-          d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep),
-          fill: P.trackColor,
-          opacity: P.trackOpacity,
-          strokeWidth: thick,
-        });
+        // when trackGradient is on and the ring uses a smooth colour scale,
+        // the whole sweep is painted as the gradient itself (thin slices,
+        // same interpolation as the progress arc) at the track's opacity;
+        // otherwise it is one solid track-colour arc.
+        const rgbStops = stopsToRgb(ring.stopsList);
+        const smoothScale =
+          P.trackGradient &&
+          (ring.style === "gradient" || ring.style === "interpolated") &&
+          rgbStops.length > 1;
+        if (smoothScale) {
+          const N = 64;
+          for (let s = 0; s < N; s++) {
+            const f1 = (s + 1) / N;
+            const a0 = startDeg + sweep * (s / N);
+            const a1 = startDeg + sweep * f1;
+            const v1 = ring.min + (ring.max - ring.min) * f1;
+            const c1 = lerpStops(rgbStops, v1);
+            arcs.push({
+              key: `trackgrad-${ring.idx}-${s}`,
+              d: arcPath(P.cx, P.cy, rr, a0, a1),
+              fill: c1 ? rgbStr(c1) : P.trackColor,
+              opacity: P.trackOpacity,
+              strokeWidth: thick,
+            });
+          }
+        } else {
+          arcs.push({
+            key: "track-" + ring.idx,
+            d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep),
+            fill: P.trackColor,
+            opacity: P.trackOpacity,
+            strokeWidth: thick,
+          });
+        }
       }
 
       if (has) {
@@ -807,6 +838,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   // The shaded remainder of the scale behind the progress arc.
   const showTrack = config?.showTrack !== false;
   const trackOpacity = clampNum(config?.trackOpacity, 0, 100, 38) / 100;
+  const trackGradient = config?.trackGradient === true;
 
   const ents: EntityCfg[] = Array.isArray(config?.entities)
     ? (config.entities as EntityCfg[]).slice(0, 2)
@@ -965,8 +997,9 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       centreScale,
       showTrack,
       trackOpacity,
+      trackGradient,
     });
-  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, showTrack, trackOpacity]);
+  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, showTrack, trackOpacity, trackGradient]);
 
   const configured = ents.length > 0 || legacyRings.length > 0;
 

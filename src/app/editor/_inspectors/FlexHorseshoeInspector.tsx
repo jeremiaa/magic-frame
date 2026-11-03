@@ -798,6 +798,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           {renderSwitch("showTrack", t("Track arc (shaded part after the value)"), true)}
         </div>
         {renderRange("trackOpacity", t("Track visibility"), 0, 100, 1, 38, "%")}
+        {renderSwitch("trackGradient", t("Track follows gradient colours"), false)}
         {renderColorPicker("trackColor", t("Track colour"), "#6b7280")}
         {renderColorPicker("fixedColor", t("Fixed colour"), "#4dd0e1")}
       </div>
