@@ -105,16 +105,35 @@ try {
     check("charge only: no battery node on the left", !L4b.srcNodes.some((n) => n.key === "battery"));
     check("charge only: battery-charge on the right", L4b.conNodes.some((n) => n.key === "battery-charge"));
 
-    // 4c. measured label widths drive the side gutters
+    // 4c. measured label sizes drive the gutters and the label scales
     const Lp = computeLayout(size, C, { ...Fbase, gi: 1000, homeLoad: 1000,
       cons: [{ entityId: "sensor.s", label: "S", colour: "#c", v: 400 }], otherV: 600 },
-      "Other", "Home", "sensor.grid", { src: 120, con: 60 });
+      "Other", "Home", "sensor.grid", { src: { w: 120, h: 30 }, con: { w: 60, h: 30 } });
     check("label gutters: left hugs measured src width", Math.abs(Lp.leftBarX - (8 + 128)) < 0.001);
     check("label gutters: right hugs measured con width", Math.abs(Lp.rightBarX - (400 - 8 - 68 - Lp.bw)) < 0.001);
+    check("label scales: roomy box keeps full size", Lp.conLabelScale.every((s) => s === 1) && Lp.srcLabelScale.every((s) => s === 1));
     const Ld = computeLayout(size, C, { ...Fbase, gi: 1000, homeLoad: 1000, cons: [], otherV: 1000 },
       "Other", "Home", "sensor.grid");
     const fallback = Math.min(Math.max(400 * 0.22, 70), 150, Math.max(20, (400 - 16 - 6 * Ld.bw) / 2));
     check("label gutters: fixed-formula fallback without measurements", Math.abs(Ld.leftBarX - (8 + fallback)) < 0.001);
+    check("label scales: unmeasured defaults to full size", Ld.conLabelScale.every((s) => s === 1));
+
+    // 4d. a tall stack shrinks to fit the box instead of clipping past it
+    const cons13 = Array.from({ length: 13 }, (_, i) => ({ entityId: "sensor.c" + i, label: "C" + i, colour: "#c", v: 100 }));
+    const shortBox = { w: 715, h: 162 };
+    const Lf = computeLayout(shortBox, C, { ...Fbase, gi: 11000, solar: 1800, bc: 9000, battLevel: 64, homeLoad: 3900, cons: cons13, otherV: 1300 },
+      "Other", "Home", "sensor.grid", { src: { w: 80, h: 54 }, con: { w: 90, h: 36 } });
+    const cTop = Math.min(...Lf.conNodes.map((n) => n.top));
+    const cBot = Math.max(...Lf.conNodes.map((n) => n.top + n.h));
+    check("fit: 14-node stack stays inside the box", cBot <= 162 - 8 + 0.5 && cTop >= 8 - 0.5);
+    check("fit: no source node clips either", Math.max(...Lf.srcNodes.map((n) => n.top + n.h)) <= 162 - 8 + 0.5);
+    check("fit: tight slots shrink labels, never below 0.45", Lf.conLabelScale.every((s) => s >= 0.45 && s <= 1));
+    check("fit: battery-charge leads the right stack", Lf.conNodes[0].key === "battery-charge");
+    // roomy box with EVEN flows: equal bands give 48px slots, pair 36px fits
+    const consEven = Array.from({ length: 13 }, (_, i) => ({ entityId: "sensor.e" + i, label: "E" + i, colour: "#c", v: 200 }));
+    const Lbig = computeLayout({ w: 715, h: 700 }, C, { ...Fbase, gi: 2600, homeLoad: 2600, cons: consEven, otherV: 0 },
+      "Other", "Home", "sensor.grid", { src: { w: 80, h: 54 }, con: { w: 90, h: 36 } });
+    check("fit: roomy even box keeps every label at full size", Lbig.conLabelScale.every((s) => s === 1));
 
     // 5. every band path is a closed cubic curve
     const L5 = computeLayout(size, C, { ...Fbase, gi: 500, solar: 500, homeLoad: 1000, cons: [{ entityId: "s", label: "S", colour: "#c", v: 400 }], otherV: 600 },

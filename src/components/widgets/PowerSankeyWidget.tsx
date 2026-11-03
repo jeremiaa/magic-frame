@@ -107,6 +107,44 @@ function resolveOverlaps(centres: number[], heights: number[], top: number, bott
   return ys;
 }
 
+/**
+ * Position a side's node bars so the WHOLE stack fits [top, bottom].
+ * resolveOverlaps only ever pushes nodes apart, so a side with many
+ * small flows (MIN_NODE inflation) stacks taller than the box and the
+ * tail renders past the bottom edge, where the svg silently clips it.
+ * Here the heights and the gap shrink by one factor first, then the
+ * overlap resolution places a stack that is guaranteed to fit.
+ */
+function fitSide(
+  nodes: { centre: number; h: number; top: number }[],
+  top: number,
+  bottom: number,
+  gap: number,
+) {
+  const n = nodes.length;
+  if (!n) return;
+  const availH = bottom - top;
+  let hs = nodes.map((x) => x.h);
+  let g = gap;
+  const needed = hs.reduce((a, b) => a + b, 0) + (n - 1) * g;
+  if (needed > availH && needed > 0) {
+    const f = availH / needed;
+    hs = hs.map((h) => Math.max(2, h * f));
+    g = Math.max(2, g * f);
+  }
+  const ys = resolveOverlaps(
+    nodes.map((x) => x.centre),
+    hs,
+    top,
+    bottom,
+    g,
+  );
+  nodes.forEach((node, i) => {
+    node.h = hs[i];
+    node.top = ys[i];
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
@@ -160,11 +198,17 @@ interface Band { key: string; d: string; colour: string; }
 
 interface LabelLine { text: string; big?: boolean; scale?: number; style?: React.CSSProperties; }
 
+interface LabelPx { w: number; h: number }
+
 interface Layout {
   bands: Band[]; nodeBars: Bar[];
   leftBarX: number; homeBarX: number; rightBarX: number; bw: number;
   srcNodes: SrcNode[]; conNodes: ConNode[]; gridOnRight: boolean;
   home: { x: number; y: number; h: number; cx: number }; contentH: number;
+  /** Per-node label text scale (1 = full size): each label pair is scaled to
+   * fit the vertical slot between its node and the next, so a tall stack
+   * shrinks its labels instead of cropping them. */
+  srcLabelScale: number[]; conLabelScale: number[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -179,12 +223,13 @@ export function computeLayout(
   homeLabel: string,
   gridId: string,
   /**
-   * Measured label text widths in px (src = left labels, con = right).
-   * When present the side gutters hug the real label sizes instead of a
-   * fixed guess, so responsive font sizes never crop the text. Falls back
-   * to the old fixed formula until the probe has measured once.
+   * Measured label text per side: w = widest line in px (sizes the side
+   * gutters so responsive fonts never crop), h = tallest stacked label
+   * pair in px at full scale (drives the per-node label scale so a tall
+   * stack shrinks labels instead of cropping them). Null until the probe
+   * has measured once - the fixed-formula fallbacks then apply.
    */
-  labelPx?: { src: number; con: number } | null,
+  labelPx?: { src: LabelPx; con: LabelPx } | null,
 ): Layout | null {
   const { w, h } = size;
   const MIN_BAND = 2;
@@ -203,10 +248,10 @@ export function computeLayout(
     Math.max(20, (w - 2 * pad - 6 * bw) / 2),
   );
   const labelSpaceL = labelPx
-    ? Math.min(Math.max(labelPx.src + 8, 40), Math.max(40, fitMax))
+    ? Math.min(Math.max(labelPx.src.w + 8, 40), Math.max(40, fitMax))
     : fallbackSpace;
   const labelSpaceR = labelPx
-    ? Math.min(Math.max(labelPx.con + 8, 40), Math.max(40, fitMax))
+    ? Math.min(Math.max(labelPx.con.w + 8, 40), Math.max(40, fitMax))
     : fallbackSpace;
   const leftBarX = pad + labelSpaceL;
   const homeBarX = w / 2 - bw / 2;
@@ -297,14 +342,7 @@ export function computeLayout(
     });
   }
 
-  const srcYs = resolveOverlaps(
-    srcNodes.map((n) => n.centre),
-    srcNodes.map((n) => n.h),
-    contentTop,
-    contentBottom,
-    NODE_GAP,
-  );
-  srcNodes.forEach((n, i) => (n.top = srcYs[i]));
+  fitSide(srcNodes, contentTop, contentBottom, NODE_GAP);
 
   const conNodes: ConNode[] = [];
   if (gridOnRight) {
@@ -357,14 +395,18 @@ export function computeLayout(
       top: 0,
     });
   }
-  const conYs = resolveOverlaps(
-    conNodes.map((n) => n.centre),
-    conNodes.map((n) => n.h),
-    contentTop,
-    contentBottom,
-    NODE_GAP,
-  );
-  conNodes.forEach((n, i) => (n.top = conYs[i]));
+  fitSide(conNodes, contentTop, contentBottom, NODE_GAP);
+
+  // Per-node label slots and scales: a label pair must fit the vertical
+  // space between its node and the next (or the box bottom), or a tall
+  // stack would crop its labels. The measured pair height sizes the text.
+  const slotOf = (nodes: { top: number }[], i: number) =>
+    i < nodes.length - 1 ? nodes[i + 1].top - nodes[i].top : contentBottom - nodes[i].top;
+  const clampS = (v: number) => Math.max(0.45, Math.min(1, v));
+  const srcLabelScale = srcNodes.map((_, i) =>
+    labelPx && labelPx.src.h > 0 ? clampS(slotOf(srcNodes, i) / labelPx.src.h) : 1);
+  const conLabelScale = conNodes.map((_, i) =>
+    labelPx && labelPx.con.h > 0 ? clampS(slotOf(conNodes, i) / labelPx.con.h) : 1);
 
   const bands: Band[] = [];
   for (const n of srcNodes) {
@@ -397,6 +439,8 @@ export function computeLayout(
     srcNodes, conNodes, gridOnRight,
     home: { x: homeBarX, y: homeTop, h: homeH, cx: homeBarX + bw / 2 },
     contentH,
+    srcLabelScale,
+    conLabelScale,
   };
 }
 
@@ -484,7 +528,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   const boxRef = useRef<HTMLDivElement>(null);
   // Widest measured label text per side (px). The layout hugs these so
   // responsive font sizes never crop; null until the probe measures once.
-  const [labelPx, setLabelPx] = useState<{ src: number; con: number } | null>(null);
+  const [labelPx, setLabelPx] = useState<{ src: LabelPx; con: LabelPx } | null>(null);
   const probeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -533,17 +577,30 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
   useLayoutEffect(() => {
     const el = probeRef.current;
     if (!el) return;
-    let src = 0;
-    let con = 0;
+    const wS: Record<string, number> = {};
+    const hS: Record<string, number> = {};
+    let srcW = 0;
+    let conW = 0;
     el.querySelectorAll<HTMLElement>("span[data-side]").forEach((s) => {
-      const wpx = s.getBoundingClientRect().width;
-      if (s.dataset.side === "src") src = Math.max(src, wpx);
-      else con = Math.max(con, wpx);
+      const side = s.dataset.side === "src" ? "src" : "con";
+      const node = s.dataset.node || "";
+      const r = s.getBoundingClientRect();
+      if (side === "src") srcW = Math.max(srcW, r.width);
+      else conW = Math.max(conW, r.width);
+      // stacked pair height per node: sum its lines, keep the tallest node
+      const k = side + "|" + node;
+      hS[k] = (hS[k] || 0) + r.height;
     });
-    setLabelPx((prev) =>
-      prev && Math.abs(prev.src - src) < 0.5 && Math.abs(prev.con - con) < 0.5
+    const pairH = (side: string) =>
+      Math.max(0, ...Object.entries(hS).filter(([k]) => k.startsWith(side + "|")).map(([, v]) => v));
+    setLabelPx((prev) => {
+      const next = { src: { w: srcW, h: pairH("src") }, con: { w: conW, h: pairH("con") } };
+      return prev &&
+        Math.abs(prev.src.w - next.src.w) < 0.5 && Math.abs(prev.con.w - next.con.w) < 0.5 &&
+        Math.abs(prev.src.h - next.src.h) < 0.5 && Math.abs(prev.con.h - next.con.h) < 0.5
         ? prev
-        : { src, con });
+        : next;
+    });
   });
 
   // Webfont swap changes label widths after first paint - remeasure once
@@ -694,17 +751,15 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     return lines;
   };
 
-  const rightScaleFor = (count: number): number => {
-    if (!L) return 1;
-    const availH = L.contentH ? L.contentH - 24 : (size?.h || 200);
-    const perNode = availH / Math.max(count, 1);
-    return count <=4 ? 1 : Math.max(0.55, Math.min(1, perNode / 40));
-  };
+  // Per-node label scale straight from the layout (1 when roomy, shrinking
+  // only when a label pair would not fit its slot between stacked nodes).
+  const srcScaleAt = (i: number) => (L && L.srcLabelScale[i] != null ? L.srcLabelScale[i] : 1);
+  const conScaleAt = (i: number) => (L && L.conLabelScale[i] != null ? L.conLabelScale[i] : 1);
 
   // Shared label-line css: weight, shadow and colour follow the Style tab,
-  // at full brightness.
-  const srcLineCss = (ln: LabelLine): React.CSSProperties => ({
-    fontSize: `${(ln.big ? 0.78 : 0.6) * (ln.scale ?? 1)}em`,
+  // at full brightness. `scale` shrinks the text into its node slot.
+  const srcLineCss = (ln: LabelLine, scale = 1): React.CSSProperties => ({
+    fontSize: `${(ln.big ? 0.78 : 0.6) * scale * (ln.scale ?? 1)}em`,
     fontWeight: ln.big ? bigWeight : smallWeight,
     color: ln.big ? textMain : textSub,
     lineHeight: 1.2,
@@ -713,8 +768,8 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
     ...ln.style,
   });
 
-  const conLineCss = (ln: LabelLine, rightScale: number): React.CSSProperties => ({
-    fontSize: `${(ln.big ? 0.78 : 0.6) * rightScale * (ln.scale ?? 1)}em`,
+  const conLineCss = (ln: LabelLine, scale: number): React.CSSProperties => ({
+    fontSize: `${(ln.big ? 0.78 : 0.6) * scale * (ln.scale ?? 1)}em`,
     fontWeight: ln.big ? bigWeight : smallWeight,
     color: ln.big ? textMain : textSub,
     lineHeight: 1.2,
@@ -793,7 +848,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
             </svg>
 
             {/* source labels: right-aligned, left of their bars */}
-            {L.srcNodes.map((n) => (
+            {L.srcNodes.map((n, nIdx) => (
               <div
                 key={"lbl-" + n.key}
                 className="absolute text-right"
@@ -804,7 +859,7 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                 }}
               >
                 {srcLabel(n).map((ln, i) => (
-                  <div key={i} style={srcLineCss(ln)}>
+                  <div key={i} style={srcLineCss(ln, srcScaleAt(nIdx))}>
                     {ln.text}
                   </div>
                 ))}
@@ -812,13 +867,9 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
             ))}
 
             {/* consumer (right) labels: left-aligned, right of their bars */}
-            {L.conNodes.map((n) => {
-              const count = L.conNodes.length;
-              const rightScale = rightScaleFor(count);
+            {L.conNodes.map((n, nIdx) => {
+              const scale = conScaleAt(nIdx);
               const lines = conLabelLines(n);
-              const availH = L.contentH ? L.contentH - 24 : (size?.h || 200);
-              const perNode = availH / Math.max(count, 1);
-
               return (
                 <div
                   key={"lbl-" + n.key}
@@ -828,12 +879,11 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                     top: n.top + n.h / 2,
                     transform: "translateY(-50%)",
                     maxWidth: size.w - L.rightBarX - L.bw - 12,
-                    maxHeight: perNode,
                     overflow: "hidden",
                   }}
                 >
                   {lines.map((ln, i) => (
-                    <div key={i} style={conLineCss(ln, rightScale)}>
+                    <div key={i} style={conLineCss(ln, scale)}>
                       {ln.text}
                     </div>
                   ))}
@@ -880,7 +930,12 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
             >
               {L.srcNodes.map((n) =>
                 srcLabel(n).map((ln, i) => (
-                  <span key={n.key + "-" + i} data-side="src" style={{ ...srcLineCss(ln), position: "absolute" }}>
+                  <span
+                    key={n.key + "-" + i}
+                    data-side="src"
+                    data-node={n.key}
+                    style={{ ...srcLineCss(ln, 1), position: "absolute" }}
+                  >
                     {ln.text}
                   </span>
                 )),
@@ -890,7 +945,8 @@ export default function PowerSankeyWidget({ config }: { config?: any }) {
                   <span
                     key={n.key + "-" + i}
                     data-side="con"
-                    style={{ ...conLineCss(ln, rightScaleFor(L.conNodes.length)), position: "absolute" }}
+                    data-node={n.key}
+                    style={{ ...conLineCss(ln, 1), position: "absolute" }}
                   >
                     {ln.text}
                   </span>
