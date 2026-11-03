@@ -521,6 +521,14 @@ const flexHorseshoeConfig = baseConfig
     // rows further away, negative pulls them closer / over the horseshoe)
     entityListOffset: z.number().optional(),
     centreScale: z.number().optional(),
+    // per-item scale multipliers for the big centre block, on top of
+    // centreScale (icon / value text / unit), 0.1..3
+    centreIconScale: z.number().optional(),
+    centreValueScale: z.number().optional(),
+    centreUnitScale: z.number().optional(),
+    // vertical slide of the centre icon, 0..100 (50 = natural spot above
+    // the value; the ends shift half the gauge height)
+    centreIconY: z.number().optional(),
     // justify the centre entity icon left/centre/right in the value block
     centreIconAlign: z.enum(["left", "center", "right"]).optional(),
     // centre value colour: "value" = the arc/gradient colour at the value

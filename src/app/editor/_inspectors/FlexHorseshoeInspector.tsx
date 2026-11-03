@@ -189,7 +189,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
             onChange={(e) => updateConfig(widget.i, key, e.target.checked)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:transition-all peer-checked:bg-blue-500"></div>
+          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
         </div>
         <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
           {label}
@@ -263,7 +263,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
             onChange={(e) => updateEntity(idx, key, e.target.checked)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:transition-all peer-checked:bg-blue-500"></div>
+          <div className="w-11 h-6 bg-[var(--mf-elev)]/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
         </div>
         <span className="text-sm font-medium text-[var(--mf-fg)]/80 group-hover:text-[var(--mf-fg)] transition-colors">
           {label}
@@ -769,6 +769,16 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           {t("Match the value colour follows the arc/gradient at the current value (the previous behaviour); the widget default text colour uses the Text & colour tab colour instead.")}
         </p>
         {renderRange("centreScale", t("Centre value size"), 0.5, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("The master size scales the whole centre block. The per-item scales below multiply on top of it.")}
+        </p>
+        {renderRange("centreIconScale", t("Centre icon scale"), 0.1, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
+        {renderRange("centreValueScale", t("Centre value scale"), 0.1, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
+        {renderRange("centreUnitScale", t("Centre unit scale"), 0.1, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
+        {renderRange("centreIconY", t("Centre icon vertical position"), 0, 100, 1, 50, "%")}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("50 keeps the icon just above the value. 0 lifts it half the gauge height, 100 lowers it half.")}
+        </p>
       </div>
 
       {/* ── 5. Geometry ───────────────────────────────────────────────────── */}

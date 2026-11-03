@@ -46,6 +46,7 @@ const base = {
   showTicks: false, tickCount: 11, tickSize: 6,
   markerColor: "#ffffff",
   showCentre: true, centreEntity: 0, centreShowUnit: true, centreScale: 1,
+  centreIconScale: 1, centreValueScale: 1, centreUnitScale: 1, centreIconY: 50,
   showTrack: true, trackOpacity: 0.38,
   rings: [],
 };
@@ -490,6 +491,37 @@ check("normAlign validates left/centre/right", () => {
   assert.equal(normAlign("right", "center"), "right");
   assert.equal(normAlign(undefined, "center"), "center");
   assert.equal(normAlign("LEFT", "center"), "center");
+});
+
+// ---- 24. centre per-item scales + icon vertical position ----
+check("per-item centre scales multiply on top of the master", () => {
+  const r = ring({ value: 50 });
+  const L1 = computeLayout({ ...base, rings: [r] });
+  const L2 = computeLayout({
+    ...base,
+    centreValueScale: 2, centreUnitScale: 3, centreIconScale: 0.5,
+    rings: [r],
+  });
+  assert.ok(L1.centre && L2.centre, "centre missing");
+  assert.ok(Math.abs(L2.centre!.valuePx - L1.centre!.valuePx * 2) < 1e-9, "value scale off");
+  assert.ok(Math.abs(L2.centre!.unitPx - L1.centre!.unitPx * 3) < 1e-9, "unit scale off");
+  assert.ok(Math.abs(L2.centre!.iconPx - L1.centre!.iconPx * 0.5) < 1e-9, "icon scale off");
+});
+
+check("iconPx default still matches the legacy valuePx * 0.38 clamp", () => {
+  const L = computeLayout({ ...base, centreScale: 2, rings: [ring({ value: 50 })] });
+  const legacy = Math.max(10, Math.min(30, L.centre!.valuePx * 0.38));
+  assert.equal(L.centre!.iconPx, legacy);
+});
+
+check("centreIconY: 50 keeps the natural spot, ends shift half the gauge", () => {
+  const r = ring({ value: 50 });
+  const mid = computeLayout({ ...base, rings: [r] });
+  assert.equal(mid.centre!.iconDy, 0);
+  const up = computeLayout({ ...base, centreIconY: 0, rings: [r] });
+  assert.equal(up.centre!.iconDy, -100); // h = 200: half up
+  const down = computeLayout({ ...base, centreIconY: 100, rings: [r] });
+  assert.equal(down.centre!.iconDy, 100); // half down
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");

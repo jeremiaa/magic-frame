@@ -591,7 +591,11 @@ outside ring; the second draws the ring inside it.
 | `centreShowUnit` | on | The unit after the value - the entity's own **Show unit** must also be on. |
 | `centreUnitPosition` | `below` | Unit below / above the value, or inline before / after it. |
 | `centreUnitOffset` | 0 em | Raises (positive) or lowers (negative) the unit, −2 to 2 em. |
-| `centreScale` | 1 | Size multiplier on the centre value, 0.5-3×. |
+| `centreScale` | 1 | Master size multiplier on the whole centre block, 0.5-3×. The per-item scales multiply on top of it. |
+| `centreIconScale` | 1 | Scale multiplier on the centre icon alone, 0.1-3×. |
+| `centreValueScale` | 1 | Scale multiplier on the centre value text, 0.1-3×. |
+| `centreUnitScale` | 1 | Scale multiplier on the centre unit, 0.1-3×. |
+| `centreIconY` | 50 | Vertical position of the centre icon, 0-100. 50 is its natural spot above the value; 0 / 100 shift it half the gauge height up / down. |
 | `arcDegrees` | 260 | The sweep, 90-360°; the gap is centred at the bottom. At 360 the horseshoe closes into a full circle. |
 | `ringWidth` | 18 % | Default ring thickness as a share of the radius, 4-60 %. Per-entity **Ring thickness** overrides it. |
 | `ringGap` | 5 % | Radial gap between stacked rings. |

@@ -505,6 +505,13 @@ export function computeLayout(
     centreEntity: number;
     centreShowUnit: boolean;
     centreScale: number;
+    /** per-item scale multipliers on top of centreScale (icon/value/unit) */
+    centreIconScale: number;
+    centreValueScale: number;
+    centreUnitScale: number;
+    /** vertical position of the centre icon, 0..100 (50 = its natural spot
+     *  above the value; the ends shift half the gauge height) */
+    centreIconY: number;
     showTrack: boolean;
     /** track arc opacity, 0..1 (drawn only when showTrack) */
     trackOpacity: number;
@@ -520,7 +527,7 @@ export function computeLayout(
   arcs: Arc[];
   ticks: { key: string; x1: number; y1: number; x2: number; y2: number }[];
   markers: { key: string; x: number; y: number; r: number; fill: string }[];
-  centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number } | null;
+  centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number; iconPx: number; iconDy: number } | null;
   ringCount: number;
   /** stroke width of the outermost drawn ring (for the rows anchor) */
   outerThick: number;
@@ -681,7 +688,7 @@ export function computeLayout(
   });
 
   // Big centre value: the user-chosen entity (default: first entity)
-  let centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number } | null =
+  let centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number; iconPx: number; iconDy: number } | null =
     null;
   const cIdx = Math.max(0, Math.min(1, Math.round(P.centreEntity)));
   const cRing = P.rings[cIdx] ?? P.rings[0];
@@ -689,12 +696,20 @@ export function computeLayout(
     const v = cRing.value;
     const has = v != null;
     const c = has ? valueColour(cRing, v as number) : null;
+    // The master scale (centreScale) sizes the whole block; the per-item
+    // scales multiply on top of it (all default 1 = the previous look).
+    // The icon follows the master scale only, never the value's own scale.
+    const masterValuePx = Math.max(10, Math.min(72, innerR * 0.62)) * P.centreScale;
     centre = {
       valueText: has ? (v as number).toFixed(cRing.decimals) : "-",
       unitText: P.centreShowUnit && cRing.showUnit ? cRing.unit : "",
       colour: c,
-      valuePx: Math.max(10, Math.min(72, innerR * 0.62)) * P.centreScale,
-      unitPx: Math.max(8, Math.min(28, innerR * 0.26)) * P.centreScale,
+      valuePx: masterValuePx * P.centreValueScale,
+      unitPx: Math.max(8, Math.min(28, innerR * 0.26)) * P.centreScale * P.centreUnitScale,
+      iconPx: Math.max(10, Math.min(30, masterValuePx * 0.38)) * P.centreIconScale,
+      // 50 = the natural spot above the value; 0 / 100 slide the icon
+      // half the gauge height up / down (relative shift, layout intact)
+      iconDy: ((P.centreIconY - 50) / 100) * P.h,
     };
   }
 
@@ -829,6 +844,14 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   // arc/gradient (default) or the widget's default text colour.
   const centreIconAlign = normAlign(config?.centreIconAlign, "center");
   const centreColourMode = config?.centreColourMode === "text" ? "text" : "value";
+
+  // Per-item centre scales (0.1-3, default 1) multiply on top of the master
+  // centreScale; centreIconY (0-100, default 50) slides the icon vertically
+  // the same way the attention status text slider moves its text.
+  const centreIconScale = clampNum(config?.centreIconScale, 0.1, 3, 1);
+  const centreValueScale = clampNum(config?.centreValueScale, 0.1, 3, 1);
+  const centreUnitScale = clampNum(config?.centreUnitScale, 0.1, 3, 1);
+  const centreIconY = clampNum(config?.centreIconY, 0, 100, 50);
 
   // Whole-widget content fine-tune: nudges everything the widget draws
   // (title, rows, gauge) in pixels, inside the tile.
@@ -995,11 +1018,15 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       centreEntity,
       centreShowUnit,
       centreScale,
+      centreIconScale,
+      centreValueScale,
+      centreUnitScale,
+      centreIconY,
       showTrack,
       trackOpacity,
       trackGradient,
     });
-  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, showTrack, trackOpacity, trackGradient]);
+  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, centreIconScale, centreValueScale, centreUnitScale, centreIconY, showTrack, trackOpacity, trackGradient]);
 
   const configured = ents.length > 0 || legacyRings.length > 0;
 
@@ -1341,8 +1368,13 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               {centreIcon ? (
                 <div
                   style={{
-                    fontSize: `${Math.max(10, Math.min(30, L.centre.valuePx * 0.38))}px`,
+                    fontSize: `${L.centre.iconPx}px`,
                     marginBottom: "0.15em",
+                    // centreIconY slider: 50 = the natural spot above the
+                    // value; the ends slide the icon half the gauge height.
+                    // Relative shift only - the value/unit layout stays put.
+                    position: "relative",
+                    top: `${L.centre.iconDy}px`,
                     // the entity's icon colour applies here too (MDI/Lucide),
                     // the attention colour overriding it while active
                     ...(cRing?.effectiveIconColor ? { color: cRing.effectiveIconColor } : {}),
