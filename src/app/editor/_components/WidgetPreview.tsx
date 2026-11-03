@@ -111,7 +111,13 @@ export default function WidgetPreview({ type, config, bgOpacity, gridW = 12, gri
         containerType: "size",
         backgroundColor: `rgba(0,0,0, ${outerBgOpacity})`,
         backdropFilter: outerBgOpacity > 0 ? "blur(12px)" : "none",
-        border: outerBgOpacity > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
+        // Border would eat 1px per side from the content box and shrink the
+        // gauge/video by 2px the moment bgOpacity > 0. An inset shadow draws
+        // the identical frame WITHOUT touching the layout (mirror of the
+        // live view in src/app/view/[id]/page.tsx).
+        border: "none",
+        boxShadow: outerBgOpacity > 0 && !noInnerPadding
+          ? "inset 0 0 0 1px rgba(255,255,255,0.05)" : "none",
         ...(cfgOuterPad != null ? { padding: `${cfgOuterPad}px` } : {}),
       }}
     >
