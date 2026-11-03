@@ -42,6 +42,18 @@ type EntityCfg = {
   rowScale?: number;
   valuePlacement?: string;
   rowAlign?: string;
+  // attention state (active-on-sensor) - per entity
+  attentionOn?: boolean;
+  attentionEntity?: string;
+  attentionState?: string;
+  attentionColor?: string;
+  attentionShowText?: boolean;
+  attentionTextMode?: string;
+  attentionText?: string;
+  attentionTextAlign?: string;
+  attentionTextX?: number;
+  attentionTextY?: number;
+  attentionTextPulse?: boolean;
 };
 
 const RING_STYLES: RingStyleType[] = ["fixed", "colorstop", "interpolated", "segments", "gradient"];
@@ -370,6 +382,22 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
         )}
       </div>
 
+      {/* ── 1b. Widget layout ─────────────────────────────────────────────── */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Widget layout")}</label>
+        {renderRange("outerPadding", t("Outer padding"), 0, 48, 1, 0, "px")}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("Padding inside the tile, between the tile edge and this widget's content. 0 lets the content fill the whole widget - a background from the Layout tab adds no extra padding.")}
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {renderRange("contentOffsetX", t("Content horizontal fine-tune"), -100, 100, 1, 0, "px")}
+          {renderRange("contentOffsetY", t("Content vertical fine-tune"), -100, 100, 1, 0, "px")}
+        </div>
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("Nudges everything this widget draws (title, rows, gauge) in pixels, inside the tile.")}
+        </p>
+      </div>
+
       {/* ── 2. Entities (max two: first = outside, second = inside) ───────── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -482,7 +510,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
 
                 <div>
                   <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
-                    {t("Colour")}
+                    {t("Arc colour (fixed style + fallback)")}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -503,6 +531,9 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                       <span className="text-xs text-[var(--mf-fg)]/40">{t("Default (no colour)")}</span>
                     )}
                   </div>
+                  <p className="text-xs text-[var(--mf-fg)]/40 mt-1">
+                    {t("Draws the arc for the Fixed colour style, and is the fallback for the row value and centre value colours when the style has no usable stops.")}
+                  </p>
                 </div>
 
                 <div>
@@ -565,6 +596,75 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
                   </div>
                   {renderEntityRange(idx, "rowScale", t("Row scale (icon, name, value)"), 0.5, 2, 0.1, 1)}
                 </div>
+
+                <div className="border-t border-[var(--mf-bdr)]/10 pt-3 space-y-3">
+                  <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Attention state")}</label>
+                  <p className="text-xs text-[var(--mf-fg)]/40">
+                    {t("While the watched entity holds the active state, this entity's icon takes the attention colour - with Automatic it keeps the icon's own colour. A status text can sit anywhere on the widget while active.")}
+                  </p>
+                  {renderEntitySwitch(idx, "attentionOn", t("Active on sensor"), false)}
+                  {ent.attentionOn === true && (
+                    <>
+                      <HAEntityInput
+                        value={ent.attentionEntity || ""}
+                        onChange={(v) => updateEntity(idx, "attentionEntity", v)}
+                        placeholder={t("binary_sensor.door (empty = this entity)")}
+                        clearable
+                      />
+                      <div>
+                        <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
+                          {t("Active state (empty = any but off)")}
+                        </label>
+                        <input
+                          type="text"
+                          value={ent.attentionState || ""}
+                          onChange={(e) => updateEntity(idx, "attentionState", e.target.value)}
+                          placeholder="on"
+                          className={INPUT}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {renderEntityColour(idx, "attentionColor", t("Attention icon colour"), t("Automatic (icon colour)"))}
+                      </div>
+                      {renderEntitySwitch(idx, "attentionShowText", t("Show status text while active"), false)}
+                      {ent.attentionShowText === true && (
+                        <div className="rounded-xl border border-[var(--mf-bdr)]/10 bg-[var(--mf-elev)]/[0.02] p-3 space-y-3">
+                          {renderEntitySelect(
+                            idx,
+                            "attentionTextMode",
+                            t("Text source"),
+                            [
+                              { value: "state", label: "Watched entity state" },
+                              { value: "custom", label: "Custom text" },
+                            ],
+                            "state",
+                          )}
+                          {ent.attentionTextMode === "custom" && (
+                            <div>
+                              <label className="text-xs text-[var(--mf-fg)]/50 block mb-1.5">
+                                {t("Status text")}
+                              </label>
+                              <input
+                                type="text"
+                                value={ent.attentionText || ""}
+                                onChange={(e) => updateEntity(idx, "attentionText", e.target.value)}
+                                placeholder={t("Door open")}
+                                className={INPUT}
+                              />
+                            </div>
+                          )}
+                          {renderEntitySelect(idx, "attentionTextAlign", t("Text justification"), ROW_ALIGNS, "center")}
+                          {renderEntityRange(idx, "attentionTextX", t("Text horizontal position"), 0, 100, 1, 50)}
+                          {renderEntityRange(idx, "attentionTextY", t("Text vertical position"), 0, 100, 1, 50)}
+                          <p className="text-xs text-[var(--mf-fg)]/40">
+                            {t("Percent of the widget width/height - the text anchors there and justifies left/centre/right around the anchor.")}
+                          </p>
+                          {renderEntitySwitch(idx, "attentionTextPulse", t("Pulse text"), true)}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </AccordionCard>
           );
@@ -597,7 +697,7 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
           (v) => Number(v).toFixed(1),
         )}
         <p className="text-xs text-[var(--mf-fg)]/40">
-          Positive moves the rows further from the horseshoe, negative pulls them closer (they can overlap the arc).
+          {t("The rows start snug against the arc ends at 0 em. Positive pushes them further from the horseshoe, negative pulls them up into its mouth (they can overlap the arc).")}
         </p>
       </div>
 
@@ -643,6 +743,31 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
         <p className="text-xs text-[var(--mf-fg)]/40">
           Positive raises the unit above the value baseline, negative lowers it. 0 leaves it sitting in line with the value text.
         </p>
+        {renderSelect(
+          "centreIconAlign",
+          "Centre icon justification",
+          [
+            { value: "left", label: "Left" },
+            { value: "center", label: "Center" },
+            { value: "right", label: "Right" },
+          ],
+          "center",
+        )}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("Justifies the entity icon left/centre/right within the centre value block.")}
+        </p>
+        {renderSelect(
+          "centreColourMode",
+          "Centre value colour",
+          [
+            { value: "value", label: "Match the value colour along the arc" },
+            { value: "text", label: "Widget default text colour" },
+          ],
+          "value",
+        )}
+        <p className="text-xs text-[var(--mf-fg)]/40">
+          {t("Match the value colour follows the arc/gradient at the current value (the previous behaviour); the widget default text colour uses the Text & colour tab colour instead.")}
+        </p>
         {renderRange("centreScale", t("Centre value size"), 0.5, 3, 0.1, 1, "×", (v) => Number(v).toFixed(1))}
       </div>
 
@@ -669,6 +794,10 @@ export function FlexHorseshoeInspector({ widget, updateConfig }: Props) {
       {/* ── 7. Colours ────────────────────────────────────────────────────── */}
       <div className="space-y-3 border-t border-[var(--mf-bdr)]/10 pt-3">
         <label className="text-sm font-medium text-[var(--mf-fg)]/80">{t("Colours")}</label>
+        <div className="flex flex-wrap gap-4">
+          {renderSwitch("showTrack", t("Track arc (shaded part after the value)"), true)}
+        </div>
+        {renderRange("trackOpacity", t("Track visibility"), 0, 100, 1, 38, "%")}
         {renderColorPicker("trackColor", t("Track colour"), "#6b7280")}
         {renderColorPicker("fixedColor", t("Fixed colour"), "#4dd0e1")}
       </div>

@@ -76,6 +76,52 @@ export interface EntityCfg {
   rowNameColor?: string;
   /** scale multiplier for the entity row's icon, name and value (default 1) */
   rowScale?: number;
+  /* ---- attention state, per entity ---- */
+  /** watch an entity for the attention state; the icon recolours while it
+   *  holds the active state (blank watch = the entity itself) */
+  attentionOn?: boolean;
+  /** watch this entity for the attention state (blank = the entity itself) */
+  attentionEntity?: string;
+  /** the state value that activates attention (blank = any state except off-ish) */
+  attentionState?: string;
+  /** icon colour while attention is active; blank = keep the normal icon colour */
+  attentionColor?: string;
+  /** show a status text while attention is active */
+  attentionShowText?: boolean;
+  /** what the status text shows: the watched state or custom text */
+  attentionTextMode?: "state" | "custom";
+  /** custom status text (used when attentionTextMode is custom) */
+  attentionText?: string;
+  /** justification of the status text at its anchor point */
+  attentionTextAlign?: "left" | "center" | "right";
+  /** horizontal anchor of the status text, 0-100 % of the widget width */
+  attentionTextX?: number;
+  /** vertical anchor of the status text, 0-100 % of the widget height */
+  attentionTextY?: number;
+  /** pulse the status text (like the notifications widget pulses a status card) */
+  attentionTextPulse?: boolean;
+}
+
+/** Resolved attention state for one entity. */
+export interface AttentionInfo {
+  on: boolean;
+  /** entity id watched for the attention state (blank = none) */
+  watchId: string;
+  /** attribute watched (entity@attr), null = the state itself */
+  watchAttr: string | null;
+  /** attention is active right now */
+  active: boolean;
+  /** raw state string of the watched entity (original case, "" = none) */
+  stateText: string;
+  /** icon colour while active (null = keep the normal icon colour) */
+  color: string | null;
+  showText: boolean;
+  textMode: "state" | "custom";
+  text: string;
+  align: "left" | "center" | "right";
+  x: number;
+  y: number;
+  pulse: boolean;
 }
 
 /** Legacy config shape: rings were configured separately from entities. */
@@ -259,6 +305,69 @@ export function normCentreUnitPos(v: unknown, d: CentreUnitPos = "below"): Centr
   return CENTRE_UNIT_POS.includes(v as CentreUnitPos) ? (v as CentreUnitPos) : d;
 }
 
+/** "#rrggbb" + alpha 0..1 -> "rgba(r,g,b,a)". Falls back to a neutral grey. */
+export function hexA(hex: string, a: number): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return `rgba(127,127,127,${a})`;
+  return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+}
+
+/** left/centre/right validation with fallback (config values are user input). */
+export function normAlign(v: unknown, d: "left" | "center" | "right"): "left" | "center" | "right" {
+  return v === "left" || v === "center" || v === "right" ? v : d;
+}
+
+/** States that never count as "active" when no match state is configured. */
+const ATTENTION_OFFISH = new Set(["off", "closed", "standby", "idle", "none", "unavailable", "unknown", ""]);
+
+/**
+ * Attention state (active-on-sensor) for one entity. Pure: given the entity's
+ * config, its own id (blank watch = itself) and the live state dict, resolve
+ * whether attention is active and everything the status text needs. While
+ * active the icon takes attentionColor (null = keep its own colour).
+ */
+export function resolveAttention(
+  a: EntityCfg,
+  selfId: string,
+  statesDict: Record<string, any>,
+): AttentionInfo {
+  const on = a.attentionOn === true;
+  const watch = parseEntityRef(on ? a.attentionEntity || selfId || "" : "");
+  const wSt = on && watch.id ? statesDict[watch.id] : null;
+  const wRaw = wSt
+    ? String(
+        watch.attr
+          ? wSt.attributes
+            ? wSt.attributes[watch.attr]
+            : ""
+          : wSt.state,
+      ).trim()
+    : "";
+  const wLower = wRaw.toLowerCase();
+  const matchState = String(a.attentionState ?? "").trim().toLowerCase();
+  const active =
+    on &&
+    wSt != null &&
+    wRaw !== "" &&
+    !BAD_STATES.has(wLower) &&
+    (matchState ? wLower === matchState : !ATTENTION_OFFISH.has(wLower));
+  return {
+    on,
+    watchId: watch.id,
+    watchAttr: watch.attr,
+    active,
+    stateText: wRaw,
+    color: a.attentionColor || null,
+    showText: a.attentionShowText === true,
+    textMode: a.attentionTextMode === "custom" ? "custom" : "state",
+    text: String(a.attentionText ?? ""),
+    align: normAlign(a.attentionTextAlign, "center"),
+    x: clampNum(a.attentionTextX, 0, 100, 50),
+    y: clampNum(a.attentionTextY, 0, 100, 50),
+    pulse: a.attentionTextPulse !== false,
+  };
+}
+
 /** Finite-number clamp with fallback (config values are user input). */
 export function clampNum(v: unknown, min: number, max: number, d: number): number {
   const n = typeof v === "number" ? v : Number(v);
@@ -355,6 +464,11 @@ export interface ResolvedRing {
   rowNameColor: string | null;
   /** resolved row scale multiplier (icon + name + value) */
   rowScale: number;
+  /** resolved attention state (active-on-sensor) */
+  attention: AttentionInfo;
+  /** icon colour in use right now: the attention colour while attention is
+   *  active and one is picked, otherwise the entity's own icon colour */
+  effectiveIconColor: string | null;
 }
 
 /** A stroked arc piece. Rendered with fill="none" + stroke so that the
@@ -391,6 +505,9 @@ export function computeLayout(
     centreEntity: number;
     centreShowUnit: boolean;
     centreScale: number;
+    showTrack: boolean;
+    /** track arc opacity, 0..1 (drawn only when showTrack) */
+    trackOpacity: number;
   },
 ): {
   cx: number;
@@ -401,6 +518,11 @@ export function computeLayout(
   markers: { key: string; x: number; y: number; r: number; fill: string }[];
   centre: { valueText: string; unitText: string; colour: string | null; valuePx: number; unitPx: number } | null;
   ringCount: number;
+  /** stroke width of the outermost drawn ring (for the rows anchor) */
+  outerThick: number;
+  /** y of the arc ends' lower edge: entity rows below the gauge anchor here
+   *  so offset 0 = snug against the horseshoe, not the tile bottom */
+  rowsTopY: number;
 } {
   const { w, h } = P;
   const sweep = Math.max(1, Math.min(360, P.sweep));
@@ -408,14 +530,27 @@ export function computeLayout(
 
   const pad = 6;
   const tickLen = P.showTicks ? Math.max(3, (Math.min(w, h) / 2) * (P.tickSize / 100)) : 0;
-  const r0 = Math.max(10, Math.min(w, h) / 2 - pad - (tickLen > 0 ? tickLen + 2 : 0));
 
   // Stack rings from the outside in. Rings with neither horseshoe nor marker
   // are invisible and don't consume radial space.
+  const radial = P.rings.filter(
+    (ring) => ring.showRing || (ring.showMarker && ring.value != null),
+  );
+
+  // The outermost drawn ring's stroke extends r0 + thick/2 from the centre, so
+  // half of it is reserved up front: the arc never crops off the widget while
+  // the content offsets are 0. (Offsets != 0 can still push it out - that is
+  // the user's explicit nudge.)
+  const rBase = Math.max(10, Math.min(w, h) / 2 - pad - (tickLen > 0 ? tickLen + 2 : 0));
+  const outerPct = radial.length
+    ? (radial[0].thicknessPct != null ? radial[0].thicknessPct : P.ringWidthPct)
+    : P.ringWidthPct;
+  const outerThick = Math.max(4, rBase * (Math.min(100, Math.max(4, outerPct)) / 100));
+  const r0 = Math.max(10, rBase - outerThick / 2);
+
   const geoms: { ring: ResolvedRing; r: number; thick: number }[] = [];
   let r = r0;
-  for (const ring of P.rings) {
-    if (!ring.showRing && !(ring.showMarker && ring.value != null)) continue;
+  for (const ring of radial) {
     const thick = Math.max(4, r0 * ((ring.thicknessPct != null ? ring.thicknessPct : P.ringWidthPct) / 100));
     if (r - thick / 2 <= 2) break; // no room left - stop stacking
     geoms.push({ ring, r, thick });
@@ -433,14 +568,16 @@ export function computeLayout(
     const has = v != null;
 
     if (ring.showRing) {
-      // full track
-      arcs.push({
-        key: "track-" + ring.idx,
-        d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep),
-        fill: P.trackColor,
-        opacity: 0.38,
-        strokeWidth: thick,
-      });
+      // full track: the shaded remainder of the scale behind the progress
+      if (P.showTrack) {
+        arcs.push({
+          key: "track-" + ring.idx,
+          d: arcPath(P.cx, P.cy, rr, startDeg, startDeg + sweep),
+          fill: P.trackColor,
+          opacity: P.trackOpacity,
+          strokeWidth: thick,
+        });
+      }
 
       if (has) {
         const frac = valueFrac(ring.min, ring.max, v as number);
@@ -543,7 +680,26 @@ export function computeLayout(
     }
   }
 
-  return { cx: P.cx, cy: P.cy, r0, arcs, ticks, markers, centre, ringCount: geoms.length };
+  // Where the entity rows anchor when they sit below the gauge: the lower
+  // edge of the arc ends. The horseshoe gap is centred at the bottom, so the
+  // ends sit cos(halfGap) below the centre (clamped to the centre line for
+  // small sweeps, where the ends rise above it).
+  const halfGapDeg = (360 - sweep) / 2;
+  const arcEndY = P.cy + r0 * Math.cos((halfGapDeg * Math.PI) / 180);
+  const rowsTopY = Math.max(arcEndY, P.cy) + (geoms.length ? geoms[0].thick : 0) / 2 + 2;
+
+  return {
+    cx: P.cx,
+    cy: P.cy,
+    r0,
+    arcs,
+    ticks,
+    markers,
+    centre,
+    ringCount: geoms.length,
+    outerThick: geoms.length ? geoms[0].thick : 0,
+    rowsTopY,
+  };
 }
 
 /* ---- emoji icon mapping ---- */
@@ -637,6 +793,21 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const centreUnitOffset = clampNum(config?.centreUnitOffset, -2, 2, 0);
   const unitDy = -centreUnitOffset; // positive offset = raised (CSS top goes negative)
 
+  // Centre icon justification (left/centre/right around the value block) and
+  // where the centre value's colour comes from: the value colour along the
+  // arc/gradient (default) or the widget's default text colour.
+  const centreIconAlign = normAlign(config?.centreIconAlign, "center");
+  const centreColourMode = config?.centreColourMode === "text" ? "text" : "value";
+
+  // Whole-widget content fine-tune: nudges everything the widget draws
+  // (title, rows, gauge) in pixels, inside the tile.
+  const contentOffsetX = clampNum(config?.contentOffsetX, -100, 100, 0);
+  const contentOffsetY = clampNum(config?.contentOffsetY, -100, 100, 0);
+
+  // The shaded remainder of the scale behind the progress arc.
+  const showTrack = config?.showTrack !== false;
+  const trackOpacity = clampNum(config?.trackOpacity, 0, 100, 38) / 100;
+
   const ents: EntityCfg[] = Array.isArray(config?.entities)
     ? (config.entities as EntityCfg[]).slice(0, 2)
     : [];
@@ -644,12 +815,17 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const legacyRings: LegacyRingDef[] =
     ents.length === 0 && Array.isArray(config?.rings) ? (config.rings as LegacyRingDef[]) : [];
 
-  // entity ids for the shared HA stream (rows + rings)
+  // entity ids for the shared HA stream (rows + rings + attention watches)
   const ids = useMemo(() => {
     const set = new Set<string>();
     for (const e of ents) {
       const { id } = parseEntityRef(e.entityId || "");
       if (id) set.add(id);
+      // attention watches its own entity (blank = the entity itself)
+      if ((e as EntityCfg).attentionOn === true) {
+        const w = parseEntityRef((e as EntityCfg).attentionEntity || e.entityId || "");
+        if (w.id) set.add(w.id);
+      }
     }
     for (const r of legacyRings) {
       const { id } = parseEntityRef(r.entityId || "");
@@ -719,6 +895,12 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       const style = e.style || (stopsList.length ? "colorstop" : "fixed");
       const rawIcon = (e as EntityCfg).icon;
       const iconCfg = typeof rawIcon === "string" ? rawIcon : "";
+
+      /* ---- attention state (active-on-sensor), per entity ---- */
+      const a = e as EntityCfg;
+      const attention = resolveAttention(a, id, statesDict);
+      const effectiveIconColor =
+        attention.active && attention.color ? attention.color : (a.iconColor || null);
       const unitOverride = String((e as EntityCfg).unitOverride ?? "").trim();
       const unit = unitOverride || unitOf(st, attr);
       out.push({
@@ -730,7 +912,10 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         max: isFinite(Number(e.max)) ? Number(e.max) : 100,
         style,
         stopsList,
-        thicknessPct: isFinite(Number(e.thicknessPct)) && Number(e.thicknessPct) > 0 ? Number(e.thicknessPct) : null,
+        thicknessPct:
+          isFinite(Number(e.thicknessPct)) && Number(e.thicknessPct) > 0
+            ? Math.min(60, Number(e.thicknessPct))
+            : null,
         value: toNumber(st, attr),
         unit,
         showUnit: (e as EntityCfg).showUnit ?? legacyShowUnit,
@@ -750,6 +935,8 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
         rowValueColor: (e as EntityCfg).rowValueColor || null,
         rowNameColor: (e as EntityCfg).rowNameColor || null,
         rowScale: clampNum((e as EntityCfg).rowScale, 0.5, 2, 1),
+        attention,
+        effectiveIconColor,
       });
     });
     return out;
@@ -776,8 +963,10 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       centreEntity,
       centreShowUnit,
       centreScale,
+      showTrack,
+      trackOpacity,
     });
-  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale]);
+  }, [size, resolvedRings, sweep, ringWidthPct, ringGapPct, trackColor, fixedColor, showTicks, tickCount, tickSize, markerColor, showCentreValue, centreEntity, centreShowUnit, centreScale, showTrack, trackOpacity]);
 
   const configured = ents.length > 0 || legacyRings.length > 0;
 
@@ -821,6 +1010,13 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const cIdx = resolvedRings[centreEntity] ? centreEntity : 0;
   const cRing = resolvedRings[cIdx];
   const centreIcon = showCentreIcon && cRing ? iconNode(cRing.icon, statesDict[cRing.id], cRing.id) : null;
+  // Centre value colour: the value's colour along the arc/gradient (default),
+  // or the widget's default text colour. Both modes fall back through the
+  // Text & colour tab colour (config.color) before the theme text colour.
+  const centreValueColour =
+    centreColourMode === "text"
+      ? config?.color || textMain
+      : L?.centre?.colour || config?.color || textMain;
 
   /* ---- entity rows ---- */
 
@@ -831,20 +1027,37 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   const rowRings = resolvedRings.filter((r) => r.showRowIcon || r.showRowName || r.showRowValue);
   const entityListOffset = clampNum(config?.entityListOffset, -3, 3, 0);
 
+  // Rows BELOW the gauge anchor at the arc ends (L.rowsTopY), so offset 0
+  // sits the rows snug under the horseshoe - not 3 em lower at the tile
+  // bottom. Rows ABOVE keep the flow layout: they already sit at 0 em
+  // against the top of the arc. While the gauge has no measured layout yet
+  // (!L) the rows fall back to the flow layout.
+  const rowsOverlayBelow = entityListPosition === "below" && !!L && rowRings.length > 0;
   const listEl = rowRings.length > 0 ? (
     <div
-      style={{
-        flex: "0 0 auto",
-        padding: entityListPosition === "above" ? "0.2em 0.7em 0.2em" : "0.2em 0.7em 0.35em",
-        ...(entityListPosition === "above" && entityListOffset !== 0
-          ? { marginBottom: `${entityListOffset}em` }
-          : {}),
-        ...(entityListPosition === "below" && entityListOffset !== 0
-          ? { marginTop: `${entityListOffset}em` }
-          : {}),
-        maxHeight: "45%",
-        overflow: "hidden",
-      }}
+      style={
+        rowsOverlayBelow
+          ? {
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: `${L!.rowsTopY}px`,
+              transform: entityListOffset !== 0 ? `translateY(${entityListOffset}em)` : undefined,
+              padding: "0.15em 0.7em 0",
+              maxHeight: "45%",
+              overflow: "hidden",
+              pointerEvents: "none",
+            }
+          : {
+              flex: "0 0 auto",
+              padding: "0.2em 0.7em 0.35em",
+              ...(entityListPosition === "above" && entityListOffset !== 0
+                ? { marginBottom: `${entityListOffset}em` }
+                : {}),
+              maxHeight: "45%",
+              overflow: "hidden",
+            }
+      }
     >
       {rowRings.map((r) => {
         const st = statesDict[r.id];
@@ -910,7 +1123,8 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               lineHeight: 1,
               // MDI/Lucide icons draw with currentColor, so colouring the
               // span colours the glyph; emoji glyphs simply ignore it.
-              ...(r.iconColor ? { color: r.iconColor } : {}),
+              // Attention active + a picked colour overrides the icon's own.
+              ...(r.effectiveIconColor ? { color: r.effectiveIconColor } : {}),
             }}
           >
             {iconNode(r.icon, st, r.id)}
@@ -976,6 +1190,56 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
       })}
     </div>
   ) : null;
+
+  /* ---- attention status texts (one per active entity) ---- */
+
+  const attentionEls = resolvedRings
+    .map((r) => {
+      const a = r.attention;
+      if (!a.on || !a.active || !a.showText) return null;
+      const text = (a.textMode === "custom" ? a.text : a.stateText).trim();
+      if (!text) return null;
+      const transform =
+        a.align === "left"
+          ? "translate(0, -50%)"
+          : a.align === "right"
+            ? "translate(-100%, -50%)"
+            : "translate(-50%, -50%)";
+      return (
+        <div
+          key={"attn-" + r.id + (r.attr ? "@" + r.attr : "")}
+          style={{
+            position: "absolute",
+            left: `${a.x}%`,
+            top: `${a.y}%`,
+            transform,
+            fontSize: "0.7em",
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            // the attention colour tints the text and its pill; without one
+            // both fall back to the widget text colour / a neutral tint
+            color: a.color || "inherit",
+            backgroundColor: a.color ? hexA(a.color, 0.22) : "rgba(127,127,127,0.25)",
+            padding: "0.22em 0.55em",
+            borderRadius: "0.6em",
+            // pulse like the notifications widget pulses a status card
+            animation: a.pulse ? "mf-status-alert 2.4s ease-in-out infinite" : undefined,
+          }}
+        >
+          {text}
+        </div>
+      );
+    })
+    .filter(Boolean);
+
+  const attentionOverlay =
+    attentionEls.length > 0 ? (
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+        {attentionEls}
+      </div>
+    ) : null;
 
   const titleEl = title ? (
     <div
@@ -1046,8 +1310,17 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                   style={{
                     fontSize: `${Math.max(10, Math.min(30, L.centre.valuePx * 0.38))}px`,
                     marginBottom: "0.15em",
-                    // the entity's icon colour applies here too (MDI/Lucide)
-                    ...(cRing?.iconColor ? { color: cRing.iconColor } : {}),
+                    // the entity's icon colour applies here too (MDI/Lucide),
+                    // the attention colour overriding it while active
+                    ...(cRing?.effectiveIconColor ? { color: cRing.effectiveIconColor } : {}),
+                    // justify the icon left/centre/right within the value block
+                    display: "flex",
+                    justifyContent:
+                      centreIconAlign === "left"
+                        ? "flex-start"
+                        : centreIconAlign === "right"
+                          ? "flex-end"
+                          : "center",
                   }}
                 >
                   {centreIcon}
@@ -1063,7 +1336,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                       {L.centre.unitText}
                     </span>
                   ) : null}
-                  <span style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
+                  <span style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: centreValueColour }}>
                     {L.centre.valueText}
                   </span>
                   {centreUnitPos === "after" && L.centre.unitText ? (
@@ -1073,7 +1346,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
                   ) : null}
                 </>
               ) : (
-                <div style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: L.centre.colour || textMain }}>
+                <div style={{ fontSize: `${L.centre.valuePx}px`, fontWeight: 700, color: centreValueColour }}>
                   {L.centre.valueText}
                 </div>
               )}
@@ -1082,6 +1355,7 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
               ) : null}
             </div>
           ) : null}
+          {rowsOverlayBelow ? listEl : null}
           {!connected ? (
             <div style={{ position: "absolute", right: 6, top: 4, fontSize: "0.55em", opacity: 0.5 }}>offline</div>
           ) : null}
@@ -1091,11 +1365,14 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
   );
 
   // Compose the tile: title top/bottom, entity rows above/below the gauge.
+  // Rows below the gauge render as an overlay INSIDE the gauge box (anchored
+  // at the arc ends - see listEl), so they no longer consume flex height and
+  // the arc keeps the full tile. Rows above keep the flow layout.
   const children: ReactElement[] = [];
   if (titleEl && titlePosition === "top") children.push(titleEl);
   if (listEl && entityListPosition === "above") children.push(listEl);
   children.push(gaugeBox);
-  if (listEl && entityListPosition === "below") children.push(listEl);
+  if (listEl && !rowsOverlayBelow) children.push(listEl);
   if (titleEl && titlePosition === "bottom") children.push(titleEl);
 
   return (
@@ -1103,8 +1380,23 @@ export default function FlexHorseshoeWidget({ config }: { config?: any }) {
     // on the tile, but hard-setting textMain here would stomp it - the title
     // (and everything inheriting the root) would ignore the user's colour.
     // textMain stays as the fallback for tiles with no colour configured.
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", color: config?.color || textMain }}>
+    // contentOffsetX/Y fine-tune everything this widget draws, in pixels;
+    // attentionOverlay floats the status texts anywhere over the tile.
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        color: config?.color || textMain,
+        ...(contentOffsetX !== 0 || contentOffsetY !== 0
+          ? { transform: `translate(${contentOffsetX}px, ${contentOffsetY}px)` }
+          : {}),
+      }}
+    >
       {children}
+      {attentionOverlay}
     </div>
   );
 }

@@ -19,7 +19,11 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 
 const RUNNER = /* ts */ `
-import { computeLayout, buildRowZones, normCentreUnitPos, clampNum, type ResolvedRing } from "@/components/widgets/FlexHorseshoeWidget";
+import {
+  computeLayout, buildRowZones, normCentreUnitPos, clampNum,
+  resolveAttention, hexA, normAlign,
+  type ResolvedRing,
+} from "@/components/widgets/FlexHorseshoeWidget";
 import assert from "node:assert";
 
 function ring(o: Partial<ResolvedRing>): ResolvedRing {
@@ -42,11 +46,20 @@ const base = {
   showTicks: false, tickCount: 11, tickSize: 6,
   markerColor: "#ffffff",
   showCentre: true, centreEntity: 0, centreShowUnit: true, centreScale: 1,
+  showTrack: true, trackOpacity: 0.38,
   rings: [],
 };
 
-// pad(6) + min(200,200)/2 - 6 = 94 (no ticks)
-const R0 = 94;
+// Replicates the widget's radius math exactly (same expression tree, so the
+// floats stay bit-identical): rBase shrinks by pad, then the outermost
+// drawn ring's half stroke is reserved so the arc never crops off the box.
+const HALF = Math.min(200, 200) / 2;
+const PAD = 6;
+const RBASE = Math.max(10, HALF - PAD); // 94 (no ticks)
+const OUTER_THICK = Math.max(4, RBASE * (Math.min(100, Math.max(4, 20)) / 100)); // 18.8
+const R0 = Math.max(10, RBASE - OUTER_THICK / 2); // 84.6
+const TH0 = Math.max(4, R0 * (20 / 100));
+const GAP0 = Math.max(2, R0 * (5 / 100));
 
 let pass = 0, fail = 0;
 function check(name: string, fn: () => void) {
@@ -59,14 +72,16 @@ check("global ringWidthPct sets track stroke width", () => {
   const L = computeLayout({ ...base, rings: [ring({})] });
   const track = L.arcs.find((a) => a.key === "track-0");
   assert.ok(track, "track arc missing");
-  assert.equal(track!.strokeWidth, Math.max(4, R0 * 0.20)); // 18.8
+  assert.equal(track!.strokeWidth, TH0); // 16.92
 });
 
 // ---- 2. thickness: per-entity thicknessPct overrides global ----
 check("per-entity thicknessPct overrides global", () => {
+  // outer ring reserves its own half stroke: rBase 94 - 94*0.4/2 = 75.2
+  const r0_40 = Math.max(10, RBASE - Math.max(4, RBASE * (40 / 100)) / 2);
   const L = computeLayout({ ...base, rings: [ring({ thicknessPct: 40 })] });
   const track = L.arcs.find((a) => a.key === "track-0");
-  assert.equal(track!.strokeWidth, Math.max(4, R0 * 0.40)); // 37.6
+  assert.equal(track!.strokeWidth, Math.max(4, r0_40 * (40 / 100)));
 });
 
 // ---- 3. stacking: entity 0 outside, entity 1 inside ----
@@ -75,14 +90,14 @@ check("two rings stack outside-in", () => {
   assert.equal(L.ringCount, 2);
   const t0 = L.arcs.find((a) => a.key === "track-0")!;
   const t1 = L.arcs.find((a) => a.key === "track-1")!;
-  // radius must differ: r1 = r0 - thick0 - gap
-  const th0 = Math.max(4, R0 * 0.2), gap = Math.max(2, R0 * 0.05);
-  assert.equal(t0.strokeWidth, th0);
-  assert.equal(t1.strokeWidth, th0);
+  assert.equal(t0.strokeWidth, TH0);
+  assert.equal(t1.strokeWidth, TH0);
   const d0 = t0.d, d1 = t1.d;
   assert.notEqual(d0, d1, "arcs must sit at different radii");
-  // outer arc path radius ~ R0, inner ~ R0 - th0 - gap = 94 - 18.8 - 4.7 = 70.5
-  assert.ok(d1.includes(Math.round(R0 - th0 - gap - 1) + ""), "inner radius looks wrong: " + d1);
+  // inner ring radius: R0 - TH0 - GAP0 = 84.6 - 16.92 - 4.23 = 63.45
+  const innerR = R0 - TH0 - GAP0;
+  const gotR = parseFloat(d1.match(/A ([\\d.]+) /)![1]);
+  assert.ok(Math.abs(gotR - innerR) < 0.01, "inner radius looks wrong: " + d1);
 });
 
 // ---- 4. invisible ring (no ring, no marker) does not consume space ----
@@ -94,7 +109,9 @@ check("ring with showRing=false && showMarker=false is skipped", () => {
   assert.equal(L.ringCount, 1);
   const t = L.arcs.find((a) => a.key === "track-1");
   assert.ok(t, "second ring should still render (and take outer slot)");
-  assert.equal(t!.strokeWidth, Math.max(4, R0 * 0.4));
+  // the surviving ring becomes the outer one: reserve its own half stroke
+  const r0_40 = Math.max(10, RBASE - Math.max(4, RBASE * (40 / 100)) / 2);
+  assert.equal(t!.strokeWidth, Math.max(4, r0_40 * (40 / 100)));
 });
 
 // ---- 5. marker-only ring: no arcs, marker at value angle ----
@@ -174,9 +191,11 @@ check("ticks rendered at requested count outside r0", () => {
   const L = computeLayout({ ...base, showTicks: true, tickCount: 5, rings: [ring({})] });
   assert.equal(L.ticks.length, 5);
   const t = L.ticks[0];
-  const len = Math.max(3, 100 * 0.06);
-  // with ticks enabled r0 shrinks: min(w,h)/2 - pad - (tickLen + 2) = 86
-  const r0T = 100 - 6 - (len + 2);
+  const len = Math.max(3, (Math.min(200, 200) / 2) * (6 / 100));
+  // with ticks enabled rBase shrinks first: 100 - 6 - (len + 2) = 86,
+  // then the outer ring's half stroke is reserved: 86 - 86*0.2/2 = 77.4
+  const rBaseT = Math.max(10, 100 - 6 - (len + 2));
+  const r0T = Math.max(10, rBaseT - Math.max(4, rBaseT * (Math.min(100, Math.max(4, 20)) / 100)) / 2);
   const a0 = 180 + (360 - 260) / 2; // 230° clockwise from 12 o'clock
   const [x1, y1] = polarCw(100, 100, r0T + 2, a0);
   const [x2, y2] = polarCw(100, 100, r0T + 2 + len, a0);
@@ -296,6 +315,141 @@ check("clampNum clamps to range and falls back on junk", () => {
   assert.equal(clampNum(null, -2, 2, 0), 0);
   assert.equal(clampNum("1.2", -2, 2, 0), 1.2);
   assert.equal(clampNum(4, -3, 3, 0), 3);
+});
+
+// ---- 19. track toggle + visibility ----
+check("showTrack=false drops the shaded remainder, progress stays", () => {
+  const L = computeLayout({ ...base, showTrack: false, rings: [ring({ value: 30 })] });
+  assert.ok(!L.arcs.some((a) => a.key === "track-0"), "track must be gone");
+  assert.ok(L.arcs.some((a) => a.key === "prog-0"), "progress arc must remain");
+});
+check("trackVisibility passes through as the track arc opacity", () => {
+  const L = computeLayout({ ...base, trackOpacity: 0.55, rings: [ring({})] });
+  const track = L.arcs.find((a) => a.key === "track-0")!;
+  assert.equal(track.opacity, 0.55);
+  const L2 = computeLayout({ ...base, trackOpacity: 0, rings: [ring({})] });
+  assert.equal(L2.arcs.find((a: any) => a.key === "track-0")!.opacity, 0);
+});
+
+// ---- 20. the arc never crops off the widget (stroke reservation) ----
+check("outer stroke fits the box: r0 + thick/2 <= rBase, ticks or not", () => {
+  for (const cfg of [
+    { ...base, rings: [ring({})] },
+    { ...base, rings: [ring({ thicknessPct: 60 })] },
+    { ...base, showTicks: true, rings: [ring({})] },
+    { ...base, sweep: 360, rings: [ring({})] },
+  ]) {
+    const L = computeLayout(cfg);
+    assert.ok(L.outerThick > 0, "outerThick missing");
+    // extent of the outer stroke from centre, vs the box half minus pad
+    const half = Math.min(cfg.w, cfg.h) / 2;
+    const len = cfg.showTicks ? Math.max(3, (half) * (cfg.tickSize / 100)) : 0;
+    const rBase = Math.max(10, half - 6 - (len > 0 ? len + 2 : 0));
+    assert.ok(
+      L.r0 + L.outerThick / 2 <= rBase + 1e-9,
+      "arc crops the box: r0 " + L.r0 + " + thick/2 " + L.outerThick / 2 + " > rBase " + rBase,
+    );
+    // ticks sit between r0+2 and r0+2+len, also inside rBase
+    if (cfg.showTicks) {
+      assert.ok(L.r0 + 2 + len <= rBase + 1e-9, "ticks crop the box");
+    }
+  }
+});
+
+// ---- 21. rows anchor: 0 em = snug under the arc ends ----
+check("rowsTopY anchors at the arc ends for a bottom-gapped sweep", () => {
+  const L = computeLayout({ ...base, rings: [ring({})] });
+  // sweep 260 -> halfGap 50 deg, arc ends cos(50) below centre
+  const halfGap = (360 - 260) / 2;
+  const arcEndY = 100 + R0 * Math.cos((halfGap * Math.PI) / 180);
+  const want = Math.max(arcEndY, 100) + TH0 / 2 + 2;
+  assert.ok(Math.abs(L.rowsTopY - want) < 1e-9, "rowsTopY " + L.rowsTopY + " != " + want);
+});
+check("rowsTopY clamps to the centre line when the ends rise above it", () => {
+  const L = computeLayout({ ...base, sweep: 90, rings: [ring({})] });
+  assert.ok(Math.abs(L.rowsTopY - (100 + TH0 / 2 + 2)) < 1e-9, "expected centre-line anchor");
+});
+
+// ---- 22. attention state (active-on-sensor) ----
+const st = (state: string, extra: any = {}) => ({ state, attributes: extra });
+check("attention off by default; icon keeps its own colour", () => {
+  const a = resolveAttention({ entityId: "sensor.batt" }, "sensor.batt", { "sensor.batt": st("on") });
+  assert.equal(a.on, false);
+  assert.equal(a.active, false);
+  assert.equal(a.color, null);
+});
+check("attention active on a matching state, colour picked up", () => {
+  const a = resolveAttention(
+    { entityId: "sensor.batt", attentionOn: true, attentionState: "on", attentionColor: "#ff5252" },
+    "sensor.batt",
+    { "sensor.batt": st("on") },
+  );
+  assert.equal(a.active, true);
+  assert.equal(a.stateText, "on");
+  assert.equal(a.color, "#ff5252");
+});
+check("blank match state: any but off-ish counts as active", () => {
+  const f = (state: string) => resolveAttention(
+    { entityId: "sensor.batt", attentionOn: true }, "sensor.batt", { "sensor.batt": st(state) });
+  assert.equal(f("open").active, true);
+  assert.equal(f("charging").active, true);
+  assert.equal(f("off").active, false);
+  assert.equal(f("closed").active, false);
+  assert.equal(f("unavailable").active, false);
+  assert.equal(f("").active, false);
+});
+check("match is case-insensitive; state text keeps original case", () => {
+  const a = resolveAttention(
+    { entityId: "sensor.batt", attentionOn: true, attentionState: "Charging" },
+    "sensor.batt",
+    { "sensor.batt": st("charging") },
+  );
+  assert.equal(a.active, true);
+  assert.equal(a.stateText, "charging");
+  assert.equal(resolveAttention(
+    { entityId: "sensor.batt", attentionOn: true, attentionState: "on" },
+    "sensor.batt", { "sensor.batt": st("Charging") }).active, false);
+});
+check("watches another entity (entity@attribute supported)", () => {
+  const dict = {
+    "sensor.batt": st("88"),
+    "binary_sensor.door": st("on"),
+    "sensor.charger": st("ok", { charging: "yes" }),
+  };
+  const a = resolveAttention(
+    { entityId: "sensor.batt", attentionOn: true, attentionEntity: "binary_sensor.door", attentionState: "on" },
+    "sensor.batt", dict);
+  assert.equal(a.watchId, "binary_sensor.door");
+  assert.equal(a.active, true);
+  assert.equal(a.stateText, "on");
+  const b = resolveAttention(
+    { entityId: "sensor.batt", attentionOn: true, attentionEntity: "sensor.charger@charging", attentionState: "yes" },
+    "sensor.batt", dict);
+  assert.equal(b.watchAttr, "charging");
+  assert.equal(b.active, true);
+  assert.equal(b.stateText, "yes");
+});
+check("status text defaults clamp into range", () => {
+  const a = resolveAttention({ entityId: "s", attentionOn: true, attentionTextX: 500, attentionTextY: -20, attentionTextAlign: "diagonal", attentionTextMode: "junk" } as any, "s", { s: st("on") });
+  assert.equal(a.x, 100);
+  assert.equal(a.y, 0);
+  assert.equal(a.align, "center");
+  assert.equal(a.textMode, "state");
+  assert.equal(a.pulse, true); // default on
+  assert.equal(a.showText, false); // default off
+});
+
+// ---- 23. hexA + normAlign ----
+check("hexA renders #rrggbb with alpha, junk falls back neutral", () => {
+  assert.equal(hexA("#ff0000", 0.5), "rgba(255,0,0,0.5)");
+  assert.equal(hexA("#26c6da", 0.22), "rgba(38,198,218,0.22)");
+  assert.equal(hexA("nope", 0.5), "rgba(127,127,127,0.5)");
+});
+check("normAlign validates left/centre/right", () => {
+  assert.equal(normAlign("left", "center"), "left");
+  assert.equal(normAlign("right", "center"), "right");
+  assert.equal(normAlign(undefined, "center"), "center");
+  assert.equal(normAlign("LEFT", "center"), "center");
 });
 
 console.log("\\n" + pass + " passed, " + fail + " failed");

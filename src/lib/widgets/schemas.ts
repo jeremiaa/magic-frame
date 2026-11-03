@@ -469,6 +469,20 @@ const flexHorseshoeConfig = baseConfig
           rowNameColor: z.string().optional(),
           // scale multiplier for the entity row's icon, name and value
           rowScale: z.number().optional(),
+          // attention state (active-on-sensor): while the watched entity holds
+          // the active state the icon takes attentionColor (blank = the icon's
+          // own colour) and an optional status text shows anywhere on the tile
+          attentionOn: z.boolean().optional(),
+          attentionEntity: z.string().optional(),
+          attentionState: z.string().optional(),
+          attentionColor: z.string().optional(),
+          attentionShowText: z.boolean().optional(),
+          attentionTextMode: z.enum(["state", "custom"]).optional(),
+          attentionText: z.string().optional(),
+          attentionTextAlign: z.enum(["left", "center", "right"]).optional(),
+          attentionTextX: z.number().optional(),
+          attentionTextY: z.number().optional(),
+          attentionTextPulse: z.boolean().optional(),
         })
       )
       .optional(),
@@ -507,6 +521,19 @@ const flexHorseshoeConfig = baseConfig
     // rows further away, negative pulls them closer / over the horseshoe)
     entityListOffset: z.number().optional(),
     centreScale: z.number().optional(),
+    // justify the centre entity icon left/centre/right in the value block
+    centreIconAlign: z.enum(["left", "center", "right"]).optional(),
+    // centre value colour: "value" = the arc/gradient colour at the value
+    // (default), "text" = the widget default text colour
+    centreColourMode: z.enum(["value", "text"]).optional(),
+    // whole-widget content fine-tune in px (title + rows + gauge)
+    contentOffsetX: z.number().optional(),
+    contentOffsetY: z.number().optional(),
+    // padding inside the tile, honoured by the view wrapper (px)
+    outerPadding: z.number().optional(),
+    // the shaded remainder of the scale behind the progress arc
+    showTrack: z.boolean().optional(),
+    trackOpacity: z.number().optional(),
     arcDegrees: z.number().optional(),
     ringWidth: z.number().optional(),
     ringGap: z.number().optional(),
