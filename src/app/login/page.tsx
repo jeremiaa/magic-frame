@@ -5,6 +5,18 @@ import { useRouter } from "next/navigation";
 import MagicFrameLogo from "@/components/MagicFrameLogo";
 import { LocaleProvider, useT } from "@/lib/i18n/LocaleProvider";
 
+
+/**
+ * Wohin es nach dem Anmelden geht. `?next=` kommt aus der Adresszeile, also
+ * von jedem, der einen Link verschicken kann — angenommen wird deshalb nur ein
+ * Pfad dieser Installation. Ohne das führte „…/login?next=https://fremd.example"
+ * nach dem Anmelden auf eine fremde Seite, die wie Magic Frame aussehen darf.
+ */
+function safeNext(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return "/editor";
+  return raw;
+}
+
 function AuthGate() {
   const t = useT();
   const router = useRouter();
@@ -68,7 +80,7 @@ function LoginForm() {
         return;
       }
       const params = new URLSearchParams(window.location.search);
-      router.replace(params.get("next") || "/editor");
+      router.replace(safeNext(params.get("next")));
       router.refresh();
     } catch {
       setError(t("Netzwerkfehler. Bitte erneut versuchen."));
@@ -102,7 +114,7 @@ function LoginForm() {
         return;
       }
       const params = new URLSearchParams(window.location.search);
-      router.replace(params.get("next") || "/editor");
+      router.replace(safeNext(params.get("next")));
       router.refresh();
     } catch {
       setError(t("Netzwerkfehler. Bitte erneut versuchen."));
