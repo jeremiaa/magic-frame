@@ -26,6 +26,7 @@ import {
   Lock,
   AlertOctagon,
   Globe,
+  Cloud,
 } from "lucide-react";
 import { useT, useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -131,6 +132,7 @@ export default function SettingsPage() {
       icon: <Globe size={16} />,
       render: () => (
         <>
+          <TunnelCard />
           <DDNSCard />
           <CaddyCard />
         </>
@@ -550,6 +552,284 @@ function McpCard() {
           </a>
         </p>
       </div>
+    </Card>
+  );
+}
+
+/* ---------- Fernzugriff (Cloudflare-Tunnel) ---------- */
+
+type TunnelProblem = { code: string; detail?: string };
+type TunnelInfo = {
+  available: boolean;
+  unavailable: "addon" | "no-gate" | "no-secret" | "no-binary" | null;
+  mode: "" | "quick" | "token";
+  status: "off" | "starting" | "running" | "error";
+  url: string | null;
+  hostnames: string[];
+  error: TunnelProblem | null;
+  warning: TunnelProblem | null;
+  hasStoredToken: boolean;
+  autostart: boolean;
+  gatePort: number;
+  cloudflaredVersion: string | null;
+};
+
+// Was die Route als Kennung schickt, in Worten. Deutsch ist die Quellsprache,
+// en.ts übersetzt — deshalb stehen hier ganze Sätze und keine Bausteine.
+const TUNNEL_UNAVAILABLE: Record<string, string> = {
+  addon: "Im Home-Assistant-Add-on gibt es den Fernzugriff noch nicht. Home Assistant bringt dafür eigene Wege mit.",
+  "no-binary": "Auf diesem System fehlt das Programm cloudflared. Das Docker-Abbild von Magic Frame bringt es mit; bei anderen Installationen wird es über das System installiert.",
+  "no-gate": "Der Fernzugriff braucht den eigenen Server von Magic Frame und steht im Entwicklungsmodus nicht zur Verfügung.",
+  "no-secret": "SESSION_SECRET fehlt oder ist zu kurz. Ohne kann sich niemand anmelden, also gibt es auch keinen Fernzugriff.",
+};
+const TUNNEL_PROBLEMS: Record<string, string> = {
+  "already-running": "Der Tunnel läuft bereits.",
+  "no-token": "Es ist kein Token hinterlegt.",
+  "bad-token": "Das sieht nicht nach einem Tunnel-Token aus. Ein Token beginnt mit eyJ.",
+  "token-rejected": "Cloudflare hat das Token abgelehnt.",
+  "quick-unavailable": "Cloudflare vergibt gerade keinen Schnell-Tunnel. Bitte später noch einmal versuchen.",
+  "gate-port": "Der Port für den Tunnel-Eingang ist belegt. Mit MF_TUNNEL_PORT lässt sich ein anderer festlegen.",
+  "ingress-mismatch": "Der Tunnel wurde angehalten: Im Cloudflare-Dashboard zeigt ein Eintrag nicht auf den Tunnel-Eingang.",
+  exited: "cloudflared hat sich beendet.",
+  blocked: "Aus diesem Netz ist Cloudflare nicht erreichbar. Der Tunnel braucht ausgehende Verbindungen zu Cloudflare auf Port 7844.",
+  "no-connection": "Der Tunnel hat nach einer Minute noch keine Verbindung zu Cloudflare bekommen und wurde angehalten.",
+  slow: "Noch keine Verbindung zu Cloudflare. cloudflared versucht es weiter.",
+  "ingress-unknown": "Die Einstellungen aus dem Cloudflare-Dashboard ließen sich nicht prüfen. Ungeprüft bleibt der Tunnel aus.",
+  "no-hostname": "Der Tunnel läuft, aber im Cloudflare-Dashboard ist noch keine öffentliche Adresse eingetragen.",
+  internal: "Interner Fehler.",
+};
+
+function TunnelCard() {
+  const t = useT();
+  const [info, setInfo] = useState<TunnelInfo | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [token, setToken] = useState("");
+  const [problem, setProblem] = useState<TunnelProblem | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [adminOnly, setAdminOnly] = useState(false);
+
+  async function load() {
+    try {
+      const res = await fetch("/api/admin/tunnel", { cache: "no-store" });
+      if (res.ok) setInfo(await res.json());
+      else if (res.status === 403) setAdminOnly(true);
+    } catch {
+      // Beim Anhalten des Tunnels von aussen reisst genau diese Verbindung ab.
+    }
+  }
+
+  // Solange er startet, oft nachsehen — sonst steht die Adresse erst nach zehn
+  // Sekunden da. Im Ruhezustand reicht ein seltener Blick.
+  // Im Fehlerzustand auch: ein fester Tunnel versucht es von selbst wieder.
+  const pace = info?.status === "starting" ? 1500 : info?.status === "running" ? 8000 : info?.status === "error" ? 5000 : 0;
+  useEffect(() => {
+    load();
+  }, []);
+  useEffect(() => {
+    if (!pace) return;
+    const timer = setInterval(load, pace);
+    return () => clearInterval(timer);
+  }, [pace]);
+
+  async function act(action: string, withToken?: string) {
+    setBusy(true);
+    setProblem(null);
+    try {
+      const res = await fetch("/api/admin/tunnel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, token: withToken }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.status) setInfo(data.status);
+      if (!res.ok) setProblem({ code: data.error || "internal", detail: data.detail });
+      else if (action === "start-token" || action === "forget-token") setToken("");
+    } catch {
+      // Wer den Tunnel durch den Tunnel anhält, bekommt keine Antwort mehr.
+      if (action !== "stop") setProblem({ code: "internal" });
+    } finally {
+      setBusy(false);
+      load();
+    }
+  }
+
+  async function copy(text: string) {
+    await navigator.clipboard.writeText(text);
+    setCopied(text);
+    setTimeout(() => setCopied(null), 1500);
+  }
+
+  const row = (text: string) => (
+    <div className="flex items-start gap-2 bg-[var(--mf-ovl)]/40 light:bg-[var(--mf-surface)] border border-[var(--mf-bdr)]/10 rounded-lg px-3 py-2">
+      <code className="flex-1 text-[11px] font-mono text-[var(--mf-fg)]/80 break-all leading-relaxed [font-variant-ligatures:none]">{text}</code>
+      <button
+        onClick={() => copy(text)}
+        className="text-xs text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-md px-2 h-7 flex items-center gap-1 shrink-0"
+      >
+        {copied === text ? <Check size={12} /> : <Copy size={12} />}
+        {copied === text ? t("kopiert") : t("Kopieren")}
+      </button>
+    </div>
+  );
+
+  const problemBox = (p: TunnelProblem, kind: "err" | "warn") => (
+    <div
+      className={`text-sm rounded-lg border px-3 py-2 ${
+        kind === "err" ? "bg-red-600/10 border-red-500/40 text-red-200" : "bg-amber-500/10 border-amber-500/40 text-amber-200"
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <AlertTriangle size={15} className="shrink-0" />
+        <span>{t(TUNNEL_PROBLEMS[p.code] ?? TUNNEL_PROBLEMS.internal)}</span>
+      </div>
+      {p.detail && (
+        <code className="block mt-1.5 text-[11px] font-mono break-all opacity-80 [font-variant-ligatures:none]">{p.detail}</code>
+      )}
+      {p.code === "ingress-mismatch" && info && (
+        <div className="mt-1.5 text-xs opacity-90">
+          {t("Richtig ist als Dienst:")} <code className="font-mono">http://127.0.0.1:{info.gatePort}</code>
+        </div>
+      )}
+    </div>
+  );
+
+  const badge =
+    info?.status === "running"
+      ? { label: "Läuft", tone: "emerald" as const }
+      : info?.status === "starting"
+        ? { label: "Startet", tone: "amber" as const }
+        : info?.status === "error"
+          ? { label: "Fehler", tone: "amber" as const }
+          : { label: "Aus", tone: "zinc" as const };
+
+  const addresses =
+    info?.status === "running"
+      ? info.mode === "quick" && info.url
+        ? [info.url]
+        : info.hostnames.map((h) => `https://${h}`)
+      : [];
+  const shown = problem ?? info?.error ?? null;
+  const gateService = `http://127.0.0.1:${info?.gatePort ?? 3001}`;
+  const blue = "bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg px-4 h-9 disabled:opacity-40";
+  const quiet =
+    "text-sm text-[var(--mf-fg)]/70 hover:text-[var(--mf-fg)] bg-[var(--mf-elev)]/5 hover:bg-[var(--mf-elev)]/10 rounded-lg px-4 h-9 disabled:opacity-40";
+
+  return (
+    <Card
+      icon={<Cloud size={18} />}
+      iconTint={info?.status === "running" ? "emerald" : "blue"}
+      title="Fernzugriff"
+      badge={info ? badge : undefined}
+      desc="Macht den Editor von außen erreichbar, ohne Router und ohne eigene Domain, über einen Cloudflare-Tunnel. Durch den Tunnel sieht nur etwas, wer angemeldet ist. Deine Ansichten bleiben im Heimnetz."
+    >
+      {adminOnly ? (
+        <div className="text-sm text-[var(--mf-fg)]/60">{t("Den Fernzugriff können nur Administratoren einrichten.")}</div>
+      ) : !info ? (
+        <div className="text-sm text-[var(--mf-fg)]/40">{t("Lädt…")}</div>
+      ) : !info.available ? (
+        <div className="text-sm text-[var(--mf-fg)]/60">{t(TUNNEL_UNAVAILABLE[info.unavailable ?? "no-gate"])}</div>
+      ) : (
+        <div className="space-y-4 text-xs text-[var(--mf-fg)]/60">
+          {shown && problemBox(shown, "err")}
+          {info.warning && problemBox(info.warning, "warn")}
+
+          {info.status === "running" && (
+            <div className="space-y-3">
+              {addresses.length > 0 && (
+                <div>
+                  <div className="font-semibold text-[var(--mf-fg)]/80 mb-1">
+                    {info.mode === "quick" ? t("Adresse (gilt, bis der Tunnel stoppt)") : t("Adresse")}
+                  </div>
+                  <div className="space-y-1.5">{addresses.map((a) => <div key={a}>{row(a)}</div>)}</div>
+                </div>
+              )}
+              <p>
+                {t("Von außen erreichbar sind die Anmeldung, der Editor und der MCP-Server. Ansichten öffnen sich dort nur für Angemeldete; die Wandtablets im Heimnetz merken nichts davon.")}
+              </p>
+              <button onClick={() => act("stop")} disabled={busy} className={quiet}>
+                {t("Tunnel stoppen")}
+              </button>
+            </div>
+          )}
+
+          {info.status === "starting" && (
+            <div className="flex items-center gap-3">
+              <RefreshCw size={14} className="animate-spin text-[var(--mf-fg)]/50" />
+              <span className="text-sm">{t("Der Tunnel startet…")}</span>
+              <button onClick={() => act("stop")} disabled={busy} className={quiet + " ml-auto"}>
+                {t("Abbrechen")}
+              </button>
+            </div>
+          )}
+
+          {(info.status === "off" || info.status === "error") && (
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-xl border border-[var(--mf-bdr)]/10 p-4 flex flex-col">
+                <div className="font-semibold text-sm text-[var(--mf-fg)]/90">{t("Schnell ausprobieren")}</div>
+                <p className="mt-1.5 mb-3">
+                  {t("Ein Klick, ohne Cloudflare-Konto. Die Adresse ist zufällig und gilt, bis der Tunnel stoppt oder Magic Frame neu startet.")}
+                </p>
+                <button onClick={() => act("start-quick")} disabled={busy} className={blue + " mt-auto self-start"}>
+                  {t("Schnell-Tunnel starten")}
+                </button>
+              </div>
+
+              <div className="rounded-xl border border-[var(--mf-bdr)]/10 p-4 flex flex-col">
+                <div className="font-semibold text-sm text-[var(--mf-fg)]/90">{t("Feste Adresse")}</div>
+                <p className="mt-1.5">
+                  {t("Für dauerhaft: ein Tunnel aus deinem Cloudflare-Konto mit eigener Adresse. Er startet nach einem Neustart von selbst wieder.")}
+                </p>
+                <ol className="list-decimal ml-4 mt-2 mb-3 space-y-1">
+                  <li>{t("In Cloudflare unter Zero Trust → Networks → Tunnels einen Tunnel anlegen.")}</li>
+                  <li>
+                    {t("Als Dienst genau das eintragen:")} <code className="font-mono text-[var(--mf-fg)]/80">{gateService}</code>
+                  </li>
+                  <li>{t("Das Token von dort hier einfügen.")}</li>
+                </ol>
+                {info.hasStoredToken ? (
+                  <div className="mt-auto flex flex-wrap items-center gap-2">
+                    <button onClick={() => act("start-token")} disabled={busy} className={blue}>
+                      {t("Festen Tunnel starten")}
+                    </button>
+                    <button onClick={() => act("forget-token")} disabled={busy} className={quiet}>
+                      {t("Token vergessen")}
+                    </button>
+                    <span className="text-[var(--mf-fg)]/40">{t("Ein Token ist hinterlegt.")}</span>
+                  </div>
+                ) : (
+                  <div className="mt-auto flex gap-2">
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      value={token}
+                      onChange={(e) => setToken(e.target.value)}
+                      placeholder="eyJ…"
+                      aria-label={t("Tunnel-Token")}
+                      className={inputCls + " h-9 font-mono"}
+                    />
+                    <button onClick={() => act("start-token", token)} disabled={busy || !token.trim()} className={blue + " shrink-0"}>
+                      {t("Starten")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <p className="text-[var(--mf-fg)]/40">
+            {t("Der Tunnel läuft über Cloudflare; mit dem Start gelten deren Nutzungsbedingungen.")}{" "}
+            <a
+              href="https://github.com/jeremiaa/magic-frame/blob/main/wiki/hosting-and-domain.md#remote-access-with-one-click"
+              target="_blank"
+              rel="noreferrer"
+              className="text-emerald-400 hover:underline"
+            >
+              {t("Was genau von außen erreichbar ist")}
+            </a>
+            {info.cloudflaredVersion ? <span className="ml-2">cloudflared {info.cloudflaredVersion}</span> : null}
+          </p>
+        </div>
+      )}
     </Card>
   );
 }

@@ -1,5 +1,6 @@
 import "server-only";
 import { NextRequest } from "next/server";
+import { isViaTunnel } from "@/lib/tunnel/via";
 
 /**
  * The client address, for locking out password guessing — or null when we
@@ -23,6 +24,13 @@ import { NextRequest } from "next/server";
  * src/lib/caddy/generate.ts and caddy/Dockerfile.)
  */
 export function clientIp(req: NextRequest): string | null {
+  // Durch den eingebauten Cloudflare-Tunnel: die Schranke (server-tunnel.js)
+  // hat X-Real-IP aus Cloudflares CF-Connecting-IP gesetzt oder entfernt. Die
+  // Kette in X-Forwarded-For beginnt dort mit dem, was der Aufrufer selbst
+  // geschickt hat — die Zählung nach Hops gilt für diesen Weg nicht.
+  if (isViaTunnel(req.headers)) {
+    return normalize(req.headers.get("x-real-ip") ?? "") || null;
+  }
   // What our own proxy put there, from the peer it actually accepted the
   // connection from. A client cannot forge this at that hop, because Caddy
   // overwrites whatever arrived.

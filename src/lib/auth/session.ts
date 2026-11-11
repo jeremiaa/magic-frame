@@ -1,6 +1,7 @@
 import "server-only";
 import { getIronSession, type SessionOptions } from "iron-session";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { isViaTunnel } from "@/lib/tunnel/via";
 
 export type SessionData = {
   userId?: string;
@@ -24,20 +25,36 @@ function getSessionSecret(): string {
   return secret;
 }
 
-function getSessionOptions(): SessionOptions {
+function getSessionOptions(secure: boolean): SessionOptions {
   return {
     cookieName: "magic_session",
     password: getSessionSecret(),
     cookieOptions: {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.COOKIE_SECURE === "true",
+      secure,
       path: "/",
       maxAge: 60 * 60 * 24 * 30,
     },
   };
 }
 
+/**
+ * Durch den Cloudflare-Tunnel ist die Verbindung zum Browser immer https.
+ * Dann trägt das Cookie „Secure", auch wenn COOKIE_SECURE fürs Heimnetz aus
+ * ist — sonst ginge die Sitzung bei einem Aufruf über http im Klartext durchs
+ * Internet. Im Heimnetz ändert sich nichts.
+ */
+async function arrivedThroughTunnel(): Promise<boolean> {
+  try {
+    return isViaTunnel(await headers());
+  } catch {
+    // Ausserhalb einer Anfrage gibt es keine Kopfzeilen.
+    return false;
+  }
+}
+
 export async function getSession() {
-  return getIronSession<SessionData>(await cookies(), getSessionOptions());
+  const secure = process.env.COOKIE_SECURE === "true" || (await arrivedThroughTunnel());
+  return getIronSession<SessionData>(await cookies(), getSessionOptions(secure));
 }

@@ -4,6 +4,7 @@ const { parse } = require('url');
 const next = require('next');
 const { Server } = require('socket.io');
 const { startIngressListener } = require('./server-ingress');
+const { createTunnelGate } = require('./server-tunnel');
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -48,7 +49,22 @@ app.prepare().then(() => {
   // die Umgebungsvariable setzt nur addon/run.sh. Siehe server-ingress.js.
   const ingressServer = startIngressListener({ app, handle, basePath: BASE_PATH });
 
+  // Der Eingang für den Cloudflare-Tunnel. Er lauscht erst, wenn jemand in den
+  // Einstellungen einen Tunnel startet — bis dahin ist das hier nur ein Objekt.
+  // Siehe server-tunnel.js.
+  const tunnelGate = createTunnelGate({ handle });
+
   const httpServer = createServer((req, res) => {
+    // Das Kennzeichen „kam durch den Tunnel" setzt ausschliesslich die
+    // Schranke. Was am normalen Port damit ankommt, hat es sich selbst gegeben.
+    delete req.headers['x-mf-tunnel'];
+    // Zweite Linie: Tunnel-Verkehr, der am normalen Port landet, weil im
+    // Cloudflare-Dashboard der falsche Port steht. Ohne laufenden Tunnel ist
+    // das immer falsch und kostet einen Vergleich.
+    if (tunnelGate.shouldGate(req)) {
+      tunnelGate.handleRequest(req, res);
+      return;
+    }
     // Real-Client-IP als x-real-ip an Next.js durchreichen.
     // Next.js 15 entfernt `request.ip`; ohne diesen Header sieht der Lockout-
     // Tracker sonst nur "0.0.0.0" und würde alle externen Clients zu einem
@@ -69,8 +85,15 @@ app.prepare().then(() => {
     cors: {
       origin: "*",
       methods: ["GET", "POST"]
-    }
+    },
+    // Dieselbe zweite Linie für Live-Sync. Displays im Heimnetz werden hier
+    // nie nach einer Anmeldung gefragt — nur Tunnel-Verkehr am falschen Port.
+    allowRequest: tunnelGate.allowSocket,
   });
+  tunnelGate.setIo(io);
+  // Für den Tunnel-Manager im Next-Prozess (src/lib/tunnel/manager.ts) —
+  // dasselbe Muster wie LIVE_SYNC_IO weiter unten.
+  globalThis.__MF_TUNNEL_GATE = tunnelGate;
 
   // Der Socket ist bewusst NUR ein Empfangskanal. Displays verbinden sich
   // ohne Anmeldung (der View ist offen) und hören zu — mehr nicht.

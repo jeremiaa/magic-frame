@@ -55,6 +55,13 @@ jobs:
       - name: Check every widget is registered everywhere
         run: npm run check:widgets
 
+      # Der Tunnel-Eingang entscheidet, was von aussen ohne Anmeldung zu sehen
+      # ist. Der Lauf gleicht seine Erlaubnisliste mit den Routen ab, die es
+      # wirklich gibt — eine neue Route ist damit von selbst zu, und wer eine
+      # oeffnet, muss es hier hinschreiben.
+      - name: Check the tunnel gate
+        run: npm run check:tunnel
+
       - name: Production build
         run: npm run build
         env:
