@@ -1,7 +1,8 @@
 # Hosting and your domain
 
-How Magic Frame is reached: on your own network with a plain address, or from
-anywhere with a real domain and a real certificate. Also what to do when the
+How Magic Frame is reached: on your own network with a plain address, from
+outside through a tunnel that takes one click, or from anywhere with a real
+domain and a real certificate. Also what to do when the
 machine already runs a web server, and what to do when you would rather keep
 your own reverse proxy in charge.
 
@@ -26,6 +27,11 @@ The Docker stack publishes three things on the machine:
 The `app` container publishes **no** port at all. It listens on 3000 inside the
 stack, and only Caddy talks to it. That is why there is no way to bypass the
 proxy, and why changing ports is a matter of changing what Caddy binds.
+
+While a [tunnel](#remote-access-with-one-click) is running, the app has a
+second listener, on `127.0.0.1:3001` inside its own container. Nothing is
+published for it either, and not even the other containers can reach it — only
+the tunnel program, which runs next to the app.
 
 ### Changing the ports
 
@@ -95,6 +101,112 @@ Three ways out, in order of effort:
    at `chrome://settings/security`. A per-site exception works too.
 3. **Give it a domain**, below. Then the upgrade succeeds, because there is a
    real certificate to upgrade to.
+
+---
+
+## Remote access with one click
+
+Magic Frame can make itself reachable from outside your home without touching
+the router, without a domain and without a certificate to look after. It
+starts a **Cloudflare Tunnel** for you: a small program, `cloudflared`, opens an
+*outgoing* connection to Cloudflare, and Cloudflare hands the requests for a
+public address back through it. No port on your router opens.
+
+Open `Settings → Hosting & network` (`Einstellungen → Hosting & Netzwerk`). The
+first card is **Remote access** (`Fernzugriff`).
+
+![The Remote access card in Settings, switched off: on the left a button to start a quick tunnel without a Cloudflare account, on the right the three steps and the token field for a tunnel with a fixed address.](img/hosting-and-domain-remote-access.png)
+
+### What is reachable from outside, and what is not
+
+Views are open without signing in, and that is on purpose: the tablet on the
+kitchen wall should simply open `/view/kitchen`. On your home network that is
+right. Behind a public address it would put the family calendar and the photos
+on the internet, at addresses anybody can guess.
+
+So the tunnel does not lead to the normal entrance. It leads to a second one
+that exists only while a tunnel is running, and that entrance has one rule:
+**through the tunnel, only someone who is signed in sees anything.**
+
+| From outside, without signing in | |
+| --- | --- |
+| The sign-in page and the files it is built from | open |
+| Signing in, the two-factor code, signing out | open |
+| The MCP endpoint, `/api/mcp` | open — it checks its own token, see [Agents and MCP](mcp.md) |
+| Every view, every other API route, live sync, everything else | closed |
+
+A browser that asks for anything closed is sent to the sign-in page; a program
+gets a 404. The answer is the same for an address that exists and one that
+does not, so nobody can find out from outside which views you have.
+
+Once you are signed in, everything works as it does at home, opening a view
+included. The displays on your home network do not go through the tunnel and
+notice nothing.
+
+Four things happen at that entrance without you switching them on:
+
+- **The caller's real address is used.** The sign-in log and the
+  [brute-force lockout](users-and-security.md#brute-force-lockout) see the
+  address Cloudflare reports, not the tunnel's own.
+- **The session cookie is marked `Secure`,** whatever `COOKIE_SECURE` says for
+  your home network.
+- **Cloudflare is told to keep nothing.** Everything behind the sign-in is sent
+  with `Cache-Control: private, no-store`, so a picture you loaded cannot come
+  back out of Cloudflare's cache for somebody else.
+- **Guessing is slowed down.** After 20 refused sign-ins or MCP tokens from one
+  address within ten minutes, that address gets nothing but "too many attempts"
+  for a quarter of an hour.
+
+### Trying it: the quick tunnel
+
+One click on **Start a quick tunnel** (`Schnell-Tunnel starten`), no Cloudflare
+account. After a few seconds the card shows an address ending in
+`trycloudflare.com`.
+
+That address is random. It lasts until you stop the tunnel or Magic Frame
+restarts, and it does **not** come back by itself after a restart — an
+installation should not be back on the internet without anybody asking for
+it. It is the right thing for trying this out, for showing somebody, or for an
+afternoon away from home. Cloudflare makes no promise about how long such a
+tunnel stays up.
+
+### For keeps: a fixed address
+
+This needs a Cloudflare account with a domain in it.
+
+1. In the Cloudflare dashboard, go to `Zero Trust → Networks → Tunnels` and
+   create a tunnel of the type *Cloudflared*.
+2. Add a public hostname to it. As the **service**, enter exactly
+   `http://127.0.0.1:3001` — the card shows the line to copy.
+3. Copy the tunnel's token and paste it into the card. You can paste the whole
+   install command Cloudflare shows; Magic Frame picks the token out of it.
+
+The tunnel now comes back after every restart. The token is stored for that and
+is never shown again; **Forget the token** (`Token vergessen`) removes it.
+
+The service address matters. `3001` is the entrance with the rule above; the
+normal port is not. Magic Frame checks what the Cloudflare dashboard says: if
+an entry points anywhere else, the tunnel is **stopped** and the card names
+the entry. And should tunnel traffic ever arrive at the normal port anyway, it
+is held to the same rule there.
+
+### What it does not do
+
+- **Displays outside your home.** A view does not open through the tunnel
+  without signing in, so a wall display in another building cannot use it yet.
+- **The Claude apps and Home Assistant as MCP clients.** They sign in with
+  OAuth, which Magic Frame does not offer yet — see
+  [Agents and MCP](mcp.md#what-cannot-connect-yet). Clients that take a token,
+  like Claude Code, work through the tunnel today.
+- **The Home Assistant add-on.** The card says so there; use Home Assistant's
+  own remote access.
+
+`cloudflared` is part of Magic Frame's Docker image, pinned to a version and
+checked against its published checksum when the image is built. Nothing is
+downloaded when you click. An installation that does not run from the image
+needs `cloudflared` on its `PATH`, or the card says that it is missing.
+
+The connection to Cloudflare uses HTTP/2 over TCP, port 7844, outgoing.
 
 ---
 
@@ -216,7 +328,7 @@ Most home connections get a new public address every so often. Dynamic DNS keeps
 a DNS record pointed at the current one, so your domain does not go stale
 overnight — and so the certificate above can keep renewing.
 
-![The Hosting & network section: dynamic DNS at the top for keeping a DNS record pointed at your changing address, and automatic HTTPS below it.](img/hosting-and-domain-ddns-card.png)
+![The dynamic DNS card in the Hosting & network section: the provider, the API token and the record that is kept pointed at your changing home address.](img/hosting-and-domain-ddns-card.png)
 
 1. Go to `Settings → Hosting & network`. The first card is **Dynamic DNS
    (DDNS)**.
@@ -323,8 +435,9 @@ handles the proxy and the certificate.
 
 That is not a limitation being papered over — the add-on genuinely ships without
 its own Caddy, because there would be two proxies fighting over the same job.
-For access from outside, use Home Assistant's own remote access settings. The
-dynamic DNS card is still there and still works.
+For access from outside, use Home Assistant's own remote access settings; the
+Remote access card says that it is not available in the add-on. The dynamic DNS
+card is still there and still works.
 
 Magic Frame detects the add-on by the presence of `/data/options.json`, which
 the Supervisor creates for every add-on. Attempts to save a certificate
@@ -343,6 +456,9 @@ interface. See [The Home Assistant add-on](home-assistant-addon.md).
 | Status says *not reachable* | The `caddy` container is not running. |
 | Logged out again immediately after every sign-in | `COOKIE_SECURE="true"` while you are still on plain HTTP. |
 | Google or Microsoft calendar drops its connection behind a proxy | `APP_BASE_URL` is not set. |
+| The tunnel is stopped after a minute: *no connection to Cloudflare* | The network lets nothing out to Cloudflare on port 7844 (TCP). A firewall or a guest network usually. |
+| The tunnel is stopped: *an entry in the Cloudflare dashboard does not point at the tunnel entrance* | The service of the public hostname must be `http://127.0.0.1:3001`. The card shows which entry is wrong. |
+| Through the tunnel, a view sends you to the sign-in page | That is the rule, not a fault: [from outside, views open only for someone who is signed in](#what-is-reachable-from-outside-and-what-is-not). |
 
 More of these, in more detail, on [Troubleshooting](troubleshooting.md).
 

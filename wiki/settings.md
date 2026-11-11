@@ -62,7 +62,7 @@ paste it to somebody:
 ### Who may change what
 
 The settings that change how the installation runs need an **Admin** account:
-the domain and certificate, dynamic DNS, the brute-force limits, the default
+remote access, the domain and certificate, dynamic DNS, the brute-force limits, the default
 language, custom modules, restoring a backup, connecting Todoist, and creating
 or deleting users. A **View only** account sees those cards but cannot change
 them, and the ones it may not even read say so rather than showing zeros.
@@ -232,11 +232,14 @@ rearrange the screens.
 
 ## 5. Hosting & network
 
-*Hosting & Netzwerk.* Two cards, **Dynamic DNS (DDNS)** and **HTTPS (Caddy
-reverse proxy)**. Both are only interesting if you want the dashboard reachable
-from outside your home network, or want a real certificate instead of a browser
-warning.
+*Hosting & Netzwerk.* Three cards: **Remote access**, **Dynamic DNS (DDNS)** and
+**HTTPS (Caddy reverse proxy)**. All three are only interesting if you want the
+dashboard reachable from outside your home network, or want a real certificate
+instead of a browser warning.
 
+- Remote access starts a Cloudflare Tunnel with one click, with no router
+  setting and no domain. From outside, only someone who is signed in sees
+  anything; your views stay on your home network.
 - Dynamic DNS keeps a DNS record pointed at your changing home address.
   Cloudflare, Hetzner DNS and any DynDNS-v2 service are supported.
 - The HTTPS card configures the Caddy web server that ships with Magic Frame:

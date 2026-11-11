@@ -31,7 +31,10 @@ A few requests, and the tools an agent uses for them:
 ### What you need
 
 1. **The address.** `http://` or `https://`, the address you reach the editor
-   on, and `/api/mcp` — for example `http://192.0.2.10/api/mcp`.
+   on, and `/api/mcp` — for example `http://192.0.2.10/api/mcp`. From outside
+   your home, the address of the
+   [built-in tunnel](hosting-and-domain.md#remote-access-with-one-click) works
+   the same way.
 2. **Your token.** The Companion API token from `Settings → Devices & apps`
    (`Einstellungen → Geräte & Apps`). How to get it and how to rotate it is in
    [The companion API](companion-api.md).
@@ -74,8 +77,10 @@ cannot connect.
 The connectors in the Claude apps and the MCP integration in Home Assistant
 sign in with **OAuth**. Magic Frame's server takes a token and does not offer
 OAuth, so those two cannot connect yet. The Claude apps also reach a connector
-from Anthropic's servers, not from your network, so they would need an address
-that is reachable from the internet as well.
+from Anthropic's servers, not from your network, so they need an address that
+is reachable from the internet as well. That half exists now — the
+[built-in tunnel](hosting-and-domain.md#remote-access-with-one-click) — and
+OAuth is what is still missing.
 
 ## Who may do what
 

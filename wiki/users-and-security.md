@@ -282,7 +282,11 @@ unknown attempt under one shared label would turn this protection into
 something anybody could aim at your household — five wrong guesses and nobody
 gets in for half an hour.
 
-Two situations where that happens:
+Through the [built-in tunnel](hosting-and-domain.md#remote-access-with-one-click)
+the address is the one Cloudflare reports for the caller. Nobody but the tunnel
+program can reach that entrance, so the report cannot be forged either.
+
+Two situations where the address cannot be established:
 
 - **An old Caddyfile.** The generated file lives in a volume and is only
   rewritten when you save the hosting settings. An installation from before
@@ -332,6 +336,11 @@ Things to keep in mind:
 ## What is not protected
 
 This is the section to read before putting Magic Frame on the open internet.
+
+One way of putting it there closes everything below by itself: through the
+[built-in tunnel](hosting-and-domain.md#remote-access-with-one-click), nothing
+on this list can be reached without signing in. What follows is about every
+other way — a domain, your own reverse proxy, a forwarded port.
 
 ### Views need no login, on purpose
 

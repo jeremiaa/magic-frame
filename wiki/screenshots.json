@@ -858,7 +858,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       }
     },
     {
@@ -883,7 +883,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       }
     },
     {
@@ -908,7 +908,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       }
     },
     {
@@ -933,7 +933,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       }
     },
     {
@@ -958,7 +958,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       }
     },
     {
@@ -983,7 +983,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       }
     },
     {
@@ -1014,14 +1014,46 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       },
       "element": "div.rounded-2xl:has(h2:text-is(\"MCP server for AI agents\"))"
     },
     {
+      "id": "hosting-and-domain-remote-access",
+      "page": "hosting-and-domain.md",
+      "caption": "The Remote access card in Settings, switched off: on the left a button to start a quick tunnel without a Cloudflare account, on the right the three steps and the token field for a tunnel with a fixed address.",
+      "shows": [
+        "src/app/editor/(app)/settings/page.tsx"
+      ],
+      "steps": [
+        {
+          "goto": "/editor/settings"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "clickText": "Hosting & network"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "scrollTo": "text=\"Remote access\""
+        },
+        {
+          "wait": 800
+        }
+      ],
+      "takenAt": {
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+      },
+      "element": "div.rounded-2xl:has(h2:text-is(\"Remote access\"))"
+    },
+    {
       "id": "hosting-and-domain-ddns-card",
       "page": "hosting-and-domain.md",
-      "caption": "The Hosting & network section: dynamic DNS at the top for keeping a DNS record pointed at your changing address, and automatic HTTPS below it.",
+      "caption": "The dynamic DNS card in the Hosting & network section: the provider, the API token and the record that is kept pointed at your changing home address.",
       "shows": [
         "src/app/editor/(app)/settings/page.tsx"
       ],
@@ -1046,7 +1078,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "632120eb26bd"
+        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
       },
       "element": "div.rounded-2xl:has(h2:text-is(\"Dynamic DNS (DDNS)\"))"
     },
