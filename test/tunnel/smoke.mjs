@@ -91,7 +91,7 @@ const VIEW = viewList.find((v) => v.id === 'home')?.id ?? viewList[0].id;
 
 let s = await tunnelGet();
 eq(s.available, true, `a tunnel can be started here (cloudflared ${s.cloudflaredVersion})`);
-ok(MODE === 'fake' ? /fake/.test(s.cloudflaredVersion) : /^\d{4}\./.test(s.cloudflaredVersion), `…with the ${MODE} cloudflared`);
+ok(MODE === 'fake' ? /fake/.test(s.cloudflaredVersion) : /^\d{4}\.\d+\.\d+$/.test(s.cloudflaredVersion), `…with the ${MODE} cloudflared`);
 if (s.status !== 'off') { await tunnel('stop'); await untilStatus('off'); s = await tunnelGet(); }
 eq(s.status, 'off', 'no tunnel is running');
 eq(await portOpen(GATE_PORT), false, 'without a tunnel there is no second listener at all');
