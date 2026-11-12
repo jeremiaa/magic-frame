@@ -858,7 +858,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       }
     },
     {
@@ -883,7 +883,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       }
     },
     {
@@ -908,7 +908,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       }
     },
     {
@@ -933,7 +933,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       }
     },
     {
@@ -958,7 +958,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       }
     },
     {
@@ -983,7 +983,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       }
     },
     {
@@ -1014,7 +1014,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       },
       "element": "div.rounded-2xl:has(h2:text-is(\"MCP server for AI agents\"))"
     },
@@ -1046,7 +1046,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       },
       "element": "div.rounded-2xl:has(h2:text-is(\"Remote access\"))"
     },
@@ -1078,7 +1078,7 @@
         }
       ],
       "takenAt": {
-        "src/app/editor/(app)/settings/page.tsx": "661ee5a38343"
+        "src/app/editor/(app)/settings/page.tsx": "503f2be991e6"
       },
       "element": "div.rounded-2xl:has(h2:text-is(\"Dynamic DNS (DDNS)\"))"
     },

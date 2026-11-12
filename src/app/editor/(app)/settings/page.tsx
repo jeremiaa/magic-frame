@@ -780,11 +780,11 @@ function TunnelCard() {
                   {t("Für dauerhaft: ein Tunnel aus deinem Cloudflare-Konto mit eigener Adresse. Er startet nach einem Neustart von selbst wieder.")}
                 </p>
                 <ol className="list-decimal ml-4 mt-2 mb-3 space-y-1">
-                  <li>{t("In Cloudflare unter Zero Trust → Networks → Tunnels einen Tunnel anlegen.")}</li>
+                  <li>{t("In Cloudflare unter Netzwerk → Tunnel einen Tunnel anlegen.")}</li>
                   <li>
-                    {t("Als Dienst genau das eintragen:")} <code className="font-mono text-[var(--mf-fg)]/80">{gateService}</code>
+                    {t("Unter Routen eine veröffentlichte Anwendung hinzufügen, als Service-URL genau:")} <code className="font-mono text-[var(--mf-fg)]/80">{gateService}</code>
                   </li>
-                  <li>{t("Das Token von dort hier einfügen.")}</li>
+                  <li>{t("In der Übersicht des Tunnels den Installationsbefehl kopieren und hier einfügen.")}</li>
                 </ol>
                 {info.hasStoredToken ? (
                   <div className="mt-auto flex flex-wrap items-center gap-2">

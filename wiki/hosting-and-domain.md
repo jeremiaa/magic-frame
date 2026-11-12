@@ -174,15 +174,25 @@ tunnel stays up.
 
 This needs a Cloudflare account with a domain in it.
 
-1. In the Cloudflare dashboard, go to `Zero Trust → Networks → Tunnels` and
-   create a tunnel of the type *Cloudflared*.
-2. Add a public hostname to it. As the **service**, enter exactly
-   `http://127.0.0.1:3001` — the card shows the line to copy.
-3. Copy the tunnel's token and paste it into the card. You can paste the whole
-   install command Cloudflare shows; Magic Frame picks the token out of it.
+1. In the Cloudflare dashboard, go to **Networking → Tunnels** (German:
+   `Netzwerk → Tunnel`; the old place under Zero Trust only says that they
+   have moved). Create a tunnel; only a name is asked.
+2. On the tunnel's **Routes** tab, select **Add route → Published
+   application**. Choose the subdomain and the domain — the dashboard
+   preselects one of your domains, so check that it is the right one. As the
+   **Service URL**, enter exactly `http://127.0.0.1:3001` — the card shows the
+   line to copy.
+3. On the tunnel's overview, copy the install command (for example *Debian →
+   Install as service*) and paste it into the card. The dashboard shows the
+   token masked, but its copy button copies all of it; Magic Frame picks the
+   token out of the command.
 
 The tunnel now comes back after every restart. The token is stored for that and
 is never shown again; **Forget the token** (`Token vergessen`) removes it.
+
+Should you delete the tunnel in Cloudflare one day: the address stays in your
+domain's DNS records and has to be removed there by hand. Cloudflare says so
+when you delete it.
 
 The service address matters. `3001` is the entrance with the rule above; the
 normal port is not. Magic Frame checks what the Cloudflare dashboard says: if
@@ -457,7 +467,8 @@ interface. See [The Home Assistant add-on](home-assistant-addon.md).
 | Logged out again immediately after every sign-in | `COOKIE_SECURE="true"` while you are still on plain HTTP. |
 | Google or Microsoft calendar drops its connection behind a proxy | `APP_BASE_URL` is not set. |
 | The tunnel is stopped after a minute: *no connection to Cloudflare* | The network lets nothing out to Cloudflare on port 7844 (TCP). A firewall or a guest network usually. |
-| The tunnel is stopped: *an entry in the Cloudflare dashboard does not point at the tunnel entrance* | The service of the public hostname must be `http://127.0.0.1:3001`. The card shows which entry is wrong. |
+| The tunnel is stopped: *an entry in the Cloudflare dashboard does not point at the tunnel entrance* | The service URL of the route must be `http://127.0.0.1:3001`. The card shows which entry is wrong. |
+| *Cloudflare rejected the token*, with `Unauthorized: Tunnel not found` under it | The tunnel was deleted in the Cloudflare dashboard. Copy the line of the tunnel you use now and paste it, or forget the token. |
 | Through the tunnel, a view sends you to the sign-in page | That is the rule, not a fault: [from outside, views open only for someone who is signed in](#what-is-reachable-from-outside-and-what-is-not). |
 
 More of these, in more detail, on [Troubleshooting](troubleshooting.md).
