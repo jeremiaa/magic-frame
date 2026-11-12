@@ -14,6 +14,14 @@ scripts/check-wiki.mjs prüft, dass die Version aus package.json hier steht.
 
 What each version changes, in short. The full notes are on the [releases page](https://github.com/jeremiaa/magic-frame/releases).
 
+## 1.5.13
+
+- **New: remote access with one click** — off until you switch it on under *Settings → Hosting & network*. A Cloudflare tunnel makes the editor reachable from outside without touching your router: try it with a random address and no account, or keep a fixed address from your own Cloudflare account. Through the tunnel, only someone who is signed in sees anything; your views stay on your home network.
+- School rotation: a reminder can be tied to a day of the rotation (*Day 1*, *Day 2* …) as well as to a weekday. By @sth2258.
+- After signing in, Magic Frame only goes on to an address of this installation.
+
+[Full notes for 1.5.13](https://github.com/jeremiaa/magic-frame/releases/tag/v1.5.13)
+
 ## 1.5.12
 
 - **Security fix — please update, above all if Magic Frame can be reached from the internet.** Two forms of the editor sent the saved Immich key to any address named in the request, without a sign-in, and the NAS wallpaper proxy served any file its login could read. Both are closed.
