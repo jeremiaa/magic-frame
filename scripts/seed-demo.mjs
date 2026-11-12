@@ -174,9 +174,9 @@ const SOLO = {
   // suffix (`label`, `label2`, `label3`). Same shape as the targetsN pattern.
   'w-button': ['ButtonWidget.tsx', {
     btnShape: 'circle', designLayout: 'row', fontSize: 12,
-    label: 'Good night', icon: 'lucide:moon', actionType: 'service', entityId: 'light.living_room', service: 'light.turn_off',
-    label2: 'Coffee', icon2: 'lucide:coffee', actionType2: 'service', entityId2: 'switch.coffee_machine', service2: 'switch.turn_on',
-    label3: 'Lock up', icon3: 'lucide:lock', actionType3: 'service', entityId3: 'lock.front_door', service3: 'lock.lock',
+    label: 'Good night', icon: 'lucide:moon', actionType: 'ha_service', haEntity: 'light.living_room', haService: 'light.turn_off',
+    label2: 'Coffee', icon2: 'lucide:coffee', actionType2: 'ha_service', haEntity2: 'switch.coffee_machine', haService2: 'switch.turn_on',
+    label3: 'Lock up', icon3: 'lucide:lock', actionType3: 'ha_service', haEntity3: 'lock.front_door', haService3: 'lock.lock',
   }, [13, 7]],
   // Zwei weitere Statuskarten: anderes Gerät, anderes Layout, anderer Zustand.
   // Die Karte ist eines der Aushängeschilder — ein Bild wird ihr nicht gerecht.
