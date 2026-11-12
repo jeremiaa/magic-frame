@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveImmich } from "@/lib/immich/resolve";
+import { isImmichId } from "@/lib/immich/pair";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   const dashboardId = req.nextUrl.searchParams.get("dashboardId");
   if (!id) return new NextResponse("Missing person id", { status: 400 });
+  if (!isImmichId(id)) return new NextResponse("Invalid person id", { status: 400 });
 
   try {
     const { url, key } = await resolveImmich(dashboardId ? "view" : "global", dashboardId);

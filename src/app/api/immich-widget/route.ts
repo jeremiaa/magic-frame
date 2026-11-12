@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveImmich } from "@/lib/immich/resolve";
+import { isImmichId } from "@/lib/immich/pair";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
     // mode=playlist
     const albumId = req.nextUrl.searchParams.get("albumId");
     if (!albumId) return NextResponse.json({ error: "albumId required" }, { status: 400 });
+    if (!isImmichId(albumId)) return NextResponse.json({ error: "invalid albumId" }, { status: 400 });
     const res = await fetch(`${base}/api/albums/${encodeURIComponent(albumId)}`, {
       headers,
       cache: "no-store",

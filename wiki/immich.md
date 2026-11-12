@@ -70,9 +70,12 @@ A view's wallpaper dialog has its own **Immich Instanz URL (Domain)** and
 > **Leave both empty and the view uses the global connection. Fill them in and
 > this one view uses those instead.**
 
-For the wallpaper, the two fields fall back **independently**: a view that has an
-address but no key uses its own address with the global key. That is almost never
-what anyone wants, so fill in both or neither.
+**The global key only ever goes to the global address.** A view that names a
+different address needs its own key as well. With only the address filled in,
+the wallpaper stays empty and **Alben laden** says the key is missing. A view
+with a key but no address uses that key with the global address. Up to 1.5.11
+the global key went to any address a view named; that was a way to hand the key
+to a stranger's server, and it is closed.
 
 The Image widget has the same override and adds a choice of *which* connection to
 follow — and there it is all or nothing: with **Vom View (Wallpaper)** selected,
@@ -199,5 +202,6 @@ stored; leave them empty and the global connection is used instead.
 | People grid stays empty | No **named** people in Immich yet. The card says so. |
 | The screen is **black** | The source could not be reached when the display loaded, or the album is empty. Magic Frame does **not** fall back to the bundled pictures. See [Wallpapers](wallpapers.md), which explains this at length. |
 | A view ignores the global connection | That view has its own Immich fields filled in. Clear both and it falls back. |
+| *Für diese Immich-Adresse fehlt der API-Schlüssel* | The view names an address that is not the global one. Fill in this view's own key, or clear the address to use the global connection. Two spellings of the same server (an IP address and a name) count as two addresses. |
 
 More in [Troubleshooting](troubleshooting.md).

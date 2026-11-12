@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createClient } from "webdav";
-import { normalizeWebdavUrl, webdavContentType } from "@/lib/wallpaper-engine/webdav";
+import { normalizeWebdavUrl, webdavContentType, webdavFileAllowed } from "@/lib/wallpaper-engine/webdav";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -30,6 +30,10 @@ export async function GET(req: NextRequest) {
 
      if (!targetFile) {
         return new NextResponse("Missing file parameter", { status: 400 });
+     }
+     // Only pictures from the folder this view shows (webdavFileAllowed).
+     if (!webdavFileAllowed(targetFile, wp.webdavPath)) {
+        return new NextResponse("Not a picture of this view", { status: 403 });
      }
 
      const client = createClient(normalizeWebdavUrl(wp.webdavUrl), { username: wp.webdavUser, password: wp.webdavPass });
