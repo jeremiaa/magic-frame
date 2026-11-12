@@ -227,6 +227,12 @@ const ActionBtn = ({
              <Icon 
                 icon={icon || 'lucide:power'} 
                 style={{ 
+                   // The icon re-renders its <path> nodes when the tile shows
+                   // it is pressed. A touch that started on such a node then
+                   // ends on a detached one and never reaches onTouchEnd
+                   // (#144). Letting touches pass through keeps the tile as
+                   // the target.
+                   pointerEvents: 'none',
                    fontSize: responsiveText ? `calc(${label ? '35cqmin' : '55cqmin'} * ${iconScale / 100})` : `calc(${iconSize ? iconSize : 28}px * ${iconScale / 100})`,
                    marginBottom: label ? '0.2em' : '0'
                 }} 
