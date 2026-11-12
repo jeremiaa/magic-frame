@@ -16,7 +16,7 @@ What each version changes, in short. The full notes are on the [releases page](h
 
 ## 1.5.13
 
-- **New: remote access with one click** — off until you switch it on under *Settings → Hosting & network*. A Cloudflare tunnel makes the editor reachable from outside without touching your router: try it with a random address and no account, or keep a fixed address from your own Cloudflare account. Through the tunnel, only someone who is signed in sees anything; your views stay on your home network.
+- **New: remote access with one click** — off until you switch it on under *Settings → Hosting & network*. A Cloudflare tunnel makes the editor reachable from outside without touching your router: try it with a random address and no account, or keep a fixed address from your own Cloudflare account. Through the tunnel, only someone who is signed in sees anything; your views stay on your home network. Not in this add-on: here, Home Assistant's own remote access is the way in.
 - School rotation: a reminder can be tied to a day of the rotation (*Day 1*, *Day 2* …) as well as to a weekday. By @sth2258.
 - After signing in, Magic Frame only goes on to an address of this installation.
 
