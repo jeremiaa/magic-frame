@@ -14,6 +14,14 @@ scripts/check-wiki.mjs prüft, dass die Version aus package.json hier steht.
 
 What each version changes, in short. The full notes are on the [releases page](https://github.com/jeremiaa/magic-frame/releases).
 
+## 1.5.12
+
+- **Security fix — please update, above all if Magic Frame can be reached from the internet.** Two forms of the editor sent the saved Immich key to any address named in the request, without a sign-in, and the NAS wallpaper proxy served any file its login could read. Both are closed.
+- A view that names its own Immich address now needs its own key too; the saved key only goes to the saved address. Leave the address empty to use the saved connection.
+- Buttons react on touch screens when the finger lands on the icon. Reported and diagnosed by @lucatk.
+
+[Full notes for 1.5.12](https://github.com/jeremiaa/magic-frame/releases/tag/v1.5.12)
+
 ## 1.5.11
 
 - School rotation: an activity written as *Art / Violin* gets the icon of the part the widget knows, and one it doesn't know gets a plain dot that every screen can draw. By @sth2258.

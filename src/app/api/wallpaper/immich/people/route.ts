@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
+import { verifySession, UnauthorizedError, unauthorizedResponse } from "@/lib/auth/dal";
+import { pairImmich, isImmichProblem } from "@/lib/immich/pair";
 
 export const dynamic = "force-dynamic";
 
@@ -17,29 +19,42 @@ export const dynamic = "force-dynamic";
  * nicht auswählbar.
  */
 export async function POST(req: NextRequest) {
+  // Only the editor asks for these lists, never a display. Without a sign-in
+  // anyone could make the server call an address of their choosing.
+  try {
+    await verifySession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    throw err;
+  }
+
   let body: any = {};
   try {
     body = await req.json();
   } catch {
     /* leer */
   }
-  let url = (body.url as string | undefined)?.trim();
-  let apiKey = (body.apiKey as string | undefined)?.trim();
-
-  if (!url || !apiKey) {
-    const settings = await getAppSettings();
-    url = url || settings.immichUrl;
-    apiKey = apiKey || settings.immichApiKey;
-  }
-
-  if (!url || !apiKey) {
+  const str = (v: unknown) => (typeof v === "string" ? v : undefined);
+  const settings = await getAppSettings();
+  // The saved key only ever goes to the saved address (see pairImmich).
+  const pair = pairImmich(
+    { url: str(body.url), key: str(body.apiKey) },
+    { url: settings.immichUrl, key: settings.immichApiKey },
+  );
+  if (isImmichProblem(pair)) {
     return NextResponse.json(
-      { error: "Keine Immich-Verbindung — bitte hier eintragen oder unter Einstellungen → Integrationen hinterlegen." },
+      {
+        error:
+          pair.error === "key-needed"
+            ? "Für diese Immich-Adresse fehlt der API-Schlüssel. Der gespeicherte Schlüssel gilt nur für die Adresse unter Einstellungen → Integrationen."
+            : "Keine Immich-Verbindung — bitte hier eintragen oder unter Einstellungen → Integrationen hinterlegen.",
+      },
       { status: 400 },
     );
   }
+  const apiKey = pair.key;
 
-  const baseUrl = String(url).replace(/\/+$/, "");
+  const baseUrl = pair.url.replace(/\/+$/, "");
 
   try {
     // withHidden=false: in Immich ausgeblendete Gesichter bleiben ausgeblendet.

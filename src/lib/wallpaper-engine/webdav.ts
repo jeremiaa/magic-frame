@@ -53,6 +53,29 @@ export function isSupportedWebdavImage(filename: string): boolean {
   return (WEBDAV_IMAGE_EXTENSIONS as readonly string[]).includes(extensionOf(filename));
 }
 
+/**
+ * May a display fetch this file through the wallpaper proxy? Only a picture
+ * inside the folder the view names. The proxy fetches with the view's NAS
+ * login and needs no sign-in, so up to 1.5.11 anyone who could reach the app
+ * could read any file that login can read — documents included.
+ */
+export function webdavFileAllowed(file: string | null | undefined, folder: string | null | undefined): boolean {
+  if (!file || !isSupportedWebdavImage(file)) return false;
+  const clean = (p: string): string | null => {
+    const parts: string[] = [];
+    for (const seg of p.replace(/\\/g, "/").split("/")) {
+      if (!seg || seg === ".") continue;
+      if (seg === "..") return null;
+      parts.push(seg);
+    }
+    return "/" + parts.join("/");
+  };
+  const f = clean(file);
+  const d = clean(folder || "/");
+  if (f === null || d === null) return false;
+  return d === "/" || f.startsWith(d + "/");
+}
+
 export function isUnsupportedWebdavImage(filename: string): boolean {
   return UNSUPPORTED_IMAGE_EXTENSIONS.includes(extensionOf(filename));
 }

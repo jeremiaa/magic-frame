@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "webdav";
 import { normalizeWebdavUrl, countWebdavImages } from "@/lib/wallpaper-engine/webdav";
+import { verifySession, UnauthorizedError, unauthorizedResponse } from "@/lib/auth/dal";
 
 export async function POST(req: NextRequest) {
+  // Only the editor browses folders. Without a sign-in anyone could make the
+  // server log in to an address of their choosing.
+  try {
+    await verifySession();
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return unauthorizedResponse();
+    throw err;
+  }
   try {
     const { url, username, password, path = "/" } = await req.json();
 

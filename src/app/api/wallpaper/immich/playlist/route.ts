@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { getAppSettings } from '@/lib/settings/store';
+import { pairImmich, isImmichProblem, isImmichId } from '@/lib/immich/pair';
 import { intlDateLocale } from '@/lib/i18n/locales';
 
 const connectionString = `${process.env.DATABASE_URL}`;
@@ -179,10 +180,12 @@ async function fetchImmichAssets(baseUrl: string, apiKey: string, wp: any): Prom
   // album (default) — #40: mehrere Alben möglich. immichAlbumIds ist der
   // neue Weg, immichAlbumId bleibt als Einzel-Fallback bestehen, damit
   // vorhandene Views unverändert weiterlaufen.
-  const albumIds: string[] = (Array.isArray(wp.immichAlbumIds) ? wp.immichAlbumIds : [])
+  const configured: string[] = (Array.isArray(wp.immichAlbumIds) ? wp.immichAlbumIds : [])
     .map((x: any) => String(x || '').trim())
     .filter(Boolean);
-  if (albumIds.length === 0 && wp.immichAlbumId) albumIds.push(String(wp.immichAlbumId));
+  if (configured.length === 0 && wp.immichAlbumId) configured.push(String(wp.immichAlbumId));
+  // Album ids come from the view; only real ids may become part of the path.
+  const albumIds = configured.filter(isImmichId);
   if (albumIds.length === 0) throw new Error('Missing albumId');
 
   const perAlbum = await Promise.all(albumIds.map(async (albumId) => {
@@ -238,11 +241,13 @@ export async function GET(req: NextRequest) {
      if (wp.source !== 'immich') return new NextResponse("Not Immich", { status: 400 });
      // Per-View-Daten gewinnen, sonst globale Immich-Verbindung (issue #16).
      const settings = await getAppSettings();
-     const immichUrl = wp.immichUrl || settings.immichUrl;
-     const immichApiKey = wp.immichApiKey || settings.immichApiKey;
-     if (!immichUrl || !immichApiKey) return new NextResponse("Missing Immich configuration", { status: 400 });
+     // The view's address with the view's key, or the saved pair. The saved key
+     // never goes to an address someone typed into a view (pairImmich).
+     const pair = pairImmich({ url: wp.immichUrl, key: wp.immichApiKey }, { url: settings.immichUrl, key: settings.immichApiKey });
+     if (isImmichProblem(pair)) return new NextResponse("Missing Immich configuration", { status: 400 });
+     const immichApiKey = pair.key;
 
-     const baseUrl = immichUrl.replace(/\/$/, "");
+     const baseUrl = pair.url.replace(/\/$/, "");
 
      const assets = await fetchImmichAssets(baseUrl, immichApiKey, wp);
 
