@@ -180,7 +180,7 @@ async function schoolRotationToText(config: any, opts: any, ctx: Ctx): Promise<s
     lines.push([`${ctx.t("Tag")} ${day}`, ...parts].join(" — "));
     // Erinnerungen gelten nur an Schultagen — so zeigt sie auch die Kachel.
     if (opts.includeReminders !== false) {
-      for (const r of remindersFor(parseReminders(config.reminders), ctx.today)) {
+      for (const r of remindersFor(parseReminders(config.reminders), ctx.today, info.todayRotation)) {
         if (kidFilter && r.kid && r.kid.toLowerCase() !== kidFilter) continue;
         lines.push(`${r.icon ? `${r.icon} ` : ""}${r.text}${r.kid ? ` (${r.kid})` : ""}`);
       }
