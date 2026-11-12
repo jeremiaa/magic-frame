@@ -14,6 +14,7 @@
 // cloudflared uses). scripts/check-tunnel.mjs tests the gate alone with a
 // stand-in app; this one finds out whether the real app agrees.
 
+import fs from 'node:fs';
 import net from 'node:net';
 import assert from 'node:assert/strict';
 
@@ -315,6 +316,11 @@ eq(s.error?.code, 'token-rejected', 'a token Cloudflare refuses is reported as t
 await sleep(7000);
 s = await tunnelGet();
 eq(s.status, 'error', '…and is not retried in a loop');
+// Like the real one, the stand-in never gives up on a refused token by itself.
+const cloudflaredRuns = () => fs.readdirSync('/proc').filter((d) => /^\d+$/.test(d)).some((d) => {
+  try { return fs.readFileSync(`/proc/${d}/cmdline`, 'utf8').includes('cloudflared'); } catch { return false; }
+});
+ok(!cloudflaredRuns(), '…and no cloudflared is left trying in the background');
 await until('the gate to close', async () => !(await portOpen(GATE_PORT)));
 
 r = await tunnel('start-token', fakeToken({ scenario: 'never' }));

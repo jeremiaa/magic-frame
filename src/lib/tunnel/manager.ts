@@ -112,6 +112,12 @@ const state: State = (globalForTunnel.__mfTunnel ??= {
 
 const TRY_CLOUDFLARE_RE = /https:\/\/[a-z0-9-]+\.trycloudflare\.com/;
 const METRICS_RE = /Starting metrics server on (?:127\.0\.0\.1|localhost|\[::1\]):(\d+)\/metrics/;
+// Cloudflare lehnt das Token ab. Bewusst eng: Ein Treffer hält den Tunnel an,
+// ein „Unauthorized" irgendwo sonst im Protokoll soll das nicht können.
+// Echte Zeile (2026.10.7, gelöschter Tunnel): ERR Register tunnel error from
+// server side error="Unauthorized: Tunnel not found" connIndex=0 …
+const TOKEN_REJECTED_RE =
+  /Register tunnel error from server side error="Unauthorized|Unauthorized: (?:Tunnel not found|Invalid tunnel secret)|Invalid tunnel secret|invalid token|failed to parse token|Tunnel token is not valid/i;
 const DEFAULT_GATE_PORT = 3001;
 /** So lange darf ein Tunnel brauchen, bis er verbunden ist. */
 const START_GRACE_MS = 60_000;
@@ -446,8 +452,17 @@ export async function startTunnel(mode: TunnelMode, tokenInput?: string): Promis
       setTimeout(() => void checkIngress(gen), state.ingressOk ? 500 : 300);
     }
 
-    if (/Unauthorized|invalid token|failed to parse token|Invalid tunnel secret|is not valid/i.test(line) && mode === "token") {
-      state.error = { code: "token-rejected" };
+    if (TOKEN_REJECTED_RE.test(line) && mode === "token" && state.error?.code !== "token-rejected") {
+      // cloudflared gibt dann nicht auf: Mit dem Token eines gelöschten
+      // Tunnels versucht 2026.10.7 es endlos weiter, im Abstand von bis zu
+      // 32 s („Unauthorized: Tunnel not found"). Also hier beenden — der
+      // Ausgang unten wiederholt ein abgelehntes Token nicht.
+      state.error = { code: "token-rejected", detail: (/error="([^"]+)"/.exec(line)?.[1] ?? line).slice(0, 200) };
+      proc.kill("SIGTERM");
+      const killer = setTimeout(() => {
+        if (state.proc === proc) proc.kill("SIGKILL");
+      }, 6000);
+      proc.once("exit", () => clearTimeout(killer));
     }
     if (mode === "quick" && /failed to request quick Tunnel|failed to unmarshal quick Tunnel|429 Too Many Requests/i.test(line)) {
       state.error = { code: "quick-unavailable" };

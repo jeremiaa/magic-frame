@@ -103,10 +103,15 @@ metrics.listen(Number(String(arg('--metrics')).split(':')[1]), '127.0.0.1', () =
   }
 
   if (scenario.scenario === 'reject') {
-    setTimeout(() => {
-      log('ERR', 'Register tunnel error from server side error="Unauthorized: Invalid tunnel secret"');
-      process.exit(1);
-    }, 200);
+    // What the real cloudflared (2026.10.7) does with the token of a deleted
+    // tunnel: it does NOT give up, it keeps trying with a growing pause.
+    const refused = () => {
+      log('ERR', 'failed to serve incoming request error="Unauthorized: Tunnel not found"');
+      log('ERR', 'Register tunnel error from server side error="Unauthorized: Tunnel not found" connIndex=0 event=0 ip=198.41.192.227');
+      log('INF', 'Retrying connection in up to 2s connIndex=0 event=0 ip=198.41.192.227');
+    };
+    setTimeout(refused, 200);
+    setInterval(refused, 1500);
     return;
   }
 
