@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
+import { callerMayRead } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +14,9 @@ export const dynamic = "force-dynamic";
  * The HA token never reaches the browser. The browser only sees this app's
  * own URL, which is convenient for cache-busting (just append ?ts=…).
  *
- * No auth check on this route on purpose — the Live View is read-only and
- * loads the snapshot directly from a tablet without a session. The HA
- * connection itself acts as the access control (only entities your HA
- * exposes are reachable).
+ * No login on this route on purpose — the Live View loads the snapshot from a
+ * tablet without a session. Without one, though, only a camera that is on a
+ * saved view is served; it used to be every camera Home Assistant knows.
  */
 export async function GET(
   request: NextRequest,
@@ -29,6 +29,11 @@ export async function GET(
         { error: "Invalid entity ID" },
         { status: 400 },
       );
+    }
+    // No login on purpose (a tablet shows it without one), but then only
+    // what is on a saved view — any entity used to be one guess away.
+    if (!(await callerMayRead("ha/camera", entity))) {
+      return NextResponse.json({ error: "This camera is not on any of your views." }, { status: 403 });
     }
 
     const settings = await getAppSettings();

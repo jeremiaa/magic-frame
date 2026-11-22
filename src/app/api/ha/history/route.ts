@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
 import { describeHaFetchError } from "@/lib/ha/fetch-error";
+import { callerMayRead } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,11 @@ export async function GET(req: NextRequest) {
 
   if (!entityId) {
     return NextResponse.json({ error: "Missing entityId" }, { status: 400 });
+  }
+  // A sparkline on a tablet needs no login — but then only for an entity that
+  // is on a saved view, like every other read (see readableEntities).
+  if (!(await callerMayRead("ha/history", entityId))) {
+    return NextResponse.json({ error: "This entity is not on any of your views." }, { status: 403 });
   }
 
   const settings = await getAppSettings();

@@ -1,15 +1,20 @@
 import { NextRequest } from "next/server";
 import { getBroadcaster } from "@/lib/ha-bridge/broadcaster";
+import { readableEntities } from "@/lib/ha/action-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const idsRaw = req.nextUrl.searchParams.get("ids") ?? "";
-  const ids = idsRaw
+  const asked = idsRaw
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+  // An empty list used to mean "every state change in the house", to anyone.
+  // Now it means nothing: the stream carries exactly the entities asked for,
+  // and without a login only those on a saved view (see readableEntities).
+  const ids = await readableEntities("ha/stream", asked);
 
   const broadcaster = getBroadcaster();
   broadcaster.addSubscriber();
@@ -47,7 +52,7 @@ export async function GET(req: NextRequest) {
       broadcaster.on("snapshot", onSnapshotReady);
 
       onState = (entity: any) => {
-        if (ids.length > 0 && !ids.includes(entity.entity_id)) return;
+        if (!ids.includes(entity.entity_id)) return;
         safeEnqueue(`data: ${JSON.stringify({ type: "state", entity })}\n\n`);
       };
       broadcaster.on("state", onState);

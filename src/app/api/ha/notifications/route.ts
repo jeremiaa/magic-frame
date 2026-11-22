@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import WebSocket from "ws";
 import { getAppSettings } from "@/lib/settings/store";
 import { describeHaFetchError } from "@/lib/ha/fetch-error";
+import { isSignedIn, viewsUseWidget, noteRefused } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -122,6 +123,14 @@ function toIso(v: string | number | undefined): string {
 
 export async function GET() {
   try {
+    // The notifications tile shows all of them, so there is no list to check
+    // against — but without a login there has to be such a tile on a view.
+    // Otherwise this told anyone who asked what Home Assistant has to report
+    // ("login attempt failed", "new device found").
+    if (!(await isSignedIn()) && !(await viewsUseWidget("HANotificationWidget.tsx"))) {
+      noteRefused("ha/notifications", "the notification list");
+      return NextResponse.json({ error: "No view shows Home Assistant notifications." }, { status: 403 });
+    }
     const settings = await getAppSettings();
     if (!settings.haUrl || !settings.haToken) {
       return NextResponse.json({ error: "Home Assistant not configured" }, { status: 400 });

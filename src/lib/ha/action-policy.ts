@@ -229,11 +229,64 @@ function collectServices(value: unknown, into: Set<string>, depth = 0): void {
   }
 }
 
+/**
+ * Every string a saved config holds, trimmed — and, because the RSS widget
+ * keeps several feeds in one field (one per line or comma-separated) and the
+ * route splits them the same way, every part of such a list as well.
+ *
+ * This is what a login-free display may hand to a route that fetches on its
+ * behalf: an RSS or iCal address, a calendar account id. Whatever stands in a
+ * saved view was put there by the owner; an address that stands nowhere was
+ * not, and the server has no business fetching it for a stranger.
+ */
+function collectTexts(value: unknown, into: Set<string>, depth = 0): void {
+  if (depth > 8 || value == null) return;
+  // An id saved as a number (an old Todoist project id) is still that id.
+  if (typeof value === "number" && Number.isFinite(value)) {
+    into.add(String(value));
+    return;
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (!t || t.length > 20_000) return;
+    if (t.length <= 4096) into.add(t);
+    if (/[\n,]/.test(t)) {
+      for (const part of t.split(/[\n,]/)) {
+        const p = part.trim();
+        if (p && p.length <= 4096) into.add(p);
+      }
+    }
+    if (t.startsWith("{") || t.startsWith("[")) {
+      try {
+        collectTexts(JSON.parse(t), into, depth + 1);
+      } catch {
+        // Kein JSON — dann ist es einfach Text.
+      }
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const v of value) collectTexts(v, into, depth + 1);
+    return;
+  }
+  if (typeof value === "object") {
+    for (const v of Object.values(value as Record<string, unknown>)) collectTexts(v, into, depth + 1);
+  }
+}
+
+type Policy = {
+  ids: Set<string>;
+  services: Set<string>;
+  targets: Set<string>;
+  texts: Set<string>;
+  types: Set<string>;
+};
+
 // Rebuilding on every button press would mean a database round trip per tap.
 // Short cache; the write paths that change the set clear it outright, so the
 // TTL only covers changes made straight in the database.
 const TTL_MS = 30_000;
-let cache: { at: number; ids: Set<string>; services: Set<string>; targets: Set<string> } | null = null;
+let cache: ({ at: number } & Policy) | null = null;
 
 /**
  * Drops the cached allowlist.
@@ -247,17 +300,21 @@ export function forgetAllowedEntities(): void {
   cache = null;
 }
 
-async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string>; targets: Set<string> }> {
+async function loadPolicy(): Promise<Policy> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache;
   const ids = new Set<string>();
   const services = new Set<string>();
   const targets = new Set<string>();
+  const texts = new Set<string>();
+  const types = new Set<string>();
   try {
-    const widgets = await prisma.widget.findMany({ select: { config: true } });
+    const widgets = await prisma.widget.findMany({ select: { type: true, config: true } });
     for (const w of widgets) {
+      types.add(w.type);
       collectEntityIds(w.config, ids);
       collectServices(w.config, services);
       collectOpaqueTargets(w.config, targets);
+      collectTexts(w.config, texts);
     }
     // Wallpapers carry an artwork player, and view settings can carry entities.
     const dashboards = await prisma.dashboard.findMany({ select: { wallpaper: true, settings: true } });
@@ -265,6 +322,8 @@ async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string>; 
       collectEntityIds(d.wallpaper, ids);
       collectEntityIds(d.settings, ids);
       collectOpaqueTargets(d.settings, targets);
+      collectTexts(d.wallpaper, texts);
+      collectTexts(d.settings, texts);
     }
     // A custom module's manifest can ship a field default that the user never
     // opens — the value then lives in manifestJson and never reaches
@@ -278,6 +337,7 @@ async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string>; 
         // wurde für Entitäten gelesen und für Dienste ignoriert.
         collectServices(manifest, services);
         collectOpaqueTargets(manifest, targets);
+        collectTexts(manifest, texts);
       } catch {
         // A malformed manifest is the modules page's problem, not this one.
       }
@@ -292,9 +352,10 @@ async function loadPolicy(): Promise<{ ids: Set<string>; services: Set<string>; 
       cache ? "using the last known set" : "allowing every entity until the database answers",
       err,
     );
-    return cache ?? { ids: new Set(["*"]), services: new Set(["*"]), targets: new Set(["*"]) };
+    const all = () => new Set(["*"]);
+    return cache ?? { ids: all(), services: all(), targets: all(), texts: all(), types: all() };
   }
-  cache = { at: Date.now(), ids, services, targets };
+  cache = { at: Date.now(), ids, services, targets, texts, types };
   return cache;
 }
 
@@ -355,6 +416,87 @@ export async function callerMayUse(entityId: string): Promise<boolean> {
     // decide. A broken .env must not widen a route.
   }
   return mayActOn(entityId);
+}
+
+/** `light.kitchen` — the only shape of id a read route hands to Home Assistant. */
+export function isEntityId(value: unknown): boolean {
+  return ENTITY_ID.test(normaliseEntityId(value));
+}
+
+/** `true` when the request carries a signed-in session. */
+export async function isSignedIn(): Promise<boolean> {
+  try {
+    const { getSession } = await import("@/lib/auth/session");
+    return !!(await getSession()).userId;
+  } catch {
+    // No usable SESSION_SECRET — not signed in. A broken .env must not widen a route.
+    return false;
+  }
+}
+
+// One line per refused thing per ten minutes: enough to find a display that
+// asks for something it should have, too little for a scanner to flood the log.
+const refusedAt = new Map<string, number>();
+
+/** Logs that a caller without login was refused `what` (an entity, a host). */
+export function noteRefused(route: string, what: string): void {
+  const key = `${route} ${what}`;
+  const now = Date.now();
+  const last = refusedAt.get(key);
+  if (last && now - last < 10 * 60_000) return;
+  if (refusedAt.size > 500) refusedAt.clear();
+  refusedAt.set(key, now);
+  console.warn(`[${route}] refused ${what} to a caller without login — not on any of your views`);
+}
+
+/**
+ * The ids from `asked` this caller may READ, in the order asked.
+ *
+ * Reading had no limit at all: the state, live-stream, history, camera and
+ * artwork routes answered for every entity, so anyone who could reach the
+ * server could read every state in the house — with a domain, from the
+ * internet, `person` and `device_tracker` locations included, and watch every
+ * camera. A display only ever reads what is on its views, the same set it may
+ * act on, so that is the limit here too. A signed-in session may read anything
+ * well formed: the editor shows entities before they are saved anywhere.
+ *
+ * Everybody, signed in or not, only gets ids of the right shape through. The id
+ * ends up in a Home Assistant URL, and `../config` would otherwise walk out of
+ * /api/states into the rest of its API.
+ */
+export async function readableEntities(route: string, asked: string[]): Promise<string[]> {
+  const wellFormed = asked.filter((id) => isEntityId(id));
+  if (wellFormed.length === 0) return [];
+  if (await isSignedIn()) return wellFormed;
+  const out: string[] = [];
+  for (const id of wellFormed) {
+    if (await mayActOn(id)) out.push(id);
+    else noteRefused(route, normaliseEntityId(id));
+  }
+  return out;
+}
+
+/** The one-entity form of `readableEntities`. */
+export async function callerMayRead(route: string, entityId: string): Promise<boolean> {
+  return (await readableEntities(route, [entityId])).length === 1;
+}
+
+/**
+ * `true` when a caller without login may have the server fetch this address,
+ * or use this calendar account: it has to stand in a saved view or in a
+ * module's defaults. See `collectTexts`.
+ */
+export async function standsInAView(text: string): Promise<boolean> {
+  const t = String(text ?? "").trim();
+  if (!t) return false;
+  const { texts } = await loadPolicy();
+  return texts.has("*") || texts.has(t);
+}
+
+/** `true` when at least one saved view has a widget of this type. */
+export async function viewsUseWidget(type: string): Promise<boolean> {
+  const { types } = await loadPolicy();
+  return types.has("*") || types.has(type);
 }
 
 /** `true`, wenn dieses Gerät oder dieser Bereich in einer gespeicherten Konfiguration steht. */

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
+import { callerMayRead } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,11 @@ export async function POST(
     const { entity } = await context.params;
     if (!entity || !entity.includes(".")) {
       return NextResponse.json({ error: "Invalid entity ID" }, { status: 400 });
+    }
+    // No login on purpose (a tablet shows it without one), but then only
+    // what is on a saved view — any entity used to be one guess away.
+    if (!(await callerMayRead("ha/camera", entity))) {
+      return NextResponse.json({ error: "This camera is not on any of your views." }, { status: 403 });
     }
     const { offer } = (await request.json().catch(() => ({}))) as { offer?: string };
     if (!offer || typeof offer !== "string") {

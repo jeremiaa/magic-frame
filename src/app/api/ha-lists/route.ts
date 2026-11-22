@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
 import { describeHaFetchError } from "@/lib/ha/fetch-error";
+import { isSignedIn } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
 /** Liefert alle todo.* Entities aus Home Assistant (Name + Item-Count). */
 export async function GET() {
   try {
+    // Only the list pickers in the editor ask, signed in. Without a login this
+    // named every to-do list in Home Assistant, with its count, to anybody.
+    if (!(await isSignedIn())) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const settings = await getAppSettings();
     if (!settings.haUrl || !settings.haToken) {
       return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
 import { describeHaFetchError } from "@/lib/ha/fetch-error";
+import { isSignedIn } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,12 @@ let cache: Cache | null = null;
  */
 export async function GET(request: Request) {
   try {
+    // Only the editor's entity pickers call this, and they are signed in. It
+    // hands out every entity in the house with its state, so without a login
+    // it answers nothing — it used to answer anybody who could reach it.
+    if (!(await isSignedIn())) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const settings = await getAppSettings();
     if (!settings.haUrl || !settings.haToken) {
       return NextResponse.json(
