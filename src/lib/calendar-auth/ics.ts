@@ -146,9 +146,11 @@ export function expandIcsEvents(
       let next;
       let iterations = 0;
       while ((next = expand.next()) && iterations < limit + 10) {
-        iterations++;
+        // Only occurrences inside the window count towards the cap: a series
+        // that started long ago has many earlier ones to walk past first.
         if (next.compare(windowStartIcal) < 0) continue;
         if (next.compare(windowEndIcal) > 0) break;
+        iterations++;
 
         const occurrence = event.getOccurrenceDetails(next);
         events.push({
