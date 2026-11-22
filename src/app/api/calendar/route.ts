@@ -8,6 +8,33 @@ import {
 import { expandIcsEvents } from "@/lib/calendar-auth/ics";
 import { fetchCaldavEvents } from "@/lib/calendar-auth/caldav";
 import { getCaldavCredentials } from "@/lib/calendar-auth/store";
+import { isSignedIn, noteRefused, readableEntities, standsInAView } from "@/lib/ha/action-policy";
+
+/** Only the host goes into the log: an iCal address can carry a private token. */
+function hostOf(u: string | undefined): string {
+  try {
+    return new URL(String(u ?? "").trim().replace(/^webcal:\/\//i, "https://")).host || "an address";
+  } catch {
+    return "an address";
+  }
+}
+
+/**
+ * `true` when a caller without login may have this feed: an iCal address must
+ * stand in a saved view; an account must, and so must the calendar asked for
+ * (none given means the one the widget leaves empty); a Home Assistant
+ * calendar must be an entity on a view.
+ */
+async function feedStandsInAView(feed: FeedInput, type: string): Promise<boolean> {
+  if (type === "homeassistant") {
+    return !!feed.calendarId && (await readableEntities("calendar", [feed.calendarId])).length === 1;
+  }
+  if (type === "google" || type === "microsoft" || type === "caldav") {
+    if (!feed.accountId || !(await standsInAView(feed.accountId))) return false;
+    return !feed.calendarId || (await standsInAView(feed.calendarId));
+  }
+  return !!feed.url && (await standsInAView(feed.url));
+}
 
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 10 * 60 * 1000;
@@ -129,6 +156,8 @@ export async function GET(request: NextRequest) {
     userId = session.userId ?? null;
   }
 
+  const signedIn = await isSignedIn();
+
   try {
     const perFeedLimit = Math.max(limit, 10);
     const feedResults: FeedResult[] = await Promise.all(
@@ -139,6 +168,17 @@ export async function GET(request: NextRequest) {
         const type = feed.type ?? "ical";
 
         try {
+          // A display shows its calendars without a login, so there is none
+          // here — but then only feeds that stand in a saved view. This used to
+          // fetch any address for anybody, and an account id seen on one
+          // screen opened every other calendar of that account.
+          if (!signedIn && !(await feedStandsInAView(feed, type))) {
+            // A Home Assistant calendar was already logged by name.
+            if (type !== "homeassistant") {
+              noteRefused("calendar", type === "ical" ? hostOf(feed.url) : `a ${type} calendar`);
+            }
+            throw new Error("not_on_a_view");
+          }
           let events: any[] = [];
           if (type === "google") {
             // #43: kein Session-Zwang mehr — der Token hängt an der accountId

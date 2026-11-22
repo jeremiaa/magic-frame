@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isSignedIn, standsInAView, noteRefused } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
+
+/** Only the host goes into the log: a feed address can carry a private token. */
+function hostOf(u: string): string {
+  try {
+    return new URL(u).host || "an address";
+  } catch {
+    return "an address";
+  }
+}
 
 // Server-seitiger RSS/Atom-Fetch+Parse. Der Browser kann fremde Feeds nicht
 // direkt laden (CORS) — daher wie bei /api/calendar: hier fetchen, parsen,
@@ -127,6 +137,19 @@ export async function GET(req: NextRequest) {
   const limit = Math.max(1, Math.min(50, parseInt(req.nextUrl.searchParams.get("limit") || "15", 10)));
   const urls = urlsParam.split(/[\n,]/).map((u) => u.trim()).filter(Boolean).slice(0, 8);
   if (urls.length === 0) return NextResponse.json({ error: "missing_url" }, { status: 400 });
+
+  // A display reads its feeds without a login, so this route has none — but
+  // then it fetches only feeds that stand in a saved view. It used to fetch any
+  // address for anybody, which made the server a way into the home network.
+  // Signed in, the editor previews a feed before it is saved.
+  if (!(await isSignedIn())) {
+    for (const u of urls) {
+      if (!(await standsInAView(u))) {
+        noteRefused("rss", hostOf(u));
+        return NextResponse.json({ error: "not_on_a_view" }, { status: 403 });
+      }
+    }
+  }
 
   const results = await Promise.allSettled(urls.map(fetchOne));
   const all: RssItem[] = [];

@@ -9,10 +9,36 @@ import {
   updateTask,
   TodoistError,
 } from "@/lib/todoist/client";
+import { isSignedIn, noteRefused, standsInAView } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ projectId: string }> };
+
+/**
+ * A display works its list without a login — ticks off, adds, renames,
+ * deletes — so there is none here. Without one, though, only the Todoist
+ * project a saved view shows is reachable. It used to be every project in the
+ * account, and because Todoist task ids are global, one list on one screen was
+ * enough to close or delete any task anywhere.
+ */
+async function refuseProject(projectId: string): Promise<NextResponse | null> {
+  if (await isSignedIn()) return null;
+  if (await standsInAView(projectId)) return null;
+  noteRefused("todoist", "a project");
+  return NextResponse.json({ error: "This list is not on any of your views." }, { status: 403 });
+}
+
+/** Without a login a task is only touched when it is an open task of that project. */
+async function refuseTask(projectId: string, taskId: string): Promise<NextResponse | null> {
+  const refused = await refuseProject(projectId);
+  if (refused) return refused;
+  if (await isSignedIn()) return null;
+  const open = await listTasks(projectId);
+  if (open.some((t) => String(t.id) === taskId)) return null;
+  noteRefused("todoist", "a task of another project");
+  return NextResponse.json({ error: "This task is not on any of your views." }, { status: 403 });
+}
 
 /**
  * GET → offene Tasks im Projekt, plus die Abschnitte (Sections) des Projekts.
@@ -27,6 +53,8 @@ export async function GET(_: NextRequest, ctx: Ctx) {
     if (!/^[0-9A-Za-z]+$/.test(projectId)) {
       return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
     }
+    const refused = await refuseProject(projectId);
+    if (refused) return refused;
     // Sections are additive display data, never allowed to block tasks:
     // if that call fails for any reason, fall back to an empty list instead
     // of failing the whole response.
@@ -64,6 +92,8 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     if (!/^[0-9A-Za-z]+$/.test(projectId)) {
       return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
     }
+    const refused = await refuseProject(projectId);
+    if (refused) return refused;
     const body = await req.json();
     const content = typeof body.content === "string" ? body.content.trim() : "";
     if (!content) return NextResponse.json({ error: "content required" }, { status: 400 });
@@ -88,11 +118,17 @@ export async function POST(req: NextRequest, ctx: Ctx) {
  */
 export async function PATCH(req: NextRequest, ctx: Ctx) {
   try {
-    await ctx.params; // projectId nicht benoetigt — Todoist Task-IDs sind global
+    // Todoist task ids are global — which is exactly why the project in the
+    // path is checked against the task without a login (see refuseTask).
+    const { projectId } = await ctx.params;
     const body = await req.json();
     const taskId = String(body.taskId ?? "");
     if (!taskId) return NextResponse.json({ error: "taskId required" }, { status: 400 });
     const action = String(body.action ?? "");
+    // Reopening is the undo right after a tick: the task is closed by then and
+    // no longer in the open list, and reopening destroys nothing.
+    const refused = action === "reopen" ? await refuseProject(projectId) : await refuseTask(projectId, taskId);
+    if (refused) return refused;
     if (action === "close") {
       await closeTask(taskId);
       return NextResponse.json({ ok: true });
@@ -121,9 +157,11 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 /** DELETE ?taskId=X */
 export async function DELETE(req: NextRequest, ctx: Ctx) {
   try {
-    await ctx.params;
+    const { projectId } = await ctx.params;
     const taskId = req.nextUrl.searchParams.get("taskId") ?? "";
     if (!taskId) return NextResponse.json({ error: "taskId required" }, { status: 400 });
+    const refused = await refuseTask(projectId, taskId);
+    if (refused) return refused;
     await deleteTask(taskId);
     return NextResponse.json({ ok: true });
   } catch (err: any) {

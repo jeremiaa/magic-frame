@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listProjects, TodoistError } from "@/lib/todoist/client";
+import { isSignedIn } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,11 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
+    // Only the list picker in the editor asks, and it is signed in. Without a
+    // login this named every project in the account to anybody.
+    if (!(await isSignedIn())) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const list = await listProjects();
     return NextResponse.json({
       projects: list.map((p) => ({
