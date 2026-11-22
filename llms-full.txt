@@ -2538,8 +2538,15 @@ They cannot unlock a door that is on no screen, and they cannot reach
 A signed-in editor session skips the limit — the entity picker has to be able to
 try things that are not placed anywhere yet.
 
-If you need to reach something that is genuinely on no view — a custom module
-with a hard-coded entity, or a script of your own — turn the limit off with
+A custom module on a view counts with everything it names. That includes its
+settings and defaults, in whatever format its author chose, such as
+`calendar.formula_1|#e10600` on a line of its own, and the entity ids and
+addresses written in its code. Since 1.5.15 that holds for hard-coded entities
+too, as long as the module is on a view and switched on.
+
+If you need to reach something that is genuinely on no view — a script of your
+own, or a module that only finds its entities while it runs, such as one that
+shows every calendar Home Assistant has — turn the limit off with
 `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in your `.env`. On the add-on it is the
 `ha_action_unrestricted` option; on Kubernetes it is the same key in the
 ConfigMap. The refusal message names the variable, so you do not have to
@@ -2557,7 +2564,7 @@ gets only what is on a saved view:
 | `/api/ha/camera/[entity]/snapshot`, `/stream`, `/webrtc` | A camera on a view. |
 | `/api/ha/media/[entity]/artwork` | The cover of a player on a view. |
 | `/api/ha-lists/[entity]/items` | A to-do or shopping list on a view. |
-| `/api/ha/notifications` | All notifications, if a view has a notifications tile; otherwise nothing. |
+| `/api/ha/notifications` | All notifications, if a view has a notifications tile or a custom module whose code calls this route; otherwise nothing. |
 | `/api/ha/entities`, `/api/ha-lists` | Only the entities and lists that are on a view. Signed in, the editor's pickers get all of them. |
 | `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder, which Home Assistant itself serves without a login. |
 
@@ -3178,8 +3185,13 @@ or turn the limit off with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env`
 signed-in browser, but on a wall panel it stays empty or reads *unavailable*.
 
 **Cause.** Without a login a display gets only what is on one of your saved
-views. Something that is not — a custom module that asks for an entity it does
-not have in its settings, a feed typed into a module's code — is refused.
+views. Something that is not is refused, for example an entity a custom module
+only finds while it runs.
+
+In 1.5.14 this also hit custom modules that were on a view, when their entity or
+feed sat in a settings line like `calendar.formula_1|#e10600` or in the module's
+code (#147). Since 1.5.15 everything a module on a view names counts as on that
+view. Update before you look further.
 
 **What to do:** `docker compose logs app` names every refusal, for example
 `[ha/state] refused sensor.x to a caller without login`. Put the entity or feed
@@ -8721,6 +8733,33 @@ It also inherits the tile: the font size, family, colour and shadow you set come
 from the wrapper around it, and the dark panel behind it is the widget's
 `bgOpacity`. A well-written module sizes everything relative to that inherited
 font size, so it scales with the tile like the built-in widgets do.
+
+### On a display without a login
+
+A wall panel has no login, so Magic Frame's own routes give it only what your
+saved views name: Home Assistant states, calendars, feeds, lists. A module on a
+view counts with everything it names:
+
+- its settings, as you filled them in;
+- its defaults from `module.json`;
+- the strings in its code.
+
+The format does not matter. `calendar.formula_1|#e10600|F1` on a line of its
+own, an entity in a sentence, an address inside a JSON text: each id and each
+address counts on its own. A module whose code calls `/api/ha/notifications`
+gets the notifications, as a notifications tile would.
+
+What a module only finds while it runs does not count. A module that asks Home
+Assistant for every calendar and shows them all gets, on a display, only the
+calendars something on a view names. A switched-off module counts with its
+settings and defaults only, because its code runs nowhere. A module that is on no
+view counts with nothing beyond whole default values. Signed in, as in the editor, nothing is
+limited. Refusals are in `docker compose logs app`. See
+[Home Assistant](home-assistant.md) for the full table and the switch that lifts
+the limit.
+
+Before 1.5.15 only whole settings values counted. A module that kept its entity
+in a settings line or in its code stayed empty on a display (#147).
 
 ## When something goes wrong
 
