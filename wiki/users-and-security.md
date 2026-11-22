@@ -412,8 +412,12 @@ It does check two other things, and it did not always:
 A signed-in editor session skips both, because the entity picker has to be able
 to try things that are not on a screen yet.
 
-If something you need is genuinely not on any view — a custom module with a
-hard-coded entity, a script of your own — set
+A custom module on a view counts with everything it names: its settings, its
+defaults and the strings in its code. See [Custom
+modules](custom-modules.md#on-a-display-without-a-login).
+
+If something you need is genuinely not on any view — a script of your own, or a
+module that only finds its entities while it runs — set
 `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in your `.env` (add-on: the
 `ha_action_unrestricted` option; Kubernetes: the same key in the ConfigMap) and
 the old behaviour comes back in full.

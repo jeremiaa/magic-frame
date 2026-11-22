@@ -348,8 +348,10 @@ browser the same tile works.
 
 **Cause.** A display without a login may only act on entities that are on one of
 your saved views, and only with the services the widgets use. Something else —
-a custom module with a hard-coded entity, a script of your own, a service the
-widgets never call — gets refused.
+a script of your own, a service the widgets never call — gets refused. A custom
+module on a view counts with every entity it names, in its settings or its code,
+since 1.5.15. A service beyond the everyday ones still has to stand in a setting
+of its own (`haService`).
 
 **What to do:** the display shows the reason briefly at the bottom of the
 screen, and `docker compose logs app` records every refusal with the entity and

@@ -1082,9 +1082,11 @@ name and a line of explanation there — all of them may be left as they are.
 | `ha_action_unrestricted` | Off by default. A display may normally only read and operate entities that are actually placed on one of your views. Turning this on removes that limit for the whole installation. |
 | `ha_auto_login` | On by default. Home Assistant administrators open Magic Frame from the sidebar without typing a password; everyone else gets the normal sign-in page. |
 
-Leave `ha_action_unrestricted` off unless something breaks because of it — a
-custom module with a hard-coded entity, or a script of your own, addressing
-something that sits on no view. It is the same setting as
+Leave `ha_action_unrestricted` off unless something breaks because of it: a
+script of your own, or a custom module that only finds its entities while it
+runs, addressing something that sits on no view. A custom module on a view counts
+with everything it names, hard-coded entities included (since 1.5.15). It is the
+same setting as
 `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in a Docker install, and the refusal
 message tells you when you have hit the limit. [Home
 Assistant](home-assistant.md) explains what the limit covers.
@@ -3167,8 +3169,10 @@ browser the same tile works.
 
 **Cause.** A display without a login may only act on entities that are on one of
 your saved views, and only with the services the widgets use. Something else —
-a custom module with a hard-coded entity, a script of your own, a service the
-widgets never call — gets refused.
+a script of your own, a service the widgets never call — gets refused. A custom
+module on a view counts with every entity it names, in its settings or its code,
+since 1.5.15. A service beyond the everyday ones still has to stand in a setting
+of its own (`haService`).
 
 **What to do:** the display shows the reason briefly at the bottom of the
 screen, and `docker compose logs app` records every refusal with the entity and
@@ -7293,8 +7297,12 @@ It does check two other things, and it did not always:
 A signed-in editor session skips both, because the entity picker has to be able
 to try things that are not on a screen yet.
 
-If something you need is genuinely not on any view — a custom module with a
-hard-coded entity, a script of your own — set
+A custom module on a view counts with everything it names: its settings, its
+defaults and the strings in its code. See [Custom
+modules](custom-modules.md#on-a-display-without-a-login).
+
+If something you need is genuinely not on any view — a script of your own, or a
+module that only finds its entities while it runs — set
 `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in your `.env` (add-on: the
 `ha_action_unrestricted` option; Kubernetes: the same key in the ConfigMap) and
 the old behaviour comes back in full.

@@ -81,9 +81,11 @@ name and a line of explanation there — all of them may be left as they are.
 | `ha_action_unrestricted` | Off by default. A display may normally only read and operate entities that are actually placed on one of your views. Turning this on removes that limit for the whole installation. |
 | `ha_auto_login` | On by default. Home Assistant administrators open Magic Frame from the sidebar without typing a password; everyone else gets the normal sign-in page. |
 
-Leave `ha_action_unrestricted` off unless something breaks because of it — a
-custom module with a hard-coded entity, or a script of your own, addressing
-something that sits on no view. It is the same setting as
+Leave `ha_action_unrestricted` off unless something breaks because of it: a
+script of your own, or a custom module that only finds its entities while it
+runs, addressing something that sits on no view. A custom module on a view counts
+with everything it names, hard-coded entities included (since 1.5.15). It is the
+same setting as
 `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in a Docker install, and the refusal
 message tells you when you have hit the limit. [Home
 Assistant](home-assistant.md) explains what the limit covers.
