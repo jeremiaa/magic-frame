@@ -355,9 +355,18 @@ would not show a visitor.
 A view is drawn by a browser with no session, which means everything it fetches
 has to work without one. Among those: `/api/layout/get` (the layout itself),
 `/api/calendar`, `/api/weather`, `/api/environment`, `/api/rss`,
-`/api/ha/state`, `/api/ha/stream`, `/api/ha/entities`,
-`/api/ha/camera/[entity]/snapshot`, `/api/wallpaper/immich/playlist` and
+`/api/ha/state`, `/api/ha/stream`, `/api/ha/camera/[entity]/snapshot`,
+`/api/todoist/tasks/[projectId]`, `/api/wallpaper/immich/playlist` and
 `/api/wallpaper/webdav/playlist`.
+
+**Since 1.5.14 they answer only for what is on a saved view.** Without a login,
+`/api/ha/*` hands out the entities, cameras, histories and lists that a view
+shows and nothing else; `/api/rss` and `/api/calendar` fetch only feed addresses
+that stand in a view, and a calendar account only with the calendar a widget
+names; `/api/todoist/tasks/[projectId]` reaches only the project a widget shows, and closes
+or deletes only that project's open tasks. Signed in, the editor can still try
+anything before it is saved. The full table for Home Assistant is on
+[Home Assistant](home-assistant.md).
 
 `/api/layout/get` leaves out the user names, passwords and keys stored with a
 view's wallpaper; the server uses them itself to fetch the pictures. Only an
@@ -366,12 +375,14 @@ part of the open answer, and every display kept a copy in its browser storage.
 If your installation was reachable by people you do not trust, change those
 passwords and keys.
 
-Two of those are worth naming individually:
+Up to 1.5.13 two of them went much further, and it is worth knowing if your
+installation was reachable by people you do not trust:
 
-- **`/api/ha/entities` lists every entity in your Home Assistant** with its
-  current state — not only the ones a view uses.
-- **`/api/ha/camera/[entity]/snapshot` returns a camera image** for any camera
-  entity, whether or not a widget shows it.
+- **`/api/ha/entities` listed every entity in your Home Assistant** with its
+  current state, to anybody. It now needs a login.
+- **`/api/ha/camera/[entity]/snapshot` returned a camera image** for any camera
+  entity, whether or not a widget showed it. It now serves only cameras on a
+  view.
 
 ### `/api/ha/action` has no session check at all
 

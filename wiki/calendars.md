@@ -177,7 +177,9 @@ Integrations page instead of the dropdown.
 **These feeds work on a login-free display.** The access token is looked up by
 the account the feed names, not by whoever happens to be looking at the screen —
 which is the whole point, since a wall tablet has no session. Magic Frame
-refreshes an expired token by itself, a minute before it runs out.
+refreshes an expired token by itself, a minute before it runs out. Without a
+login a display gets exactly the calendars its widgets name: since 1.5.14 an
+account seen on one screen no longer opens that account's other calendars.
 
 ## A CalDAV server
 

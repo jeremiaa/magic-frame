@@ -242,31 +242,40 @@ with a hard-coded entity, or a script of your own — turn the limit off with
 ConfigMap. The refusal message names the variable, so you do not have to
 remember it.
 
-The same is true of the reading side. These all answer without a login:
+Reading has the same limit since 1.5.14. Before, these routes answered without a
+login for **everything** in your Home Assistant — every state, every camera, the
+location of everybody with a `device_tracker`. Now a caller without a session
+gets only what is on a saved view:
 
-| Route | What it hands out |
+| Route | Without a login |
 | --- | --- |
-| `/api/ha/entities` | **Every** entity in your Home Assistant, with its friendly name and current state. |
-| `/api/ha/state` | The full state of any entities asked for. |
-| `/api/ha/stream` | The same, live. |
-| `/api/ha-lists` | Your to-do and shopping lists. |
-| `/api/ha/history` | Up to a week of recorded history for an entity. |
-| `/api/ha/camera/[entity]/snapshot`, `/stream`, `/webrtc` | A picture or a live stream from any camera. |
-| `/api/ha/media/[entity]/artwork` | The album cover of a media player. |
-| `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder. |
-| `/api/ha/notifications` | Your Home Assistant notifications. |
+| `/api/ha/state`, `/api/ha/stream` | The states of entities on a view. Anything else is simply missing from the answer. |
+| `/api/ha/history` | The history of an entity on a view. |
+| `/api/ha/camera/[entity]/snapshot`, `/stream`, `/webrtc` | A camera on a view. |
+| `/api/ha/media/[entity]/artwork` | The cover of a player on a view. |
+| `/api/ha-lists/[entity]/items` | A to-do or shopping list on a view. |
+| `/api/ha/notifications` | All notifications, if a view has a notifications tile; otherwise nothing. |
+| `/api/ha/entities`, `/api/ha-lists` | Nothing. Only the editor's pickers use them, and they are signed in. |
+| `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder, which Home Assistant itself serves without a login. |
 
-The editor and everything under `/editor` **is** behind the login. It is the
-view-facing routes that are open, on purpose.
+A signed-in session reads anything, as before: the editor shows entities before
+they are on a view. `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` lifts the reading
+limit along with the acting one, and every refusal is in `docker compose logs
+app`, so a tile that stays empty on a display tells you why.
+
+The editor and everything under `/editor` **is** behind the login. The
+view-facing routes stay open, on purpose — limited to your views.
 
 What follows from that:
 
 - **Keep the machine on your own network.** On a home LAN this is the same
-  exposure as a light switch in the hallway: whoever is in the house can use it.
+  exposure as a light switch in the hallway: whoever is in the house can see
+  and use what is on the screens.
 - **Do not port-forward Magic Frame to the internet.** Publishing it publishes
-  the list above, and with it your house. If you need access from outside, use a
-  VPN into your own network, or Home Assistant's own remote access with the
-  frame left where it is. See [Hosting and your domain](hosting-and-domain.md).
+  what is on your screens, and lets anybody use it. If you need access from
+  outside, use the [built-in tunnel](hosting-and-domain.md#remote-access-with-one-click),
+  which asks for a login, or a VPN into your own network. See
+  [Hosting and your domain](hosting-and-domain.md).
 - **Think about which entities the token can reach.** The token is yours, so it
   can do everything you can. There is no read-only mode.
 

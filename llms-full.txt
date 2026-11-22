@@ -2545,31 +2545,40 @@ with a hard-coded entity, or a script of your own — turn the limit off with
 ConfigMap. The refusal message names the variable, so you do not have to
 remember it.
 
-The same is true of the reading side. These all answer without a login:
+Reading has the same limit since 1.5.14. Before, these routes answered without a
+login for **everything** in your Home Assistant — every state, every camera, the
+location of everybody with a `device_tracker`. Now a caller without a session
+gets only what is on a saved view:
 
-| Route | What it hands out |
+| Route | Without a login |
 | --- | --- |
-| `/api/ha/entities` | **Every** entity in your Home Assistant, with its friendly name and current state. |
-| `/api/ha/state` | The full state of any entities asked for. |
-| `/api/ha/stream` | The same, live. |
-| `/api/ha-lists` | Your to-do and shopping lists. |
-| `/api/ha/history` | Up to a week of recorded history for an entity. |
-| `/api/ha/camera/[entity]/snapshot`, `/stream`, `/webrtc` | A picture or a live stream from any camera. |
-| `/api/ha/media/[entity]/artwork` | The album cover of a media player. |
-| `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder. |
-| `/api/ha/notifications` | Your Home Assistant notifications. |
+| `/api/ha/state`, `/api/ha/stream` | The states of entities on a view. Anything else is simply missing from the answer. |
+| `/api/ha/history` | The history of an entity on a view. |
+| `/api/ha/camera/[entity]/snapshot`, `/stream`, `/webrtc` | A camera on a view. |
+| `/api/ha/media/[entity]/artwork` | The cover of a player on a view. |
+| `/api/ha-lists/[entity]/items` | A to-do or shopping list on a view. |
+| `/api/ha/notifications` | All notifications, if a view has a notifications tile; otherwise nothing. |
+| `/api/ha/entities`, `/api/ha-lists` | Nothing. Only the editor's pickers use them, and they are signed in. |
+| `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder, which Home Assistant itself serves without a login. |
 
-The editor and everything under `/editor` **is** behind the login. It is the
-view-facing routes that are open, on purpose.
+A signed-in session reads anything, as before: the editor shows entities before
+they are on a view. `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` lifts the reading
+limit along with the acting one, and every refusal is in `docker compose logs
+app`, so a tile that stays empty on a display tells you why.
+
+The editor and everything under `/editor` **is** behind the login. The
+view-facing routes stay open, on purpose — limited to your views.
 
 What follows from that:
 
 - **Keep the machine on your own network.** On a home LAN this is the same
-  exposure as a light switch in the hallway: whoever is in the house can use it.
+  exposure as a light switch in the hallway: whoever is in the house can see
+  and use what is on the screens.
 - **Do not port-forward Magic Frame to the internet.** Publishing it publishes
-  the list above, and with it your house. If you need access from outside, use a
-  VPN into your own network, or Home Assistant's own remote access with the
-  frame left where it is. See [Hosting and your domain](hosting-and-domain.md).
+  what is on your screens, and lets anybody use it. If you need access from
+  outside, use the [built-in tunnel](hosting-and-domain.md#remote-access-with-one-click),
+  which asks for a login, or a VPN into your own network. See
+  [Hosting and your domain](hosting-and-domain.md).
 - **Think about which entities the token can reach.** The token is yours, so it
   can do everything you can. There is no read-only mode.
 
@@ -3160,6 +3169,24 @@ the service. If the entity really should be reachable, either place it on a view
 or turn the limit off with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env`
 (add-on: the `ha_action_unrestricted` option). See
 [Home Assistant](home-assistant.md).
+
+---
+
+## A tile stays empty on a display, but works in the editor
+
+**Symptom.** Since 1.5.14 a value, a camera, a feed or a list shows up in a
+signed-in browser, but on a wall panel it stays empty or reads *unavailable*.
+
+**Cause.** Without a login a display gets only what is on one of your saved
+views. Something that is not — a custom module that asks for an entity it does
+not have in its settings, a feed typed into a module's code — is refused.
+
+**What to do:** `docker compose logs app` names every refusal, for example
+`[ha/state] refused sensor.x to a caller without login`. Put the entity or feed
+into the widget's settings and save the view. For Home Assistant you can also
+lift the limit with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env` (add-on:
+the `ha_action_unrestricted` option). See
+[Users and security](users-and-security.md).
 
 ---
 
@@ -5943,7 +5970,9 @@ Integrations page instead of the dropdown.
 **These feeds work on a login-free display.** The access token is looked up by
 the account the feed names, not by whoever happens to be looking at the screen —
 which is the whole point, since a wall tablet has no session. Magic Frame
-refreshes an expired token by itself, a minute before it runs out.
+refreshes an expired token by itself, a minute before it runs out. Without a
+login a display gets exactly the calendars its widgets name: since 1.5.14 an
+account seen on one screen no longer opens that account's other calendars.
 
 ## A CalDAV server
 
@@ -7195,9 +7224,18 @@ would not show a visitor.
 A view is drawn by a browser with no session, which means everything it fetches
 has to work without one. Among those: `/api/layout/get` (the layout itself),
 `/api/calendar`, `/api/weather`, `/api/environment`, `/api/rss`,
-`/api/ha/state`, `/api/ha/stream`, `/api/ha/entities`,
-`/api/ha/camera/[entity]/snapshot`, `/api/wallpaper/immich/playlist` and
+`/api/ha/state`, `/api/ha/stream`, `/api/ha/camera/[entity]/snapshot`,
+`/api/todoist/tasks/[projectId]`, `/api/wallpaper/immich/playlist` and
 `/api/wallpaper/webdav/playlist`.
+
+**Since 1.5.14 they answer only for what is on a saved view.** Without a login,
+`/api/ha/*` hands out the entities, cameras, histories and lists that a view
+shows and nothing else; `/api/rss` and `/api/calendar` fetch only feed addresses
+that stand in a view, and a calendar account only with the calendar a widget
+names; `/api/todoist/tasks/[projectId]` reaches only the project a widget shows, and closes
+or deletes only that project's open tasks. Signed in, the editor can still try
+anything before it is saved. The full table for Home Assistant is on
+[Home Assistant](home-assistant.md).
 
 `/api/layout/get` leaves out the user names, passwords and keys stored with a
 view's wallpaper; the server uses them itself to fetch the pictures. Only an
@@ -7206,12 +7244,14 @@ part of the open answer, and every display kept a copy in its browser storage.
 If your installation was reachable by people you do not trust, change those
 passwords and keys.
 
-Two of those are worth naming individually:
+Up to 1.5.13 two of them went much further, and it is worth knowing if your
+installation was reachable by people you do not trust:
 
-- **`/api/ha/entities` lists every entity in your Home Assistant** with its
-  current state — not only the ones a view uses.
-- **`/api/ha/camera/[entity]/snapshot` returns a camera image** for any camera
-  entity, whether or not a widget shows it.
+- **`/api/ha/entities` listed every entity in your Home Assistant** with its
+  current state, to anybody. It now needs a login.
+- **`/api/ha/camera/[entity]/snapshot` returned a camera image** for any camera
+  entity, whether or not a widget showed it. It now serves only cameras on a
+  view.
 
 ### `/api/ha/action` has no session check at all
 

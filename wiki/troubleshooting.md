@@ -360,6 +360,24 @@ or turn the limit off with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env`
 
 ---
 
+## A tile stays empty on a display, but works in the editor
+
+**Symptom.** Since 1.5.14 a value, a camera, a feed or a list shows up in a
+signed-in browser, but on a wall panel it stays empty or reads *unavailable*.
+
+**Cause.** Without a login a display gets only what is on one of your saved
+views. Something that is not — a custom module that asks for an entity it does
+not have in its settings, a feed typed into a module's code — is refused.
+
+**What to do:** `docker compose logs app` names every refusal, for example
+`[ha/state] refused sensor.x to a caller without login`. Put the entity or feed
+into the widget's settings and save the view. For Home Assistant you can also
+lift the limit with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env` (add-on:
+the `ha_action_unrestricted` option). See
+[Users and security](users-and-security.md).
+
+---
+
 ## The fan spins up, or the display runs hot
 
 **Symptom:** a browser tab showing a Magic Frame view pushes the CPU hard even
