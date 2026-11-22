@@ -2168,10 +2168,23 @@ export const NB: Record<string, string> = {
   "Mittwoch": "Onsdag",
   "Donnerstag": "Torsdag",
   "Freitag": "Fredag",
+  "Wochentag": "Ukedag",
+  "Rotationstag": "Rotasjonsdag",
+  "Tag 1": "Dag 1",
+  "Tag 2": "Dag 2",
+  "Tag 3": "Dag 3",
+  "Tag 4": "Dag 4",
+  "Tag 5": "Dag 5",
+  "Tag 6": "Dag 6",
+  "Tag 7": "Dag 7",
+  "Tag 8": "Dag 8",
+  "Tag 9": "Dag 9",
+  "Tag 10": "Dag 10",
   "Für alle": "Alle",
   "z. B. Turnbeutel mitnehmen": "f.eks. Ta med gymtøy",
   "Erinnerung hinzufügen": "Legg til påminnelse",
-  "Erscheint an diesem Wochentag, aber nur, wenn Schule ist.": "Vises på denne ukedagen, men bare når det er skole.",
+  "Erscheint am gewählten Wochentag, oder am gewählten Rotationstag — aber nur, wenn Schule ist.":
+    "Vises på valgt ukedag eller valgt rotasjonsdag, men bare når det er skole.",
   "Als JSON bearbeiten": "Rediger som JSON",
   "Zum Einfügen der Einstellungen aus dem früheren Beispiel-Modul. Dasselbe Format wie oben.":
     "For å lime inn innstillingene fra den tidligere eksempelmodulen. Samme format som ovenfor.",
@@ -2229,4 +2242,71 @@ export const NB: Record<string, string> = {
   "Wochenende": "Helg",
   "Gefühlt": "Følt",
   "gefühlt": "følt",
+
+  // Fjerntilgang (Cloudflare-tunnel)
+  "Fernzugriff": "Fjerntilgang",
+  "Macht den Editor von außen erreichbar, ohne Router und ohne eigene Domain, über einen Cloudflare-Tunnel. Durch den Tunnel sieht nur etwas, wer angemeldet ist. Deine Ansichten bleiben im Heimnetz.":
+    "Gjør editoren tilgjengelig utenfra, uten å røre ruteren og uten eget domene, via en Cloudflare-tunnel. Gjennom tunnelen ser bare innloggede brukere noe. Visningene dine blir værende på hjemmenettverket.",
+  "Im Home-Assistant-Add-on gibt es den Fernzugriff noch nicht. Home Assistant bringt dafür eigene Wege mit.":
+    "Fjerntilgang finnes ikke i Home Assistant-tillegget ennå. Home Assistant har egne løsninger for dette.",
+  "Auf diesem System fehlt das Programm cloudflared. Das Docker-Abbild von Magic Frame bringt es mit; bei anderen Installationen wird es über das System installiert.":
+    "Programmet cloudflared mangler på dette systemet. Docker-imaget til Magic Frame har det med; ved andre installasjoner installeres det via systemet.",
+  "Der Fernzugriff braucht den eigenen Server von Magic Frame und steht im Entwicklungsmodus nicht zur Verfügung.":
+    "Fjerntilgang trenger Magic Frames egen server og er ikke tilgjengelig i utviklingsmodus.",
+  "SESSION_SECRET fehlt oder ist zu kurz. Ohne kann sich niemand anmelden, also gibt es auch keinen Fernzugriff.":
+    "SESSION_SECRET mangler eller er for kort. Uten den kan ingen logge inn, så da blir det heller ingen fjerntilgang.",
+  "Der Tunnel läuft bereits.": "Tunnelen kjører allerede.",
+  "Es ist kein Token hinterlegt.": "Det er ikke lagret noe token.",
+  "Das sieht nicht nach einem Tunnel-Token aus. Ein Token beginnt mit eyJ.":
+    "Dette ser ikke ut som et tunnel-token. Et token begynner med eyJ.",
+  "Cloudflare hat das Token abgelehnt.": "Cloudflare avviste tokenet.",
+  "Cloudflare vergibt gerade keinen Schnell-Tunnel. Bitte später noch einmal versuchen.":
+    "Cloudflare deler ikke ut noen hurtigtunnel akkurat nå. Prøv igjen senere.",
+  "Der Port für den Tunnel-Eingang ist belegt. Mit MF_TUNNEL_PORT lässt sich ein anderer festlegen.":
+    "Porten til tunnelinngangen er opptatt. Med MF_TUNNEL_PORT kan du velge en annen.",
+  "Der Tunnel wurde angehalten: Im Cloudflare-Dashboard zeigt ein Eintrag nicht auf den Tunnel-Eingang.":
+    "Tunnelen ble stoppet: en oppføring i Cloudflare-dashbordet peker ikke på tunnelinngangen.",
+  "cloudflared hat sich beendet.": "cloudflared har avsluttet.",
+  "Die Einstellungen aus dem Cloudflare-Dashboard ließen sich nicht prüfen. Ungeprüft bleibt der Tunnel aus.":
+    "Innstillingene fra Cloudflare-dashbordet kunne ikke kontrolleres. Ukontrollert forblir tunnelen av.",
+  "Den Fernzugriff können nur Administratoren einrichten.":
+    "Bare administratorer kan sette opp fjerntilgang.",
+  "Der Tunnel läuft, aber im Cloudflare-Dashboard ist noch keine öffentliche Adresse eingetragen.":
+    "Tunnelen kjører, men det er ikke lagt inn noen offentlig adresse i Cloudflare-dashbordet ennå.",
+  "Richtig ist als Dienst:": "Riktig tjeneste er:",
+  "Läuft": "Kjører",
+  "Startet": "Starter",
+  "Lädt…": "Laster…",
+  "Adresse (gilt, bis der Tunnel stoppt)": "Adresse (gjelder til tunnelen stopper)",
+  "Von außen erreichbar sind die Anmeldung, der Editor und der MCP-Server. Ansichten öffnen sich dort nur für Angemeldete; die Wandtablets im Heimnetz merken nichts davon.":
+    "Utenfra er innloggingen, editoren og MCP-serveren tilgjengelige. Visninger åpnes der bare for innloggede; veggbrettene på hjemmenettverket merker ingenting til dette.",
+  "Tunnel stoppen": "Stopp tunnelen",
+  "Der Tunnel startet…": "Tunnelen starter…",
+  "Schnell ausprobieren": "Prøv raskt",
+  "Ein Klick, ohne Cloudflare-Konto. Die Adresse ist zufällig und gilt, bis der Tunnel stoppt oder Magic Frame neu startet.":
+    "Ett klikk, uten Cloudflare-konto. Adressen er tilfeldig og gjelder til tunnelen stopper eller Magic Frame starter på nytt.",
+  "Schnell-Tunnel starten": "Start hurtigtunnel",
+  "Feste Adresse": "Fast adresse",
+  "Für dauerhaft: ein Tunnel aus deinem Cloudflare-Konto mit eigener Adresse. Er startet nach einem Neustart von selbst wieder.":
+    "For varig bruk: en tunnel fra din Cloudflare-konto med egen adresse. Den starter av seg selv igjen etter en omstart.",
+  "In Cloudflare unter Netzwerk → Tunnel einen Tunnel anlegen.":
+    "Opprett en tunnel i Cloudflare under Nettverk → Tunneler.",
+  "Unter Routen eine veröffentlichte Anwendung hinzufügen, als Service-URL genau:":
+    "Legg til en publisert applikasjon under Ruter, med nøyaktig denne tjeneste-URL-en:",
+  "In der Übersicht des Tunnels den Installationsbefehl kopieren und hier einfügen.":
+    "Kopier installasjonskommandoen fra oversikten over tunnelen og lim den inn her.",
+  "Festen Tunnel starten": "Start fast tunnel",
+  "Token vergessen": "Glem tokenet",
+  "Ein Token ist hinterlegt.": "Et token er lagret.",
+  "Tunnel-Token": "Tunnel-token",
+  "Aus diesem Netz ist Cloudflare nicht erreichbar. Der Tunnel braucht ausgehende Verbindungen zu Cloudflare auf Port 7844.":
+    "Cloudflare er ikke tilgjengelig fra dette nettverket. Tunnelen trenger utgående tilkoblinger til Cloudflare på port 7844.",
+  "Der Tunnel hat nach einer Minute noch keine Verbindung zu Cloudflare bekommen und wurde angehalten.":
+    "Tunnelen hadde fortsatt ikke fått forbindelse til Cloudflare etter ett minutt og ble stoppet.",
+  "Noch keine Verbindung zu Cloudflare. cloudflared versucht es weiter.":
+    "Ingen forbindelse til Cloudflare ennå. cloudflared prøver videre.",
+  "Starten": "Start",
+  "Der Tunnel läuft über Cloudflare; mit dem Start gelten deren Nutzungsbedingungen.":
+    "Tunnelen går via Cloudflare; ved oppstart gjelder deres bruksvilkår.",
+  "Was genau von außen erreichbar ist": "Hva som egentlig er tilgjengelig utenfra",
 };
