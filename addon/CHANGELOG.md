@@ -14,6 +14,15 @@ scripts/check-wiki.mjs prüft, dass die Version aus package.json hier steht.
 
 What each version changes, in short. The full notes are on the [releases page](https://github.com/jeremiaa/magic-frame/releases).
 
+## 1.5.14
+
+- **Security: please update**, above all if Magic Frame can be reached from the internet. Without a login, a display now gets only what is on your views. Before, anybody who could reach Magic Frame could read every state in Home Assistant, watch any camera, have the server fetch any address, and close or delete any Todoist task.
+- A deleted account is signed out at once, not after up to 30 days.
+- Recurring calendar events that started long ago show again. By @jayhemnani9910.
+- The newest strings in Norwegian. By @ghveem.
+
+[Full notes for 1.5.14](https://github.com/jeremiaa/magic-frame/releases/tag/v1.5.14)
+
 ## 1.5.13
 
 - **New: remote access with one click** — off until you switch it on under *Settings → Hosting & network*. A Cloudflare tunnel makes the editor reachable from outside without touching your router: try it with a random address and no account, or keep a fixed address from your own Cloudflare account. Through the tunnel, only someone who is signed in sees anything; your views stay on your home network. Not in this add-on: here, Home Assistant's own remote access is the way in.
