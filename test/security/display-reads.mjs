@@ -87,6 +87,7 @@ const FLUSH = 'sec-reads-flush';
 const NEWS = `${SOURCES}/news.xml`;
 const ICS = `${SOURCES}/family.ics`;
 const ACCOUNT = 'acc-' + crypto.randomBytes(5).toString('hex');
+const MODULES = ['custom:sec-f1', 'custom:sec-elsewhere'];
 const widgets = [
   ['ha', 'HomeAssistantWidget.tsx', { entities: [{ entityId: 'light.kitchen' }] }],
   ['cam', 'CameraWidget.tsx', { entityId: 'camera.front_door' }],
@@ -251,6 +252,49 @@ try {
   r = await get('/api/ha-lists', signedIn);
   eq(r.status, 200, '…signed in, the picker gets them all');
 
+  step('custom modules (#147)');
+  // A module keeps its settings in its own format, and its code can name an
+  // entity outright. Up to 1.5.14 a display without a login was refused all of
+  // it, while the editor (signed in) showed the tile fine.
+  const F1_ICS = `${SOURCES}/family.ics?from-a-module`;
+  const upload = (type, fields, code) => post('/api/admin/modules', {
+    manifest: { type, label: type, fields },
+    bundleJs: `window.MagicFrame.registerWidget({type:"custom:${type}",render:function(e){${code}return null}});`,
+  }, signedIn);
+  await db.query(`delete from "CustomModule" where type = any($1)`, [MODULES]);
+  c = await cal([{ type: 'ical', url: F1_ICS }]);
+  eq(c.feeds?.[0]?.error, 'not_on_a_view', 'before: the address is on no view');
+  s = await state('sensor.solar_power,sensor.study_co2');
+  eq(Object.keys(s), [], 'before: neither sensor is on a view');
+  r = await upload('sec-f1', [{ key: 'calendars', label: 'Calendars', type: 'textarea' }],
+    'e.fetch(`/api/ha/notifications?limit=${5}`);var S="sensor.solar_power";');
+  eq(r.status, 200, 'an admin uploads a module whose code names a sensor and calls the notifications route');
+  const f1 = (await r.json()).module;
+  r = await upload('sec-elsewhere', [], 'var S="sensor.study_co2";');
+  eq(r.status, 200, '…and another one, which goes on no view');
+  s = await state('sensor.solar_power');
+  eq(Object.keys(s), [], 'a module on no view opens nothing, not even what its code names');
+  r = await get('/api/ha/notifications');
+  eq(r.status, 403, '…nor the notifications its code calls');
+  await placeWidgets([...widgets, ['f1', 'custom:sec-f1', {
+    calendars: `calendar.school_holidays|#e10600|Holidays\nF1 races|${F1_ICS}|#e10600`,
+  }]]);
+  c = await cal([{ type: 'homeassistant', calendarId: 'calendar.school_holidays' }]);
+  ok(!c.feeds?.[0]?.error && c.events.length > 0,
+    `a calendar on a line of the module's settings, with a colour and a label: its events (${c.events.length}, ${c.feeds?.[0]?.error || 'ok'})`);
+  c = await cal([{ type: 'ical', url: F1_ICS }]);
+  ok(!c.feeds?.[0]?.error && c.events.length > 0, `an address inside such a line: its events (${c.events.length})`);
+  s = await state('sensor.solar_power,sensor.study_co2');
+  eq(Object.keys(s), ['sensor.solar_power'], 'the sensor its code names reads; the one only a module on no view names does not');
+  r = await get('/api/ha/notifications');
+  ok(r.status !== 403, `the notifications its code calls, with no notifications tile anywhere: let through (${r.status})`);
+  r = await get('/api/ha/history?entityId=sensor.study_co2');
+  eq(r.status, 403, 'what no module on a view names: still refused');
+  r = await fetch(`${BASE}/api/admin/modules/${f1.id}`, { method: 'PATCH', headers: { ...signedIn, 'content-type': 'application/json' }, body: JSON.stringify({ enabled: false }) });
+  eq(r.status, 200, 'the admin switches the module off');
+  s = await state('sensor.solar_power');
+  eq(Object.keys(s), [], '…its code runs nowhere now, and what it names is refused again at once');
+
   step('a deleted account');
   const vEmail = `viewer-${crypto.randomBytes(4).toString('hex')}@example.com`;
   const vPass = crypto.randomBytes(12).toString('base64url');
@@ -275,6 +319,7 @@ try {
   console.log(`\nAll ${checks} checks passed.`);
 } finally {
   if (viewer?.id) await db.query(`delete from "User" where id = $1`, [viewer.id]).catch(() => {});
+  await db.query(`delete from "CustomModule" where type = any($1)`, [MODULES]).catch(() => {});
   await db.query(`delete from "Dashboard" where id = any($1)`, [[VIEW, FLUSH]]).catch(() => {});
   await flush().catch(() => {});
   await db.query(`delete from "Dashboard" where id = $1`, [FLUSH]).catch(() => {});
