@@ -169,11 +169,18 @@ try {
   eq(r.status, 403, 'the artwork of a player on no view: refused');
 
   step('the entity list');
-  r = await get('/api/ha/entities');
-  eq(r.status, 401, 'without a login: nothing (it used to be every entity in the house)');
   r = await get('/api/ha/entities', signedIn);
   eq(r.status, 200, 'signed in, the entity picker gets its list');
-  ok(((await r.json()).entities || []).length > 10, '…all of it');
+  const full = ((await r.json()).entities || []).map((e) => e.entity_id);
+  ok(full.length > 10 && full.includes('person.alex'), `…all of it (${full.length})`);
+  r = await get('/api/ha/entities');
+  const listed = ((await r.json()).entities || []).map((e) => e.entity_id);
+  // Another view on this instance (a demo seed) may show more; this one shows three.
+  const elsewhere = async (id) => (await db.query(`select 1 from "Widget" where config::text like $1 and "dashboardId" <> $2 limit 1`, [`%${id}%`, VIEW])).rowCount > 0;
+  ok(r.status === 200 && ['light.kitchen', 'camera.front_door', 'calendar.family'].every((id) => listed.includes(id)),
+    'without a login: what is on a view is listed');
+  ok(listed.length < full.length && (!listed.includes('person.alex') || (await elsewhere('person.alex'))),
+    `…and nothing else (${listed.length} of ${full.length}) — it used to be every entity in the house`);
 
   step('notifications');
   r = await get('/api/ha/notifications');
@@ -221,7 +228,7 @@ try {
   // Todoist itself is not reachable from here, so this checks the doors, not
   // the lists: what is refused before Todoist is ever asked.
   r = await get('/api/todoist/projects');
-  eq(r.status, 401, 'the list of every Todoist project: needs a login');
+  ok(r.status !== 200 || ((await r.json()).projects || []).length === 0, `the Todoist project list names nothing a view does not show (${r.status})`);
   r = await get('/api/todoist/tasks/projectOnNoView');
   eq(r.status, 403, 'the tasks of a project on no view: refused');
   r = await fetch(`${BASE}/api/todoist/tasks/projectOnNoView?taskId=123`, { method: 'DELETE' });
@@ -230,13 +237,19 @@ try {
   eq(r.status, 403, 'closing one: refused');
   r = await fetch(`${BASE}/api/todoist/tasks/projectOnNoView`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ content: 'x' }) });
   eq(r.status, 403, 'adding one: refused');
-  await placeWidgets([...widgets, ['todo', 'TodosWidget.tsx', { listSource: 'todoist', todoistProjectId: 'projectOnAView' }]]);
+  r = await get('/api/ha-lists');
+  let lists = (await r.json()).lists?.map((l) => l.entityId) || [];
+  ok(r.status === 200 && (!lists.includes('todo.shopping') || (await elsewhere('todo.shopping'))), 'the to-do lists of Home Assistant: a list on no view is not named');
+  await placeWidgets([...widgets,
+    ['todo', 'TodosWidget.tsx', { listSource: 'todoist', todoistProjectId: 'projectOnAView' }],
+    ['shop', 'ShoppingListWidget.tsx', { listSource: 'ha', haListEntity: 'todo.shopping' }]]);
   r = await get('/api/todoist/tasks/projectOnAView');
   ok(r.status !== 403, `the project a widget shows: let through to Todoist (${r.status})`);
   r = await get('/api/ha-lists');
-  eq(r.status, 401, 'the list of every Home Assistant to-do list: needs a login');
+  lists = (await r.json()).lists?.map((l) => l.entityId) || [];
+  ok(lists.includes('todo.shopping'), '…the list a widget shows: named');
   r = await get('/api/ha-lists', signedIn);
-  eq(r.status, 200, '…signed in, the picker gets it');
+  eq(r.status, 200, '…signed in, the picker gets them all');
 
   step('a deleted account');
   const vEmail = `viewer-${crypto.randomBytes(4).toString('hex')}@example.com`;
@@ -253,8 +266,11 @@ try {
   viewer = null;
   r = await get('/api/auth/me', { cookie: vCookie });
   eq((await r.json()).user, null, 'the old cookie names nobody any more — at once, not after 30 days');
+  r = await get('/api/admin/users', { cookie: vCookie });
+  eq(r.status, 401, '…and opens nothing that needs a login');
   r = await get('/api/ha/entities', { cookie: vCookie });
-  eq(r.status, 401, '…and opens nothing');
+  const asNobody = ((await r.json()).entities || []).map((e) => e.entity_id);
+  ok(!asNobody.includes('person.alex') || (await elsewhere('person.alex')), '…the entity list treats it like nobody signed in');
 
   console.log(`\nAll ${checks} checks passed.`);
 } finally {
