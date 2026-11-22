@@ -7,6 +7,7 @@ import {
   unauthorizedResponse,
 } from "@/lib/auth/dal";
 import { setModuleEnabled, deleteModule } from "@/lib/modules/store";
+import { forgetAllowedEntities } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     const body = await req.json().catch(() => ({}));
     const enabled = !!body.enabled;
     const row = await setModuleEnabled(id, enabled);
+    // What a module's code names only counts while it runs (#147).
+    forgetAllowedEntities();
     return NextResponse.json({ ok: true, module: row });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
@@ -33,6 +36,7 @@ export async function DELETE(_: NextRequest, ctx: Ctx) {
     await verifyAdmin();
     const { id } = await ctx.params;
     await deleteModule(id);
+    forgetAllowedEntities();
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();

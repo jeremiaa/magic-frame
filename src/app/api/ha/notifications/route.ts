@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import WebSocket from "ws";
 import { getAppSettings } from "@/lib/settings/store";
 import { describeHaFetchError } from "@/lib/ha/fetch-error";
-import { isSignedIn, viewsUseWidget, noteRefused } from "@/lib/ha/action-policy";
+import { isSignedIn, modulesOnViewsCall, viewsUseWidget, noteRefused } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -127,7 +127,11 @@ export async function GET() {
     // against — but without a login there has to be such a tile on a view.
     // Otherwise this told anyone who asked what Home Assistant has to report
     // ("login attempt failed", "new device found").
-    if (!(await isSignedIn()) && !(await viewsUseWidget("HANotificationWidget.tsx"))) {
+    if (
+      !(await isSignedIn()) &&
+      !(await viewsUseWidget("HANotificationWidget.tsx")) &&
+      !(await modulesOnViewsCall("/api/ha/notifications"))
+    ) {
       noteRefused("ha/notifications", "the notification list");
       return NextResponse.json({ error: "No view shows Home Assistant notifications." }, { status: 403 });
     }

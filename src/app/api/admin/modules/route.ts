@@ -11,6 +11,7 @@ import {
   upsertModule,
   parseManifest,
 } from "@/lib/modules/store";
+import { forgetAllowedEntities } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,8 @@ export async function POST(req: NextRequest) {
     const manifest = parseManifest(body.manifest);
     const bundleJs = typeof body.bundleJs === "string" ? body.bundleJs : "";
     const row = await upsertModule({ manifest, bundleJs });
+    // New defaults or new code can name what a display may read (#147).
+    forgetAllowedEntities();
     return NextResponse.json({ ok: true, module: row });
   } catch (err: any) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();

@@ -274,12 +274,109 @@ function collectTexts(value: unknown, into: Set<string>, depth = 0): void {
   }
 }
 
+/**
+ * Custom modules (#147). A module's settings come in whatever format its author
+ * chose: `calendar.formula_1|#e10600|F1` one per line, a sentence, JSON. And its
+ * code can name an entity or a feed outright. The rules above only take whole
+ * values, so a module tile stayed empty on every display without a login while
+ * the editor (signed in) showed it fine, and the log said "not on any of your
+ * views" about something that visibly was.
+ *
+ * For a module on a view, everything it names counts as on that view: its
+ * settings, its defaults and the strings in its code, wherever in a text an id
+ * or an address stands. Its code was uploaded by an editor and runs on the
+ * display anyway. What it names is what the owner put on the wall. What a
+ * module only finds at run time (every calendar Home Assistant has) is still
+ * not on a view, and still refused.
+ *
+ * An id has to stand on its own: not `a.b.c` (a dotted path, a host name) and
+ * not `v1.5`. Junk that only looks like an id (`bundle.js`) is harmless — Home
+ * Assistant has no such entity.
+ */
+const ENTITY_TOKEN = /(?<![a-z0-9_.])[a-z][a-z0-9_]*\.[a-z0-9_]+(?![a-z0-9_]|\.[a-z0-9_])/g;
+
+/** An address, up to the next space, quote or list separator. */
+const URL_TOKEN = /(?:https?|webcal):\/\/[^\s"'`<>|,\\]+/gi;
+
+/** Entity ids into `ids`, addresses into `texts`, from anywhere inside `text`. */
+function collectNamedIn(text: string, ids: Set<string>, texts: Set<string>): void {
+  if (!text || text.length > 4 * 1024 * 1024) return;
+  for (const m of text.toLowerCase().matchAll(ENTITY_TOKEN)) ids.add(m[0]);
+  for (const m of text.matchAll(URL_TOKEN)) texts.add(m[0]);
+}
+
+/** `collectNamedIn` over every string of a module's settings or manifest. */
+function collectNamed(value: unknown, ids: Set<string>, texts: Set<string>, depth = 0): void {
+  if (depth > 8 || value == null) return;
+  if (typeof value === "string") {
+    collectNamedIn(value, ids, texts);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const v of value) collectNamed(v, ids, texts, depth + 1);
+    return;
+  }
+  if (typeof value === "object") {
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      // `light.turn_on` is a service, not an entity — see collectEntityIds.
+      if (SERVICE_KEY.test(k)) continue;
+      collectNamed(v, ids, texts, depth + 1);
+    }
+  }
+}
+
+/** Every string literal in a module's code: "…", '…' and `…`. */
+const JS_STRING = /"(?:[^"\\\n]|\\[\s\S])*"|'(?:[^'\\\n]|\\[\s\S])*'|`(?:[^`\\]|\\[\s\S])*`/g;
+
+/** The text of a literal as the code sees it: `\n` a line break, `/` a slash. */
+function unescapeJs(s: string): string {
+  return s.replace(
+    /\\(?:u\{([0-9a-fA-F]{1,6})\}|u([0-9a-fA-F]{4})|x([0-9a-fA-F]{2})|([\s\S]))/g,
+    (_m, cp: string | undefined, u4: string | undefined, x2: string | undefined, ch: string | undefined) => {
+      const hex = cp ?? u4 ?? x2;
+      if (hex) {
+        const code = parseInt(hex, 16);
+        return code <= 0x10ffff ? String.fromCodePoint(code) : " ";
+      }
+      if (ch === "n" || ch === "r") return "\n";
+      if (ch === "\n" || ch === "\r") return ""; // a line continuation
+      if (ch && "tbfv0".includes(ch)) return " ";
+      return ch ?? "";
+    },
+  );
+}
+
+type Named = { ids: Set<string>; texts: Set<string>; routes: Set<string> };
+
+/** What a module's code names: entity ids, texts and addresses, and Magic Frame routes. */
+function namedInCode(code: string): Named {
+  const named: Named = { ids: new Set(), texts: new Set(), routes: new Set() };
+  for (const m of code.matchAll(JS_STRING)) {
+    const s = unescapeJs(m[0].slice(1, -1));
+    collectTexts(s, named.texts);
+    collectNamedIn(s, named.ids, named.texts);
+    const t = s.trim();
+    if (t.startsWith("/api/")) named.routes.add(t.split(/[?#]/)[0].replace(/\/+$/, ""));
+  }
+  // A quote inside a comment or a regular expression can throw the literal
+  // scan off. An id or an address written out on its own is found regardless.
+  for (const m of code.matchAll(/["'`]([a-z][a-z0-9_]*\.[a-z0-9_]+)["'`]/gi)) named.ids.add(m[1].toLowerCase());
+  for (const m of code.matchAll(URL_TOKEN)) named.texts.add(m[0]);
+  return named;
+}
+
+// A module's code changes only on upload, which moves its updatedAt — and it
+// can be up to 2 MB, so it is read once per version, not on every rebuild.
+const namedInModules = new Map<string, Named>();
+
 type Policy = {
   ids: Set<string>;
   services: Set<string>;
   targets: Set<string>;
   texts: Set<string>;
   types: Set<string>;
+  /** Magic Frame routes the code of a module on a view calls (`/api/ha/notifications`). */
+  routes: Set<string>;
 };
 
 // Rebuilding on every button press would mean a database round trip per tap.
@@ -307,6 +404,7 @@ async function loadPolicy(): Promise<Policy> {
   const targets = new Set<string>();
   const texts = new Set<string>();
   const types = new Set<string>();
+  const routes = new Set<string>();
   try {
     const widgets = await prisma.widget.findMany({ select: { type: true, config: true } });
     for (const w of widgets) {
@@ -315,6 +413,8 @@ async function loadPolicy(): Promise<Policy> {
       collectServices(w.config, services);
       collectOpaqueTargets(w.config, targets);
       collectTexts(w.config, texts);
+      // A module's settings are in a format only the module knows (#147).
+      if (w.type.startsWith("custom:")) collectNamed(w.config, ids, texts);
     }
     // Wallpapers carry an artwork player, and view settings can carry entities.
     const dashboards = await prisma.dashboard.findMany({ select: { wallpaper: true, settings: true } });
@@ -328,10 +428,14 @@ async function loadPolicy(): Promise<Policy> {
     // A custom module's manifest can ship a field default that the user never
     // opens — the value then lives in manifestJson and never reaches
     // Widget.config, so the module's own button would be refused.
-    const modules = await prisma.customModule.findMany({ select: { manifestJson: true } });
+    const modules = await prisma.customModule.findMany({
+      select: { type: true, manifestJson: true, enabled: true, updatedAt: true },
+    });
+    const current = new Set<string>();
     for (const m of modules) {
+      let manifest: unknown = null;
       try {
-        const manifest = JSON.parse(m.manifestJson);
+        manifest = JSON.parse(m.manifestJson);
         collectEntityIds(manifest, ids);
         // Dienste standen hier nie — ein Modul, das ein Feld `haService` mitbringt,
         // wurde für Entitäten gelesen und für Dienste ignoriert.
@@ -341,7 +445,24 @@ async function loadPolicy(): Promise<Policy> {
       } catch {
         // A malformed manifest is the modules page's problem, not this one.
       }
+      // From here on only a module that is on a view: its defaults and its code.
+      if (!types.has(m.type)) continue;
+      collectNamed(manifest, ids, texts);
+      // A switched-off module's code is not served, so it runs nowhere.
+      if (!m.enabled) continue;
+      const key = `${m.type}@${m.updatedAt.getTime()}`;
+      current.add(key);
+      let named = namedInModules.get(key);
+      if (!named) {
+        const row = await prisma.customModule.findUnique({ where: { type: m.type }, select: { bundleJs: true } });
+        named = namedInCode(row?.bundleJs ?? "");
+        namedInModules.set(key, named);
+      }
+      for (const id of named.ids) ids.add(id);
+      for (const t of named.texts) texts.add(t);
+      for (const r of named.routes) routes.add(r);
     }
+    for (const key of namedInModules.keys()) if (!current.has(key)) namedInModules.delete(key);
   } catch (err) {
     // A database hiccup must not turn every button in the house into a 403.
     // Prefer the last known set; if there is none, allow — refusing everything
@@ -353,9 +474,9 @@ async function loadPolicy(): Promise<Policy> {
       err,
     );
     const all = () => new Set(["*"]);
-    return cache ?? { ids: all(), services: all(), targets: all(), texts: all(), types: all() };
+    return cache ?? { ids: all(), services: all(), targets: all(), texts: all(), types: all(), routes: all() };
   }
-  cache = { at: Date.now(), ids, services, targets, texts, types };
+  cache = { at: Date.now(), ids, services, targets, texts, types, routes };
   return cache;
 }
 
@@ -503,6 +624,15 @@ export async function standsInAView(text: string): Promise<boolean> {
 export async function viewsUseWidget(type: string): Promise<boolean> {
   const { types } = await loadPolicy();
   return types.has("*") || types.has(type);
+}
+
+/**
+ * `true` when the code of a module on a view calls this route (`/api/ha/notifications`):
+ * such a module is the tile that needs it, the way a built-in widget is.
+ */
+export async function modulesOnViewsCall(route: string): Promise<boolean> {
+  const { routes } = await loadPolicy();
+  return routes.has("*") || routes.has(route.replace(/\/+$/, ""));
 }
 
 /** `true`, wenn dieses Gerät oder dieser Bereich in einer gespeicherten Konfiguration steht. */
