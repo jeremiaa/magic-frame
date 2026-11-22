@@ -90,7 +90,12 @@ export default function WidgetPreview({ type, config, bgOpacity, gridW = 12, gri
   // zeigt die Vorschau etwas anderes als das Display. Nur das Bild-Widget
   // füllt randlos; die Kamera passt ihr Bild ein und braucht die Fläche.
   const fillsOwnTile = type === "ImageWidget.tsx";
-  const noInnerPadding = type === "CameraWidget.tsx";
+  // Mirrors the live view (src/app/view/[id]/page.tsx): config.outerPadding
+  // overrides the padding class verbatim; the Flex Horseshoe never gets the
+  // card padding, background or not.
+  const cfgOuterPad = typeof (config as any)?.outerPadding === "number"
+    ? Math.max(0, Math.min(48, (config as any).outerPadding)) : null;
+  const noInnerPadding = type === "CameraWidget.tsx" || type === "FlexHorseshoeWidget.tsx";
   const outerBgOpacity = isCardBased || fillsOwnTile ? 0 : (bgOpacity ?? 0) / 100;
   const hasOuterBox = !isCardBased && !fillsOwnTile && (bgOpacity ?? 0) > 0;
   const paddingClass = isCardBased || noInnerPadding ? "p-0" : hasOuterBox ? "p-4 md:p-6" : "p-0";
@@ -106,7 +111,14 @@ export default function WidgetPreview({ type, config, bgOpacity, gridW = 12, gri
         containerType: "size",
         backgroundColor: `rgba(0,0,0, ${outerBgOpacity})`,
         backdropFilter: outerBgOpacity > 0 ? "blur(12px)" : "none",
-        border: outerBgOpacity > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
+        // Border would eat 1px per side from the content box and shrink the
+        // gauge/video by 2px the moment bgOpacity > 0. An inset shadow draws
+        // the identical frame WITHOUT touching the layout (mirror of the
+        // live view in src/app/view/[id]/page.tsx).
+        border: "none",
+        boxShadow: outerBgOpacity > 0 && !noInnerPadding
+          ? "inset 0 0 0 1px rgba(255,255,255,0.05)" : "none",
+        ...(cfgOuterPad != null ? { padding: `${cfgOuterPad}px` } : {}),
       }}
     >
       <div

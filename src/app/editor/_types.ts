@@ -270,9 +270,13 @@ export interface WidgetLayoutItem {
 }
 
 export interface WallpaperConfig {
-  source: string; // 'unsplash', 'url', 'webdav', 'immich', 'icloud'
+  source: string; // 'unsplash', 'url', 'webdav', 'immich', 'icloud', 'ha_entity'
   query: string; // keywords or image url
   icloudUrl?: string;
+  // Home Assistant Entity als Bild-URL-Quelle: die Adresse steht im
+  // gewählten Attribut der Entity (leer = Zustand der Entity).
+  haEntityId?: string;
+  haAttribute?: string;
   intervalSec: number;
   showMetadata: boolean;
   webdavUrl?: string;
@@ -347,6 +351,8 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "MessagesWidget.tsx": "Nachrichten",
   "ImageWidget.tsx": "Bild",
   "SensorWidget.tsx": "Sensor",
+  "PowerSankeyWidget.tsx": "Power Sankey",
+  "FlexHorseshoeWidget.tsx": "Flex Horseshoe",
   "EnvironmentWidget.tsx": "Umwelt",
   "ShoppingListWidget.tsx": "Einkaufsliste",
   "TodosWidget.tsx": "Todos",

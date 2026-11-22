@@ -6,6 +6,12 @@
 # App-Code referenziert die DB nur über DATABASE_URL, der Name ist nur
 # ein interner Identifier.
 #
+# Externe Postgres-Datenbank:
+#   Setze DATABASE_URL in der .env auf deinen eigenen Postgres-Server.
+#   Starte OHNE db-Service: `docker compose up` (der db-Dienst hat das
+#   Profil "db", ist also standardmäßig nicht mit dabei).
+#   Mit der internen DB: `docker compose --profile db up`.
+#
 # Caddy ist immer dabei und macht Reverse-Proxy + automatisches HTTPS
 # (via Let's Encrypt). Im Default (keine Domain konfiguriert) fungiert
 # Caddy einfach als transparenter HTTP-Proxy auf :80 → app:3000.
@@ -31,7 +37,7 @@ services:
     expose:
       - "3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/magicdashboard?schema=public
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/magicdashboard?schema=public}
       - NODE_ENV=production
       # Host-Timezone-Passthrough (#73): der Installer schreibt TZ in die .env.
       # Leer/ungesetzt = UTC — bestehende Installationen ändern sich nicht.
@@ -61,9 +67,6 @@ services:
       - magic_wallpapers:/app/wallpapers
       # Shared Caddy-Config-Volume — App schreibt Caddyfile rein, Caddy liest.
       - magic_caddy_config:/caddy/config
-    depends_on:
-      db:
-        condition: service_healthy
 
   caddy:
     # Vorgebautes Image (s. app). `build:` bleibt der Opt-in-From-Source-Pfad.
@@ -94,6 +97,7 @@ services:
       - app
 
   db:
+    profiles: ["db"]
     image: postgres:16-alpine
     restart: unless-stopped
     environment:

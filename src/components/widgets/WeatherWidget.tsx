@@ -235,6 +235,19 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
 
   const isVertical = config?.forecastLayout === 'vertical';
   const flexDirectionClass = isVertical ? 'flex-col gap-[1.5em]' : 'gap-[2em] md:gap-[3em]';
+  // Content alignment: where the weather cluster (current + forecast) sits
+  // inside the tile. Default centre = previous behaviour; left/right pin it
+  // to the tile edge, which keeps small/odd-sized displays from drifting.
+  // In horizontal layout this is justify-content on the row; in vertical
+  // layout the main axis is the column, so it becomes align-items instead.
+  const contentAlign =
+    config?.align === 'left' || config?.align === 'right' ? config.align : 'center';
+  const justifyContentClass = isVertical
+    ? 'justify-center'
+    : contentAlign === 'left' ? 'justify-start' : contentAlign === 'right' ? 'justify-end' : 'justify-center';
+  const alignItemsClass = isVertical
+    ? contentAlign === 'left' ? 'items-start' : contentAlign === 'right' ? 'items-end' : 'items-center'
+    : 'items-center';
   const subtextSizeEm = 1.2 * (config?.subtextSize ? config.subtextSize / 100 : 1);
   // Stats-Zeile (Luftfeuchte/Wind/UV) wird in Pixel angegeben, nicht in em.
   // Grund: em skaliert mit der Widget-Schriftgröße — wenn das Widget groß
@@ -306,7 +319,7 @@ export default function WeatherWidget({ config, location, lat, lon }: { config?:
           <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.18)" }} />
         </div>
       )}
-      <div className={`relative z-[1] flex items-center justify-center flex-1 overflow-hidden ${flexDirectionClass}`}>
+      <div className={`relative z-[1] flex ${alignItemsClass} ${justifyContentClass} flex-1 overflow-hidden ${flexDirectionClass}`}>
       {/* Current Weather */}
       {/* Kein overflow-hidden hier: das würde das per transform vergrößerte
           Haupticon abschneiden. Location/Subtext kürzen sich über ihr eigenes

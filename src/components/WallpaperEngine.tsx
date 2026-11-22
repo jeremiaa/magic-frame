@@ -151,6 +151,48 @@ export default function WallpaperEngine({
            console.error("Failed to load iCloud Shared Album:", err?.message || err);
            setIsReady(true);
         });
+    } else if (source === 'ha_entity') {
+      // Home Assistant Entity: die Bild-URL steht in einem Attribut der Entity
+      // (oder im Zustand, wenn kein Attribut gewählt ist). Ein Template-Sensor
+      // kann die Adresse z.B. täglich neu liefern - deshalb pollend, nicht
+      // einmalig gelesen.
+      const entityId = String(config?.haEntityId || '').trim();
+      const attribute = String(config?.haAttribute || '').trim();
+      if (!entityId) {
+        setImages([]);
+        setIsReady(true);
+        return;
+      }
+      let cancelled = false;
+      // unavailable/unknown/none sind keine URLs: das bisherige Bild bleibt
+      // stehen, statt einen Fehler in den <img> zu laden.
+      const resolveUrl = (entity: any): string | null => {
+        if (!entity || typeof entity !== 'object') return null;
+        const raw = attribute ? entity.attributes?.[attribute] : entity.state;
+        if (typeof raw !== 'string') return null;
+        const url = raw.trim();
+        if (!url || url === 'unavailable' || url === 'unknown' || url === 'none') return null;
+        return url;
+      };
+      const poll = async () => {
+        try {
+          const res = await fetch(`/api/ha/state?ids=${encodeURIComponent(entityId)}`, { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (cancelled) return;
+          const url = resolveUrl(data?.[entityId]);
+          // Andere id => TwoSlotTransition blendet weich über; dieselbe id
+          // lässt das Bild unverändert stehen (kein Flackern pro Poll).
+          if (url) setImages([{ id: `ha-entity-${url}`, url }]);
+          setIsReady(true);
+        } catch {
+          // Nächster Poll - das bisherige Bild bleibt stehen.
+          if (!cancelled) setIsReady(true);
+        }
+      };
+      poll();
+      const iv = setInterval(poll, 30_000);
+      return () => { cancelled = true; clearInterval(iv); };
     } else {
       const generated = Array.from({ length: 20 }).map((_, i) => ({
         id: `unsplash-${i}-${Date.now()}`,

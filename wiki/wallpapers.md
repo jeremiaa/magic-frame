@@ -36,6 +36,7 @@ Pick the source at the top of the **Quelle** tab.
 | `immich` | Immich API (Album) | Your own [Immich](immich.md) photo library — an album, your favourites, your memories, or everyone tagged as a particular person. |
 | `icloud` | iCloud Shared Album | Photos from a public iCloud Shared Album link. The album owner must enable **Public Website** in the album's Share settings. |
 | `unsplash` | Unsplash (Dynamisch via Suchbegriff) | Despite the name, this does not use Unsplash. It asks an image-generation service on the internet (`image.pollinations.ai`) for 20 pictures built from your search words. It is the one source that needs the internet and sends your search words off the machine. |
+| `ha_entity` | Home Assistant Entity | The picture's web address, read live from a Home Assistant entity: pick the entity, then the attribute that holds the URL (or the state itself). The entity is polled through Magic Frame, so no Home Assistant token ever reaches the display. Needs a [Home Assistant connection](home-assistant.md). |
 
 ### Immich
 
@@ -84,6 +85,30 @@ service and proxies photos to the displays. Up to 1500 photos are shuffled for
 each playlist. Shared Album links use Apple's public web service, which Apple
 can change; private albums and revoked links cannot be loaded. Photos remain
 hosted by Apple, and normal Shared Album limits and image quality apply.
+
+### A Home Assistant entity
+
+The URL itself can live in Home Assistant: a template sensor or an automation
+can hold whatever address you like - today's weather map, the newest picture
+out of a watched folder, an image rendered by another service - and the
+wallpaper follows it.
+
+1. Choose **Home Assistant Entity** as the source. This needs a
+   [Home Assistant connection](home-assistant.md).
+2. Pick the entity. Typing filters by friendly name and entity id.
+3. Pick the **attribute** whose value is the URL. Leave it on *State* to use
+   the entity's state itself.
+
+The entity is polled every 30 seconds through `/api/ha/state` - the same
+question-and-answer route the widgets use - so no Home Assistant token ever
+reaches the display. When the value changes, the new picture is loaded first
+and crossfades in; while the value is empty, or the entity reports
+`unavailable` or `unknown`, the last picture stays up. The picture itself is
+fetched straight from the URL by the display, exactly like the fixed-URL
+source above.
+
+There is no image-change interval for this source: the picture changes when
+the attribute does, not on a timer.
 
 ### A WebDAV folder
 
