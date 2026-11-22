@@ -5,6 +5,7 @@ import {
   unauthorizedResponse,
 } from "@/lib/auth/dal";
 import { prisma } from "@/lib/companion/prisma";
+import { forgetAccount } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,8 @@ export async function DELETE(
     }
 
     await prisma.user.delete({ where: { id } });
+    // Signed out at once, not after the account cache runs out.
+    forgetAccount(id);
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof UnauthorizedError) return unauthorizedResponse();
