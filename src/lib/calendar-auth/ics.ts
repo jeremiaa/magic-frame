@@ -27,6 +27,16 @@ function stamp(t: any): string {
   return t.toJSDate().toISOString();
 }
 
+// A series is walked from its first occurrence up to the window, one step at
+// a time — ical.js cannot jump ahead. A feed may carry a series that repeats
+// every minute or every second since 1970, and walking that blocks the server,
+// and every display with it, for minutes. So one series gets at most
+// MAX_SERIES_STEPS steps and one call at most MAX_FEED_STEPS; a series that
+// needs more is left out. Real calendars stay far below: a daily series since
+// 1990 takes about 13 000 steps, an hourly one since 2021 about 50 000.
+const MAX_SERIES_STEPS = 60_000;
+const MAX_FEED_STEPS = 300_000;
+
 /**
  * Parses one or more ICS documents and returns the events that overlap the
  * window, sorted by start and capped at `limit`.
@@ -140,12 +150,19 @@ export function expandIcsEvents(
   // exact instances, so getOccurrenceDetails() below transparently returns
   // the edited data for an overridden date instead of the stale original,
   // with no separate entry needed for the override itself.
+  let feedSteps = 0;
+  let leftOut = 0;
   for (const event of masters.values()) {
     try {
       const expand = event.iterator();
       let next;
       let iterations = 0;
+      let steps = 0;
       while ((next = expand.next()) && iterations < limit + 10) {
+        if (++steps > MAX_SERIES_STEPS || ++feedSteps > MAX_FEED_STEPS) {
+          leftOut++;
+          break;
+        }
         // Only occurrences inside the window count towards the cap: a series
         // that started long ago has many earlier ones to walk past first.
         if (next.compare(windowStartIcal) < 0) continue;
@@ -166,6 +183,11 @@ export function expandIcsEvents(
     } catch (err) {
       console.error("Skipped malformed calendar event", err);
     }
+  }
+  if (leftOut > 0) {
+    console.warn(
+      `Calendar: left out ${leftOut} recurring series that repeat too often to expand`,
+    );
   }
 
   // Plain one-off events (never recurring, never an exception).
