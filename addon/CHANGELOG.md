@@ -14,6 +14,12 @@ scripts/check-wiki.mjs prüft, dass die Version aus package.json hier steht.
 
 What each version changes, in short. The full notes are on the [releases page](https://github.com/jeremiaa/magic-frame/releases).
 
+## 1.5.15
+
+- Custom modules work on a display again. Since 1.5.14 a module tile stayed empty on a wall panel when its calendar or entity sat in a settings line like `calendar.formula_1|#e10600` or in the module's code. Everything a module on a view names now counts as on that view. Reported by @Cptkex82.
+
+[Full notes for 1.5.15](https://github.com/jeremiaa/magic-frame/releases/tag/v1.5.15)
+
 ## 1.5.14
 
 - **Security: please update**, above all if Magic Frame can be reached from the internet. Without a login, a display now gets only what is on your views. Before, anybody who could reach Magic Frame could read every state in Home Assistant, watch any camera, have the server fetch any address, and close or delete any Todoist task.
