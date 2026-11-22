@@ -235,8 +235,15 @@ They cannot unlock a door that is on no screen, and they cannot reach
 A signed-in editor session skips the limit — the entity picker has to be able to
 try things that are not placed anywhere yet.
 
-If you need to reach something that is genuinely on no view — a custom module
-with a hard-coded entity, or a script of your own — turn the limit off with
+A custom module on a view counts with everything it names. That includes its
+settings and defaults, in whatever format its author chose, such as
+`calendar.formula_1|#e10600` on a line of its own, and the entity ids and
+addresses written in its code. Since 1.5.15 that holds for hard-coded entities
+too, as long as the module is on a view and switched on.
+
+If you need to reach something that is genuinely on no view — a script of your
+own, or a module that only finds its entities while it runs, such as one that
+shows every calendar Home Assistant has — turn the limit off with
 `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in your `.env`. On the add-on it is the
 `ha_action_unrestricted` option; on Kubernetes it is the same key in the
 ConfigMap. The refusal message names the variable, so you do not have to
@@ -254,7 +261,7 @@ gets only what is on a saved view:
 | `/api/ha/camera/[entity]/snapshot`, `/stream`, `/webrtc` | A camera on a view. |
 | `/api/ha/media/[entity]/artwork` | The cover of a player on a view. |
 | `/api/ha-lists/[entity]/items` | A to-do or shopping list on a view. |
-| `/api/ha/notifications` | All notifications, if a view has a notifications tile; otherwise nothing. |
+| `/api/ha/notifications` | All notifications, if a view has a notifications tile or a custom module whose code calls this route; otherwise nothing. |
 | `/api/ha/entities`, `/api/ha-lists` | Only the entities and lists that are on a view. Signed in, the editor's pickers get all of them. |
 | `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder, which Home Assistant itself serves without a login. |
 

@@ -366,8 +366,13 @@ or turn the limit off with `MAGIC_FRAME_HA_ACTION_UNRESTRICTED=1` in `.env`
 signed-in browser, but on a wall panel it stays empty or reads *unavailable*.
 
 **Cause.** Without a login a display gets only what is on one of your saved
-views. Something that is not — a custom module that asks for an entity it does
-not have in its settings, a feed typed into a module's code — is refused.
+views. Something that is not is refused, for example an entity a custom module
+only finds while it runs.
+
+In 1.5.14 this also hit custom modules that were on a view, when their entity or
+feed sat in a settings line like `calendar.formula_1|#e10600` or in the module's
+code (#147). Since 1.5.15 everything a module on a view names counts as on that
+view. Update before you look further.
 
 **What to do:** `docker compose logs app` names every refusal, for example
 `[ha/state] refused sensor.x to a caller without login`. Put the entity or feed

@@ -209,6 +209,33 @@ from the wrapper around it, and the dark panel behind it is the widget's
 `bgOpacity`. A well-written module sizes everything relative to that inherited
 font size, so it scales with the tile like the built-in widgets do.
 
+### On a display without a login
+
+A wall panel has no login, so Magic Frame's own routes give it only what your
+saved views name: Home Assistant states, calendars, feeds, lists. A module on a
+view counts with everything it names:
+
+- its settings, as you filled them in;
+- its defaults from `module.json`;
+- the strings in its code.
+
+The format does not matter. `calendar.formula_1|#e10600|F1` on a line of its
+own, an entity in a sentence, an address inside a JSON text: each id and each
+address counts on its own. A module whose code calls `/api/ha/notifications`
+gets the notifications, as a notifications tile would.
+
+What a module only finds while it runs does not count. A module that asks Home
+Assistant for every calendar and shows them all gets, on a display, only the
+calendars something on a view names. A switched-off module counts with its
+settings and defaults only, because its code runs nowhere. A module that is on no
+view counts with nothing beyond whole default values. Signed in, as in the editor, nothing is
+limited. Refusals are in `docker compose logs app`. See
+[Home Assistant](home-assistant.md) for the full table and the switch that lifts
+the limit.
+
+Before 1.5.15 only whole settings values counted. A module that kept its entity
+in a settings line or in its code stayed empty on a display (#147).
+
 ## When something goes wrong
 
 | What you see | What it means |
