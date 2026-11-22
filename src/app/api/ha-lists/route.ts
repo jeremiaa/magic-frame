@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
 import { getAppSettings } from "@/lib/settings/store";
 import { describeHaFetchError } from "@/lib/ha/fetch-error";
-import { isSignedIn } from "@/lib/ha/action-policy";
+import { isSignedIn, readableEntities } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
 /** Liefert alle todo.* Entities aus Home Assistant (Name + Item-Count). */
 export async function GET() {
   try {
-    // Only the list pickers in the editor ask, signed in. Without a login this
-    // named every to-do list in Home Assistant, with its count, to anybody.
-    if (!(await isSignedIn())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // The list pickers in the editor ask signed in and get every list. This
+    // used to name every to-do list in Home Assistant, with its count, to
+    // anybody; without a login it now names only the lists on a saved view.
+    const signedIn = await isSignedIn();
     const settings = await getAppSettings();
     if (!settings.haUrl || !settings.haToken) {
       return NextResponse.json(
@@ -37,9 +36,13 @@ export async function GET() {
       );
     }
     const all = (await res.json()) as any[];
-    const todos = all.filter(
+    let todos = all.filter(
       (e) => typeof e.entity_id === "string" && e.entity_id.startsWith("todo."),
     );
+    if (!signedIn) {
+      const readable = new Set(await readableEntities("ha-lists", todos.map((e) => e.entity_id), { quiet: true }));
+      todos = todos.filter((e) => readable.has(e.entity_id));
+    }
     const ids = todos.map((e) => e.entity_id);
 
     // Item-Counts: die moderne HA-todo-Plattform hält die Items NICHT mehr im

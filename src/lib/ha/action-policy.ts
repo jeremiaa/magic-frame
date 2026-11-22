@@ -464,14 +464,20 @@ export function noteRefused(route: string, what: string): void {
  * ends up in a Home Assistant URL, and `../config` would otherwise walk out of
  * /api/states into the rest of its API.
  */
-export async function readableEntities(route: string, asked: string[]): Promise<string[]> {
+export async function readableEntities(
+  route: string,
+  asked: string[],
+  opts: { quiet?: boolean } = {},
+): Promise<string[]> {
   const wellFormed = asked.filter((id) => isEntityId(id));
   if (wellFormed.length === 0) return [];
   if (await isSignedIn()) return wellFormed;
   const out: string[] = [];
   for (const id of wellFormed) {
     if (await mayActOn(id)) out.push(id);
-    else noteRefused(route, normaliseEntityId(id));
+    // A list (the entity list) leaves most of the house out by design — that
+    // is not a refusal worth a log line per entity.
+    else if (!opts.quiet) noteRefused(route, normaliseEntityId(id));
   }
   return out;
 }

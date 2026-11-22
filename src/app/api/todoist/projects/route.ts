@@ -1,23 +1,28 @@
 import { NextResponse } from "next/server";
 import { listProjects, TodoistError } from "@/lib/todoist/client";
-import { isSignedIn } from "@/lib/ha/action-policy";
+import { isSignedIn, standsInAView } from "@/lib/ha/action-policy";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Read-only Projektliste — wird vom Editor-Inspector (Dropdown) gepollt,
  * damit der User beim Konfigurieren des Widgets seine Todoist-Projekte sieht.
- * Bewusst ohne Auth, weil das auch von der Live-View gerendert werden kann.
- * Der Token bleibt server-side; raus geht nur (id, name).
+ * Ohne Anmeldung, weil das auch von der Live-View gerendert werden kann —
+ * dann aber nur die Projekte, die eine gespeicherte Ansicht zeigt. Der Token
+ * bleibt server-side; raus geht nur (id, name).
  */
 export async function GET() {
   try {
-    // Only the list picker in the editor asks, and it is signed in. Without a
-    // login this named every project in the account to anybody.
-    if (!(await isSignedIn())) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Signed in, the list picker gets every project. Without a login this used
+    // to name every project in the account to anybody; now only the projects
+    // a saved view shows.
+    const signedIn = await isSignedIn();
+    let list = await listProjects();
+    if (!signedIn) {
+      const shown: typeof list = [];
+      for (const p of list) if (await standsInAView(p.id)) shown.push(p);
+      list = shown;
     }
-    const list = await listProjects();
     return NextResponse.json({
       projects: list.map((p) => ({
         id: p.id,
