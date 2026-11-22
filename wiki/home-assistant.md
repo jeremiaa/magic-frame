@@ -255,7 +255,7 @@ gets only what is on a saved view:
 | `/api/ha/media/[entity]/artwork` | The cover of a player on a view. |
 | `/api/ha-lists/[entity]/items` | A to-do or shopping list on a view. |
 | `/api/ha/notifications` | All notifications, if a view has a notifications tile; otherwise nothing. |
-| `/api/ha/entities`, `/api/ha-lists` | Nothing. Only the editor's pickers use them, and they are signed in. |
+| `/api/ha/entities`, `/api/ha-lists` | Only the entities and lists that are on a view. Signed in, the editor's pickers get all of them. |
 | `/api/ha/local/[...path]` | Files from Home Assistant's `www` folder, which Home Assistant itself serves without a login. |
 
 A signed-in session reads anything, as before: the editor shows entities before

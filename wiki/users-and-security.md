@@ -379,7 +379,8 @@ Up to 1.5.13 two of them went much further, and it is worth knowing if your
 installation was reachable by people you do not trust:
 
 - **`/api/ha/entities` listed every entity in your Home Assistant** with its
-  current state, to anybody. It now needs a login.
+  current state, to anybody. Without a login it now lists only what is on a
+  view.
 - **`/api/ha/camera/[entity]/snapshot` returned a camera image** for any camera
   entity, whether or not a widget showed it. It now serves only cameras on a
   view.
